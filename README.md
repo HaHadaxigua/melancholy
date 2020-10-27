@@ -45,3 +45,14 @@ melancholy  /ˈmel.əŋ.kɒl.i/ 忧愁的
 normal | 普通提交，无意义，说明没有说明改动
 feat | 新功能
 fix | 修复了错误
+
+## gitignore
+*.log   # 忽略.log后缀的文件
+bin/    # 过滤bin文件夹的内容
+/idea/  # 过滤整个文件夹
+
+### usage
+1. git rm -r --cached .
+2. git add .
+3. git commit -m "fix: ..."
+4. git push origin <branch name>
