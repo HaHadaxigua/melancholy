@@ -1,0 +1,24 @@
+settings:
+  application:
+    domain: localhost:8990
+    host: 0.0.0.0
+    ishttps: false
+    mode: dev
+    name: ferry-test
+    port: "8002"
+    readtimeout: 1
+    writertimeout: 2
+  database:
+    dbtype: mysql
+    host: 127.0.0.1
+    name: melancholy
+    password: your password
+    port: 3306
+    username: ferry
+    domain:
+      gethost: 1
+      url: localhost:9527
+  gorm:
+    logmode: 0
+    maxidleconn: 0
+    maxopenconn: 20000
