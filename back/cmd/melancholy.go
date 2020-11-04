@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // this is the entrance of the backend
 func main() {
-	fmt.Println("start")
+	fmt.Println(os.Getwd())
 }
