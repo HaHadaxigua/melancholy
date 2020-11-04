@@ -3,7 +3,7 @@ Application:
   Domain: localhost:8990
   Host: 127.0.0.1
   IsHttps: false
-  Name: melancholy-test
+  Name: melancholy
   Port: "8002"
   ReadTimeout: 1
   WriterTimeout: 2

@@ -13,7 +13,7 @@ var (
 	//ValidConfigFileExtension    = []string{"json", "ini", "yaml", "yml", "xml"}
 	ValidConfigFileExtension    = []string{"yaml", "yml"}
 	validConfigFileExtensionMap = make(map[string]bool)
-	conf                        Config
+	Conf                        Config
 	v                           *viper.Viper
 )
 
@@ -29,14 +29,14 @@ func init() {
 	v = GetViper()
 	// viper进行设置 读配置文件
 	v.SetConfigFile("./application.yml")
-	v.AddConfigPath("../../config")
+	v.AddConfigPath("../back/config")
 	v.SetConfigName("application")
 	v.SetConfigType("yml")
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Panicf("failed to parse config file [%s]", err.Error())
 	}
-	if err = v.Unmarshal(&conf); err != nil {
+	if err = v.Unmarshal(&Conf); err != nil {
 		log.Panicf("failed to decode into struct [%s]", err.Error())
 	}
 }
@@ -49,7 +49,7 @@ func IsSupportConfigFileType(filename string) bool {
 
 // ReadConfig 读取配置
 func ReadConfig() {
-	fmt.Println(conf)
+	fmt.Println(Conf)
 }
 
 // NewViper 返回一个Viper实例

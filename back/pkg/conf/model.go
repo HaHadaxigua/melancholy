@@ -13,7 +13,7 @@ type Application struct {
 	IsHttps       bool   `json:"isHttps" yml:"Application.IsHttps"`
 	Name          string `json:"name" yml:"Application.Name"`
 	Port          string `json:"port" yml:"Application.Port"`
-	ReadTimeout   int64  `json:"readTimeout" yml:"Application.ReadTimeout"`
+	ReadTimeout   int  `json:"readTimeout" yml:"Application.ReadTimeout"`
 	WriterTimeout int64  `json:"writeTimeout" yml:"Application.WriteTimeout"`
 }
 
