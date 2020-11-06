@@ -16,8 +16,8 @@ type CloudFile interface {
 
 // 基础文件描述, 所有的文件都基于此
 type BaseFile struct {
-	Name     string
 	Path     string
+	Name     string
 	FileType uint32 `json:"file_type"`
 	Size     int64
 	Md5      string

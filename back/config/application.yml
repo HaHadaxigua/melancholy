@@ -1,4 +1,4 @@
-Mode: dev
+Mode: debug
 Application:
   Domain: localhost:8990
   Host: 127.0.0.1
