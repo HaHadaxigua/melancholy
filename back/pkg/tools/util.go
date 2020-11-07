@@ -1,6 +1,8 @@
 package tools
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"strings"
 )
@@ -54,4 +56,10 @@ func FormatTime(i int64) string {
 			return fmt.Sprintf("%2dh", h) + FormatTime(s)
 		}
 	}
+}
+
+//MD5 计算md5值
+func MD5(s string) string {
+	sum := md5.Sum([]byte(s))
+	return hex.EncodeToString(sum[:])
 }

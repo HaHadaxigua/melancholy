@@ -7,13 +7,14 @@ Application:
   Port: "8002"
   ReadTimeout: 1
   WriterTimeout: 2
+  Location: F:\melancholy
 Database:
   Dbtype: mysql
   Host: 127.0.0.1
-  Port: 3306
+  Port: 3307
   Name: melancholy
-  Password: your password
-  Username: ferry
+  Password: 123
+  Username: root
 Gorm:
   LogMode: 0
   MaxIdleConn: 0

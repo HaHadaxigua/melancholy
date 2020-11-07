@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
+	"github.com/HaHadaxigua/melancholy/pkg/store"
 )
 
 // this is the entrance of the backend
@@ -15,5 +16,5 @@ func main() {
 func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
 	conf.StartLog()
+	store.Setup()
 }
-
