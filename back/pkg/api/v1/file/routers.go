@@ -45,11 +45,10 @@ func CreateFolder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"data": err,
 		})
+		return
 	}
-	name,_ := bf.CreatedAt.Zone()
 	c.JSON(http.StatusOK, gin.H{
 		"data": bf,
-		"time/zone": name,
 	})
 }
 

@@ -16,9 +16,14 @@ func CreateFolder(r *msg.DirRequest) (*file.BaseFile, error) {
 	}
 	md5 := tools.MD5(fmt.Sprintf("%d%s%d%s", r.Creator, r.Name, r.ParentId, time.Now().String()))
 	tFolder := file.NewFolder(r.Creator, r.ParentId, r.Name, md5)
+
+	if HaveRepeatNameFolder(r.Name, r.ParentId) {
+		return nil, msg.FileRepeatErr
+	}
+
 	err := sf.SaveBaseFile(tFolder)
 	if err != nil {
-		return nil, msg.SaveBaseFileErr
+		return nil, msg.FileSaveErr
 	}
 	return tFolder, nil
 }
@@ -29,4 +34,16 @@ func VerifyReq(r *msg.DirRequest) bool {
 		return false
 	}
 	return true
+}
+
+//HaveRepeatNameFolder 判断是否有相同的文件名在同一个文件夹下
+func HaveRepeatNameFolder(name string, parentId int64) bool {
+	bf, err := sf.FindFolderByNameAndParentId(name, parentId)
+	if err != nil {
+		return false
+	}
+	if bf != nil {
+		return true
+	}
+	return false
 }

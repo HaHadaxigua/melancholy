@@ -3,6 +3,8 @@ package file
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg/model"
+	"github.com/HaHadaxigua/melancholy/pkg/tools"
+	"time"
 )
 
 // 云文件
@@ -24,11 +26,11 @@ type BaseFile struct {
 	Md5         string
 	Size        int64 `json:"size"`        // 描述文件大小， 如果是文件夹， 则描述文件夹内容的大小
 	DFlag       bool  `json:"dFlag"`       // 是否是文件夹
-	ParentDirID int64 `json:"parentDirId"` // 父文件夹id
+	ParentID int64 `json:"parentId"` // 父文件夹id
 	ChildFileID int64 `json:"childFileId"` // 子文件id
 }
 
-func(b *BaseFile) String() string{
+func (b *BaseFile) String() string {
 	return fmt.Sprintf("")
 }
 
@@ -39,7 +41,7 @@ func NewBaseFile(creator, parentDirId int64, name, url string) (*BaseFile, error
 		Creator:     creator,
 		Name:        name,
 		Url:         url,
-		ParentDirID: parentDirId,
+		ParentID: parentDirId,
 	}, nil
 }
 
@@ -49,7 +51,9 @@ func NewFolder(creator, parentDirId int64, name, md5 string) *BaseFile {
 		Creator:     creator,
 		Name:        name,
 		Md5:         md5,
-		ParentDirID: parentDirId,
+		Path:        GenFilePath(),
+		Url:         GenFileUrl(),
+		ParentID: parentDirId,
 		DFlag:       true,
 	}
 }
@@ -59,4 +63,14 @@ type MeVideoFile struct {
 	BaseFile
 	MeType  string `json:"meType"`  // 视频类型的分类
 	Section string `json:"section"` // 视频标签
+}
+
+//TODO: 返回一个path
+func GenFilePath() string {
+	return tools.MD5(time.Now().String())
+}
+
+//TODO: 生成文件路由
+func GenFileUrl() string{
+	return tools.MD5(time.Now().String())
 }
