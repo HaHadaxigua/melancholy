@@ -1,22 +1,19 @@
 package file
 
 import (
-	"fmt"
-	"github.com/HaHadaxigua/melancholy/pkg/model/file"
+	model "github.com/HaHadaxigua/melancholy/pkg/model/file"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	sf "github.com/HaHadaxigua/melancholy/pkg/store/file"
-	"github.com/HaHadaxigua/melancholy/pkg/tools"
-	"time"
 )
 
 //CreateFolder 根据请求创建文件夹
-func CreateFolder(r *msg.DirRequest) (*file.BaseFile, error) {
+func CreateFolder(r *msg.DirRequest) (*model.Folder, error) {
 	if !VerifyReq(r) {
 		return nil, msg.ErrReq
 	}
-	md5 := tools.MD5(fmt.Sprintf("%d%s%d%s", r.Creator, r.Name, r.ParentId, time.Now().String()))
-	tFolder := file.NewFolder(r.Creator, r.ParentId, r.Name, md5)
+	tFolder := model.NewFolder(r.Creator, r.ParentId, r.Name)
 
+	// 判断是否有重复的文件夹
 	if HaveRepeatNameFolder(r.Name, r.ParentId) {
 		return nil, msg.FileRepeatErr
 	}
@@ -26,6 +23,18 @@ func CreateFolder(r *msg.DirRequest) (*file.BaseFile, error) {
 		return nil, msg.FileSaveErr
 	}
 	return tFolder, nil
+}
+
+// GetChildFolders 根据当前路径的文件夹id 获取api
+func GetChildFolders(folderId int) ([]*model.Folder, error) {
+	if folderId < 0 {
+		return nil, msg.ErrReq
+	}
+	subFolders, err := sf.GetSubFolders(folderId)
+	if err != nil {
+		return nil, msg.FileNotFoundErr
+	}
+	return subFolders, nil
 }
 
 // VerifyReq 验证请求合法性

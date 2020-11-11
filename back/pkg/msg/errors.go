@@ -49,8 +49,9 @@ var (
 	ErrReq            = &Err{Code: 10002, Message: ErrReqMsg}
 
 	// File 模块
-	FileSaveErr   = &Err{Code: 10201, Message: FileSaveFailedErrorMsg}
-	FileRepeatErr = &Err{Code: 10202, Message: FileRepeatedErrorMsg}
+	FileSaveErr     = &Err{Code: 10201, Message: FileSaveFailedErrorMsg}
+	FileRepeatErr   = &Err{Code: 10202, Message: FileRepeatedErrorMsg}
+	FileNotFoundErr = &Err{Code: 10203, Message: FileNotFoundErrorMsg}
 
 	BadRequest = &Err{Code: 2001, Message: BadRequestMsg}
 )
@@ -72,4 +73,5 @@ const (
 	FileCreatedFailedMsg   string = "文件创建失败"
 	FileSaveFailedErrorMsg string = "文件保存失败"
 	FileRepeatedErrorMsg   string = "文件重名"
+	FileNotFoundErrorMsg   string = "文件未找到"
 )

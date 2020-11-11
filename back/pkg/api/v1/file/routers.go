@@ -14,8 +14,8 @@ func SetupFileRouters(r *gin.RouterGroup) {
 		// Test
 		fr.GET("/download", Hello)
 
-		// 创建文件夹
-		fr.POST("/create", CreateFolder)
+		fr.POST("/create", CreateFolder) // 创建文件夹
+		fr.GET("/folders", GetFolders)   // 获取当前文件夹下的子文件夹
 		fr.GET("/path", GetDirs)
 
 		// 视频文件
@@ -49,6 +49,21 @@ func CreateFolder(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": bf,
+	})
+}
+
+// GetFolders 获取当前目录下的文件夹
+func GetFolders(c *gin.Context){
+	curPath := c.GetInt("curPath")
+	folders, err := service.GetChildFolders(curPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"data": err,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": folders,
 	})
 }
 
