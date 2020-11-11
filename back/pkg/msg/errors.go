@@ -23,6 +23,11 @@ func NewErr(code int, msg string, err error) *Err {
 	}
 }
 
+func(e *Err) AddCause(err error){
+	e.Cause = err
+}
+
+
 //DecodeErr 解码错误
 func DecodeErr(err error) (int, string) {
 	if err == nil {

@@ -13,7 +13,7 @@ func CreateFolder(r *msg.DirRequest) (*model.Folder, error) {
 	}
 	tFolder := model.NewFolder(r.Creator, r.ParentId, r.Name)
 
-	// 判断是否有重复的文件夹
+	//判断是否有重复的文件夹
 	if HaveRepeatNameFolder(r.Name, r.ParentId) {
 		return nil, msg.FileRepeatErr
 	}
@@ -47,11 +47,11 @@ func VerifyReq(r *msg.DirRequest) bool {
 
 //HaveRepeatNameFolder 判断是否有相同的文件名在同一个文件夹下
 func HaveRepeatNameFolder(name string, parentId int64) bool {
-	bf, err := sf.FindFolderByNameAndParentId(name, parentId)
+	rows, err := sf.FindFolderByNameAndParentId(name, parentId)
 	if err != nil {
 		return false
 	}
-	if bf != nil {
+	if rows > 0 {
 		return true
 	}
 	return false

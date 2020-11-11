@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
 	"github.com/HaHadaxigua/melancholy/pkg/model"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
 	"net/url"
+	"os"
+	"time"
 )
 
 var db *gorm.DB
@@ -24,11 +28,24 @@ func Setup() {
 		conf.C.Database.Name,
 		url.QueryEscape("'Asia/Shanghai'"))
 
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// gorm的日志记录器
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold: time.Nanosecond,   // 慢 SQL 阈值
+			LogLevel:      logger.Silent, // Log level
+			Colorful:      false,         // 禁用彩色打印
+		},
+	)
+
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		//Logger: logger.Default.LogMode(logger.Info),
+		Logger: newLogger.LogMode(logger.Info),
+	})
 	if err != nil {
-		log.Panicf("Open DB connect failed %s", err.Error())
+		logrus.Panicf("Open DB connect failed %s", err.Error())
 	}
-	log.Info("Init DB successfully")
+	logrus.Info("Init DB successfully")
 }
 
 //GetConn 获取db connect

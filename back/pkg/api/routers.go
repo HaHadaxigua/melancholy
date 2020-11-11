@@ -16,5 +16,5 @@ func SetupRouters(e *gin.Engine) {
 			})
 		})
 	}
-	file.SetupFileRouters(v1)
+	file.SetupRouters(v1)
 }

@@ -21,21 +21,21 @@ func GetSubFolders(folderId int) ([]*file.Folder, error) {
 	db := store.GetConn()
 	folder := &file.Folder{}
 	var folders []*file.Folder
-	if err := db.Model(folder).Where("parent_id = ? AND deleted_at is not null", folderId).Scan(&folders).Error; err != nil {
+	if err := db.Model(folder).Where("parent_id = ? AND deleted_at is null", folderId).Scan(&folders).Error; err != nil {
 		return nil, err
 	}
 	return folders, nil
 }
 
-//FindFolderByNameAndParentId 根据名字和父文件夹查看是否存在相同的文件
-func FindFolderByNameAndParentId(name string, parentId int64) (*file.Folder, error) {
+//FindFolderByNameAndParentId 判断当前父文件夹下是否有同名文件夹
+func FindFolderByNameAndParentId(name string, parentId int64) (int64, error) {
 	db := store.GetConn()
 	fb := &file.Folder{}
-	result := db.Model(&fb).Where("parent_id = ? AND name = ? AND deleted_at is not null ", parentId, name).Scan(&fb)
-	if result.Error != nil {
-		return fb, nil
+	rows := db.Where("parent_id = ? AND name = ? AND deleted_at is null ", parentId, name).Find(&fb)
+	if rows.Error != nil {
+		return 0, rows.Error
 	} else {
-		return nil, result.Error
+		return rows.RowsAffected, nil
 	}
 }
 

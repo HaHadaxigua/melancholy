@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -56,6 +57,12 @@ func FormatTime(i int64) string {
 			return fmt.Sprintf("%2dh", h) + FormatTime(s)
 		}
 	}
+}
+
+func FormatStringToTime(timeStr string) time.Time {
+	loc, _ := time.LoadLocation("Local")
+	theTime, _ := time.ParseInLocation("2006-01-02 15:04:05", timeStr, loc)
+	return theTime
 }
 
 //MD5 计算md5值
