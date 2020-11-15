@@ -8,6 +8,7 @@ Application:
   ReadTimeout: 1
   WriterTimeout: 2
   Location: F:\melancholy
+  JwtSecret: 43f776358a
 Database:
   Dbtype: mysql
   Host: 127.0.0.1

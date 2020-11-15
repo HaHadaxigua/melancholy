@@ -16,7 +16,7 @@ func Hello(c *gin.Context) {
 
 //CreateFolder 创建文件夹
 func CreateFolder(c *gin.Context) {
-	dReq := &msg.DirRequest{}
+	dReq := &msg.FolderRequest{}
 	err := c.BindJSON(dReq)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

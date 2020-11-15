@@ -16,6 +16,7 @@ type Application struct {
 	ReadTimeout   int    `json:"readTimeout" yml:"Application.ReadTimeout"`
 	WriterTimeout int64  `json:"writeTimeout" yml:"Application.WriteTimeout"`
 	Location      string `json:"melancholy" yml:"Application.Location"`
+	JwtSecret     string `json:"jwtSecret" yml:"Application.JwtSecret"`
 }
 
 type Database struct {

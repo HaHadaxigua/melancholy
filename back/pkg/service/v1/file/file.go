@@ -7,7 +7,7 @@ import (
 )
 
 //CreateFolder 根据请求创建文件夹
-func CreateFolder(r *msg.DirRequest) (*model.Folder, error) {
+func CreateFolder(r *msg.FolderRequest) (*model.Folder, error) {
 	if !VerifyReq(r) {
 		return nil, msg.ErrReq
 	}
@@ -18,7 +18,7 @@ func CreateFolder(r *msg.DirRequest) (*model.Folder, error) {
 		return nil, msg.FileRepeatErr
 	}
 
-	err := sf.SaveBaseFile(tFolder)
+	err := sf.CreateBaseFile(tFolder)
 	if err != nil {
 		return nil, msg.FileSaveErr
 	}
@@ -38,7 +38,7 @@ func GetChildFolders(folderId int) ([]*model.Folder, error) {
 }
 
 // VerifyReq 验证请求合法性
-func VerifyReq(r *msg.DirRequest) bool {
+func VerifyReq(r *msg.FolderRequest) bool {
 	if r.Creator <= 0 || r.Name == "" || r.Name == " " || r.ParentId < 0 {
 		return false
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 // SaveBaseFile 保存文件
-func SaveBaseFile(fb *file.Folder) error {
+func CreateBaseFile(fb *file.Folder) error {
 	db := store.GetConn()
 	result := db.Create(fb)
 	err := result.Error
