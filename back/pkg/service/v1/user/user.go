@@ -12,16 +12,19 @@ func CreateUser(r *msg.UserRequest) (*model.User, error) {
 	if !valid && err != nil {
 		return nil, err
 	}
-	// todo: 判断用户是否存在时， 出现问题
-	eu, err := user.GetUserByEmail(r.Email)
-	if eu != nil {
-		return nil, msg.UserHasExistedErr
+	_, err = user.GetUserByEmail(r.Email)
+	if err != nil {
+		e := msg.UserHasExistedErr
+		e.Cause = err.Error()
+		return nil, e
 	}
 
 	newUser, err := model.NewUser(r.Username, r.Password, r.Email)
 	err = user.CreateUser(newUser)
 	if err != nil {
-		return nil, msg.UserCreateErr
+		e := msg.UserCreateErr
+		e.Cause = err.Error()
+		return nil, e
 	}
 	return newUser, nil
 }

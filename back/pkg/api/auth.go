@@ -1,6 +1,7 @@
 package api
 
 import (
+	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
@@ -10,15 +11,13 @@ import (
 	"net/http"
 )
 
-type auth struct {
-	Username string `valid:"Required; MaxSize(50)"`
-	Password string `valid:"Required; MaxSize(50)"`
-}
-
 func GetAuth(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-
+	type auth struct {
+		Username string `valid:"Required; MaxSize(50)"`
+		Password string `valid:"Required; MaxSize(50)"`
+	}
 	valid := validation.Validation{}
 	a := auth{Username: username, Password: password}
 	ok, _ := valid.Valid(&a)
@@ -51,19 +50,17 @@ func GetAuth(c *gin.Context) {
 	})
 }
 
-
-
-type Auth struct {
-	ID int `gorm:"primary_key" json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-
+// todo: 判断用户名和密码时需要进行重新操作
 func CheckAuth(username, password string) bool {
-	var auth Auth
+	type User struct {
+		ID       int
+		Username string
+		Password string
+	}
+
+	var auth User
 	db := store.GetConn()
-	db.Select("id").Where(Auth{Username : username, Password : password}).First(&auth)
+	db.Model(model.User{}).Select("id").Where(User{Username: username, Password: password}).First(&auth)
 	if auth.ID > 0 {
 		return true
 	}

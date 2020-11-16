@@ -15,6 +15,6 @@ func main() {
 
 func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
-	conf.StartLog()
+	conf.Setup()
 	store.Setup()
 }

@@ -8,7 +8,7 @@ import (
 type Err struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Cause   error  `json:"cause"`
+	Cause   string  `json:"cause"`
 }
 
 func (e *Err) Error() string {
@@ -19,12 +19,12 @@ func NewErr(code int, msg string, err error) *Err {
 	return &Err{
 		Code:    code,
 		Message: msg,
-		Cause:   err,
+		Cause:   err.Error(),
 	}
 }
 
 func (e *Err) AddCause(err error) {
-	e.Cause = err
+	e.Cause = err.Error()
 }
 
 //DecodeErr 解码错误
@@ -35,7 +35,7 @@ func DecodeErr(err error) (int, string) {
 	switch typed := err.(type) {
 	case *Err:
 		if typed.Code == ErrReq.Code {
-			typed.Message = ErrReq.Message + "Desc:" + typed.Cause.Error()
+			typed.Message = ErrReq.Message + "Desc:" + typed.Cause
 		}
 	}
 
@@ -48,7 +48,7 @@ func DecodeErr(err error) (int, string) {
 // 第三个xx 表示具体的出错类型
 
 var (
-	OK                = &Err{Code: 0, Message: Ok}
+	OK                = &Err{Code: 6, Message: Ok}
 	InternalServerErr = &Err{Code: 10001, Message: InternalServerErrorMsg}
 	ErrReq            = &Err{Code: 10002, Message: ErrReqMsg}
 

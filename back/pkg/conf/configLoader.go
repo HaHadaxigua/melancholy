@@ -17,7 +17,7 @@ var (
 	v                           *viper.Viper
 )
 
-func StartLog() {
+func Setup() {
 	// 初始化支持的config文件类型
 	for _, ext := range ValidConfigFileExtension {
 		validConfigFileExtensionMap[ext] = true
