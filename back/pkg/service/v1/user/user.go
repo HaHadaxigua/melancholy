@@ -3,7 +3,7 @@ package user
 import (
 	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	"github.com/HaHadaxigua/melancholy/pkg/store/user"
+	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
 )
 
 //CreateUser 请求创建用户
@@ -12,15 +12,21 @@ func CreateUser(r *msg.UserRequest) (*model.User, error) {
 	if !valid && err != nil {
 		return nil, err
 	}
-	_, err = user.GetUserByEmail(r.Email)
+	user, err := store.GetUserByEmail(r.Email)
 	if err != nil {
 		e := msg.UserHasExistedErr
 		e.Cause = err.Error()
 		return nil, e
+	} else if user != nil {
+		e := msg.UserHasExistedErr
+		e.Cause = "邮箱已被注册"
+		return nil, e
 	}
 
+
+
 	newUser, err := model.NewUser(r.Username, r.Password, r.Email)
-	err = user.CreateUser(newUser)
+	err = store.CreateUser(newUser)
 	if err != nil {
 		e := msg.UserCreateErr
 		e.Cause = err.Error()
@@ -34,7 +40,7 @@ func FindUserByUsername(r *msg.UserRequest) (*model.User, error) {
 	if !CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr
 	}
-	tu, err := user.GetUserByName(r.Username)
+	tu, err := store.GetUserByName(r.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +49,7 @@ func FindUserByUsername(r *msg.UserRequest) (*model.User, error) {
 
 //ListAllUser 列出所有的用户
 func ListAllUser() ([]*model.User, error) {
-	users, err := user.GetAllUsers()
+	users, err := store.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,7 @@ type User struct {
 	PhoneNumber int    `json:"phoneNumber"`
 	Email       string `json:"email"`
 	State       int    `json:"state"` // 帐号状态 -30: 逻辑删除		-20: 封禁， -10: 未激活(需要邮箱激活)， 0：正常
-	Salt        string  `json:"salt"`// 随机加入的盐
+	Salt        string `json:"salt"`  // 随机加入的盐
 }
 
 func (a *User) TableName() string {
@@ -25,12 +25,19 @@ func NewUser(username, password, email string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	encodePwd, err := tools.EncryptPassword(password, newSalt)
+	if err != nil {
+		return nil, err
+	}
+
 	nu := &User{
 		Username: username,
-		Password: password,
+		Password: encodePwd,
 		Email:    email,
 		State:    model.InActivated,
 		Salt:     newSalt,
 	}
+
 	return nu, nil
 }

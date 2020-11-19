@@ -9,18 +9,18 @@ import (
 var jwtSecret = []byte(conf.C.Application.JwtSecret)
 
 type Claims struct {
-	Username string `json:"username"`
+	Email string `json:"email"`
 	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
 //GenerateToken 生成token
-func GenerateToken(username, password string) (string, error) {
+func GenerateToken(email, password string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(2 * time.Hour) // 设置两小时后过期
 
 	claims := Claims{
-		username,
+		email,
 		password,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),

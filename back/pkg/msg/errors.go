@@ -8,7 +8,7 @@ import (
 type Err struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Cause   string  `json:"cause"`
+	Cause   string `json:"cause"`
 }
 
 func (e *Err) Error() string {
@@ -57,11 +57,13 @@ var (
 	InvalidParamsErr = &Err{Code: 20002, Message: InvalidParamsErrorMsg}
 
 	// Tools 模块
-	GenerateSaltErr = &Err{Code: 10103, Message: GenerateSaltErrMsg}
+	GenerateSaltErr    = &Err{Code: 10103, Message: GenerateSaltErrorMsg}
+	EncryptPasswordErr = &Err{Code: 10104, Message: EncryptPasswordErrorMsg}
 
 	// Auth 模块
-	AuthCheckTokenErr        = &Err{Code: 10101, Message: AuthCheckTokenErrorMsg}
-	AuthCheckTokenTimeoutErr = &Err{Code: 10102, Message: AuthCheckTokenTimeoutErrorMsg}
+	AuthCheckTokenErr         = &Err{Code: 10101, Message: AuthCheckTokenErrorMsg}
+	AuthCheckTokenTimeoutErr  = &Err{Code: 10102, Message: AuthCheckTokenTimeoutErrorMsg}
+	AuthAccessTokenIllegalErr = &Err{Code: 10103, Message: AuthAccessTokenIllegalErrorMsg}
 
 	// File 模块
 	FileSaveErr     = &Err{Code: 10201, Message: FileSaveFailedErrorMsg}
@@ -70,7 +72,7 @@ var (
 
 	// User 模块
 	UserCreateErr               = &Err{Code: 10301, Message: UserCreateErrorMsg}
-	UserNameIllegalErr          = &Err{Code: 10302, Message: UserNameIllegalErrorMsg}		// 用户名非法
+	UserNameIllegalErr          = &Err{Code: 10302, Message: UserNameIllegalErrorMsg} // 用户名非法
 	UserPwdIllegalErr           = &Err{Code: 10303, Message: UserPwdIllegalErrorMsg}
 	UserEmailIllegalErr         = &Err{Code: 10304, Message: UserEmailIllegalErrorMsg}
 	UserNameOrPwdIncorrectlyErr = &Err{Code: 10305, Message: UserNameOrPwdIncorrectlyErrorMsg}
@@ -92,11 +94,13 @@ const (
 	BindJsonFailedMsg string = "绑定前端数据失败"
 
 	// Tools 模块
-	GenerateSaltErrMsg string = "生成盐失败"
+	GenerateSaltErrorMsg    string = "生成盐失败"
+	EncryptPasswordErrorMsg string = "加密密码失败"
 
 	// Auth 模块
-	AuthCheckTokenErrorMsg        string = "认证Token失败"
-	AuthCheckTokenTimeoutErrorMsg string = "Token超时"
+	AuthCheckTokenErrorMsg         string = "认证Token失败"
+	AuthCheckTokenTimeoutErrorMsg  string = "Token超时"
+	AuthAccessTokenIllegalErrorMsg string = "非法Token"
 
 	// file 模块
 	FileCreatedFailedMsg   string = "文件创建失败"

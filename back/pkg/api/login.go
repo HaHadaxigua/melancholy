@@ -3,6 +3,7 @@ package api
 import (
 	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
+	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
@@ -11,7 +12,8 @@ import (
 	"net/http"
 )
 
-func GetAuth(c *gin.Context) {
+//Login
+func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 	type auth struct {
@@ -23,7 +25,7 @@ func GetAuth(c *gin.Context) {
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
-	status := msg.InvalidParamsErr
+	status := msg.OK
 	if ok {
 		isExist := CheckAuth(username, password)
 		if isExist {
@@ -35,7 +37,8 @@ func GetAuth(c *gin.Context) {
 				status = msg.OK
 			}
 		} else {
-			status = msg.AuthCheckTokenErr
+			status = msg.UserNameOrPwdIncorrectlyErr
+			status.Cause = "用户名或密码错误"
 		}
 	} else {
 		for _, err := range valid.Errors {
@@ -43,26 +46,49 @@ func GetAuth(c *gin.Context) {
 		}
 	}
 
+	if status != msg.OK {
+		c.JSON(http.StatusBadRequest, status)
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code": status.Code,
+			"msg":  status.Message,
+			"data": data,
+		})
+	}
+}
+
+//Register
+func Register(c *gin.Context) {
+	r := &msg.UserRequest{}
+	if err := c.BindJSON(r); err != nil {
+		e := msg.BadRequest
+		e.Cause = err.Error()
+		c.JSON(http.StatusBadRequest, e)
+		return
+	}
+	user, err := service.CreateUser(r)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"code": status.Code,
-		"msg":  status.Message,
-		"data": data,
+		"data": user,
 	})
 }
 
-// todo: 判断用户名和密码时需要进行重新操作
+//CheckAuth 判断用户是否存在
 func CheckAuth(username, password string) bool {
-	type User struct {
-		ID       int
-		Username string
-		Password string
-	}
-
-	var auth User
+	var auth model.User
 	db := store.GetConn()
-	db.Model(model.User{}).Select("id").Where(User{Username: username, Password: password}).First(&auth)
-	if auth.ID > 0 {
-		return true
+	result := db.Model(model.User{}).Where("username= ?", username).First(&auth)
+	if result.Error != nil {
+		return false
+	}
+	if result.RowsAffected >= 1 {
+		flag := tools.VerifyPassword(auth.Password, password+auth.Salt)
+		return flag
 	}
 
 	return false

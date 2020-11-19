@@ -39,11 +39,16 @@ func GetUserByName(name string) (*model.User, error) {
 //GetUserByEmail 根据邮箱找到用户
 func GetUserByEmail(email string) (*model.User, error) {
 	db := store.GetConn()
-	var u *model.User
-	if err := db.Model(&u).Where("email = ? AND deleted_at is null", email).Scan(u).Error; err != nil {
-		return nil, err
+	u := &model.User{}
+	result := db.Model(&u).Where("email = ? AND deleted_at is null", email).Scan(u)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return u, nil
+	if result.RowsAffected >= 1 {
+		return u, nil
+	}else {
+		return nil, nil
+	}
 }
 
 //GetAllUsers  找到所有的用户
