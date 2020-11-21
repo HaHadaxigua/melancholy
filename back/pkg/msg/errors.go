@@ -77,6 +77,7 @@ var (
 	UserEmailIllegalErr         = &Err{Code: 10304, Message: UserEmailIllegalErrorMsg}
 	UserNameOrPwdIncorrectlyErr = &Err{Code: 10305, Message: UserNameOrPwdIncorrectlyErrorMsg}
 	UserHasExistedErr           = &Err{Code: 10306, Message: UserHasExistedErrorMsg}
+	UserExitErr           = &Err{Code: 10307, Message: UserExitErrorMsg}
 )
 
 const (
@@ -115,4 +116,5 @@ const (
 	UserEmailIllegalErrorMsg         string = "邮箱非法"
 	UserNameOrPwdIncorrectlyErrorMsg string = "用户名或密码不正确"
 	UserHasExistedErrorMsg           string = "用户已存在"
+	UserExitErrorMsg                 string = "已退出"
 )

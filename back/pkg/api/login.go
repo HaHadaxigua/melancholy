@@ -1,10 +1,10 @@
 package api
 
 import (
-	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
+	//model "github.com/HaHadaxigua/melancholy/pkg/model/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
+	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -14,31 +14,38 @@ import (
 
 //Login
 func Login(c *gin.Context) {
-	username := c.Query("username")
+	email := c.Query("email")
 	password := c.Query("password")
+	if email == "" || password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "badRequest",
+		})
+		return
+	}
 	type auth struct {
-		Username string `valid:"Required; MaxSize(50)"`
+		Email    string `valid:"Required; MaxSize(50)"`
 		Password string `valid:"Required; MaxSize(50)"`
 	}
 	valid := validation.Validation{}
-	a := auth{Username: username, Password: password}
+	a := auth{Email: email, Password: password}
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
 	status := msg.OK
 	if ok {
-		isExist := CheckAuth(username, password)
-		if isExist {
-			token, err := tools.GenerateToken(username, password)
+		userId := store.CheckUserExist(email, password)
+		if userId > -1 {
+			token, err := tools.GenerateToken(email, password)
 			if err != nil {
 				status = msg.AuthCheckTokenErr
 			} else {
 				data["token"] = token
 				status = msg.OK
+				c.Set("user_id", userId)
 			}
 		} else {
 			status = msg.UserNameOrPwdIncorrectlyErr
-			status.Cause = "用户名或密码错误"
+			status.Cause = msg.UserNameOrPwdIncorrectlyErrorMsg
 		}
 	} else {
 		for _, err := range valid.Errors {
@@ -76,20 +83,4 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": user,
 	})
-}
-
-//CheckAuth 判断用户是否存在
-func CheckAuth(username, password string) bool {
-	var auth model.User
-	db := store.GetConn()
-	result := db.Model(model.User{}).Where("username= ?", username).First(&auth)
-	if result.Error != nil {
-		return false
-	}
-	if result.RowsAffected >= 1 {
-		flag := tools.VerifyPassword(auth.Password, password+auth.Salt)
-		return flag
-	}
-
-	return false
 }

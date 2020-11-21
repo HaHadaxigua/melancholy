@@ -3,6 +3,7 @@ package user
 import (
 	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
+	"github.com/HaHadaxigua/melancholy/pkg/tools"
 )
 
 // CreateUser 创建用户
@@ -60,4 +61,24 @@ func GetAllUsers() ([]*model.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+
+
+//CheckUserExist判断用户是否存在, 存在则返回用户id, 不存在则返回-1
+func CheckUserExist(email, password string) int {
+	var auth model.User
+	db := store.GetConn()
+	result := db.Model(model.User{}).Where("email= ?", email).First(&auth)
+	if result.Error != nil {
+		return -1
+	}
+	if result.RowsAffected >= 1 {
+		flag := tools.VerifyPassword(auth.Password, password+auth.Salt)
+		if flag {
+			return auth.ID
+		}
+		return -1
+	}
+	return -1
 }

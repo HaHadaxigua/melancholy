@@ -17,7 +17,7 @@ type Claims struct {
 //GenerateToken 生成token
 func GenerateToken(email, password string) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(2 * time.Hour) // 设置两小时后过期
+	expireTime := nowTime.Add(24 * time.Hour) // 设置两小时后过期
 
 	claims := Claims{
 		email,

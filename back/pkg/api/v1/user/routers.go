@@ -6,7 +6,6 @@ import "github.com/gin-gonic/gin"
 func SetupRouters(r *gin.RouterGroup) {
 	fr := r.Group("/users")
 	{
-		// 文件夹
-		fr.GET("/")
+		fr.GET("/logout", logout)
 	}
 }

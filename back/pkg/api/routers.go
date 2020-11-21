@@ -9,14 +9,14 @@ import (
 
 //SetupRouters 设置gin的路由
 func SetupRouters(e *gin.Engine) {
-	// 注册、登录、登出相关
-	e.GET("/auth", Login)
-	e.POST("/register", Register) // 注册用户
+	// 注册、登录
+	SetupBasicRouters(e)
 
 	v1 := e.Group("/api/v1", middleware.JWT)
 	{
 		file.SetupRouters(v1)
 		user.SetupRouters(v1)
+
 	}
 
 }

@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
+	"github.com/HaHadaxigua/melancholy/pkg/store"
+	"github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -13,7 +15,7 @@ type AuthHeader struct {
 	AccessToken string `header:"Access-Token"`
 }
 
-// JWT中间件 fixme: 重新生成token后 原来的token仍然有效， 即：修复token的过期机制
+// JWT中间件 fixme: 重新生成token后 原来的token仍然有效， 即：修复token的过期机制 (黑名单机制， 记录一张token黑名单)
 func JWT(c *gin.Context) {
 	status := msg.OK
 
@@ -36,6 +38,18 @@ func JWT(c *gin.Context) {
 			status.Cause = msg.AuthAccessTokenIllegalErrorMsg
 		} else if time.Now().Unix() > claims.ExpiresAt {
 			status = msg.AuthCheckTokenTimeoutErr
+		} else { // 此时token是有效的
+			// 判断下token是否已经进入黑名单
+			exitLog, e := store.FindExitLog(ah.AccessToken)
+			if exitLog != nil || e != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":msg.UserExitErr,
+				})
+				c.Abort()
+			}
+
+			userId := user.CheckUserExist(claims.Email, claims.Password)
+			c.Set("user_id", userId)
 		}
 	}
 
@@ -48,5 +62,6 @@ func JWT(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
 	c.Next()
 }
