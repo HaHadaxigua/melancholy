@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg/model/user"
 )
 
@@ -16,10 +15,6 @@ func SaveExitLog(el *user.ExitLog) error {
 
 //FindExitLog 寻找退出日志
 func FindExitLog(token string) (*user.ExitLog, error) {
-
-	fmt.Println("测试")
-
-
 	db := GetConn()
 	el := &user.ExitLog{}
 	res := db.Model(el).Where("token = ?", token).Scan(el)
