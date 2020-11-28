@@ -47,7 +47,7 @@ func GetUserByEmail(email string) (*model.User, error) {
 	}
 	if result.RowsAffected >= 1 {
 		return u, nil
-	}else {
+	} else {
 		return nil, nil
 	}
 }
@@ -56,20 +56,17 @@ func GetUserByEmail(email string) (*model.User, error) {
 func GetAllUsers() ([]*model.User, error) {
 	db := store.GetConn()
 	var users []*model.User
-	var u *model.User
-	if err := db.Model(&u).Find(&u).Scan(&users).Error; err != nil {
+	if err := db.Model(&model.User{}).Scan(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-
-
 //CheckUserExist判断用户是否存在, 存在则返回用户id, 不存在则返回-1
 func CheckUserExist(email, password string) int {
-	var auth model.User
+	auth := &model.User{Email: email}
 	db := store.GetConn()
-	result := db.Model(model.User{}).Where("email= ?", email).First(&auth)
+	result := db.Model(&auth).First(&auth)
 	if result.Error != nil {
 		return -1
 	}

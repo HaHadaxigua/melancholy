@@ -4,6 +4,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/pkg/api"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
 	"github.com/gin-gonic/gin"
+	_ "github.com/razeencheng/demo-go/swaggo-gin/docs"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"

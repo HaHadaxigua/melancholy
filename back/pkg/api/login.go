@@ -1,7 +1,7 @@
 package api
 
 import (
-	//model "github.com/HaHadaxigua/melancholy/pkg/model/user"
+	"errors"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
 	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
@@ -12,6 +12,15 @@ import (
 	"net/http"
 )
 
+// @Summary Login
+// @Description 登录接口
+// @Tags 基础接口
+// @Accept json
+// @Produce json
+// @Param who query string true "人名"
+// @Success 200 {string} string "{"msg": "hello Razeen"}"
+// @Failure 400 {string} string "{"msg": "who are you"}"
+// @Router /login [get]
 //Login
 func Login(c *gin.Context) {
 	email := c.Query("email")
@@ -73,13 +82,20 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
+
 	user, err := service.CreateUser(r)
-	if err != nil {
+	if err != nil && errors.Is(err, msg.UserHasExistedErr){
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": user,
 	})

@@ -15,7 +15,7 @@ type AuthHeader struct {
 	AccessToken string `header:"Access-Token"`
 }
 
-// JWT中间件 fixme: 重新生成token后 原来的token仍然有效， 即：修复token的过期机制 (黑名单机制， 记录一张token黑名单)
+// JWT中间件
 func JWT(c *gin.Context) {
 	status := msg.OK
 

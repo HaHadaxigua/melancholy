@@ -1,4 +1,4 @@
-package user
+package userv1
 
 import (
 	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
@@ -6,12 +6,15 @@ import (
 	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
 )
 
-//CreateUser 请求创建用户
+
+
+// CreateUser 请求创建用户
 func CreateUser(r *msg.UserRequest) (*model.User, error) {
 	valid, err := VerifyReq(r)
 	if !valid && err != nil {
 		return nil, err
 	}
+
 	user, err := store.GetUserByEmail(r.Email)
 	if err != nil {
 		e := msg.UserHasExistedErr
@@ -23,8 +26,6 @@ func CreateUser(r *msg.UserRequest) (*model.User, error) {
 		return nil, e
 	}
 
-
-
 	newUser, err := model.NewUser(r.Username, r.Password, r.Email)
 	err = store.CreateUser(newUser)
 	if err != nil {
@@ -35,7 +36,7 @@ func CreateUser(r *msg.UserRequest) (*model.User, error) {
 	return newUser, nil
 }
 
-//FindUserByUsername 根据用户名找学生
+// FindUserByUsername 根据用户名找用户
 func FindUserByUsername(r *msg.UserRequest) (*model.User, error) {
 	if !CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr

@@ -12,10 +12,4 @@ type Model struct {
 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"deleted_at default:-"` // 逻辑删除
 }
 
-const (
-	SoftDeleted int = -30
-	Blocked     int = -20
-	InActivated int = -10
-	Normal      int = 0
-	Vip         int = 10
-)
+
