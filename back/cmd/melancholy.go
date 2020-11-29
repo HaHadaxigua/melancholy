@@ -32,4 +32,5 @@ func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
 	conf.Setup()
 	store.Setup()
+	store.CasbinSetup()
 }

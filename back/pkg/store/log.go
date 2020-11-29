@@ -1,11 +1,11 @@
 package store
 
 import (
-	"github.com/HaHadaxigua/melancholy/pkg/model/user"
+	"github.com/HaHadaxigua/melancholy/pkg/model"
 )
 
 //SaveExitLog 记录退出log
-func SaveExitLog(el *user.ExitLog) error {
+func SaveExitLog(el *model.ExitLog) error {
 	db := GetConn()
 	if err := db.Create(el).Error; err != nil {
 		return err
@@ -14,9 +14,9 @@ func SaveExitLog(el *user.ExitLog) error {
 }
 
 //FindExitLog 寻找退出日志
-func FindExitLog(token string) (*user.ExitLog, error) {
+func FindExitLog(token string) (*model.ExitLog, error) {
 	db := GetConn()
-	el := &user.ExitLog{}
+	el := &model.ExitLog{}
 	res := db.Model(el).Where("token = ?", token).Scan(el)
 	if res.Error != nil {
 		return nil, res.Error

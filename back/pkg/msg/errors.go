@@ -61,23 +61,27 @@ var (
 	EncryptPasswordErr = &Err{Code: 10104, Message: EncryptPasswordErrorMsg}
 
 	// Auth 模块
-	AuthCheckTokenErr         = &Err{Code: 10101, Message: AuthCheckTokenErrorMsg}
-	AuthCheckTokenTimeoutErr  = &Err{Code: 10102, Message: AuthCheckTokenTimeoutErrorMsg}
-	AuthAccessTokenIllegalErr = &Err{Code: 10103, Message: AuthAccessTokenIllegalErrorMsg}
+	AuthCheckTokenErr         = &Err{Code: 10201, Message: AuthCheckTokenErrorMsg}
+	AuthCheckTokenTimeoutErr  = &Err{Code: 10202, Message: AuthCheckTokenTimeoutErrorMsg}
+	AuthAccessTokenIllegalErr = &Err{Code: 10203, Message: AuthAccessTokenIllegalErrorMsg}
+	AuthorizeFailedErr        = &Err{Code: 10204, Message: AuthorizeFailedMsg}
 
 	// File 模块
-	FileSaveErr     = &Err{Code: 10201, Message: FileSaveFailedErrorMsg}
-	FileRepeatErr   = &Err{Code: 10202, Message: FileRepeatedErrorMsg}
-	FileNotFoundErr = &Err{Code: 10203, Message: FileNotFoundErrorMsg}
+	FileSaveErr     = &Err{Code: 10301, Message: FileSaveFailedErrorMsg}
+	FileRepeatErr   = &Err{Code: 10302, Message: FileRepeatedErrorMsg}
+	FileNotFoundErr = &Err{Code: 10303, Message: FileNotFoundErrorMsg}
 
 	// User 模块
-	UserCreateErr               = &Err{Code: 10301, Message: UserCreateErrorMsg}
-	UserNameIllegalErr          = &Err{Code: 10302, Message: UserNameIllegalErrorMsg} // 用户名非法
-	UserPwdIllegalErr           = &Err{Code: 10303, Message: UserPwdIllegalErrorMsg}
-	UserEmailIllegalErr         = &Err{Code: 10304, Message: UserEmailIllegalErrorMsg}
-	UserNameOrPwdIncorrectlyErr = &Err{Code: 10305, Message: UserNameOrPwdIncorrectlyErrorMsg}
-	UserHasExistedErr           = &Err{Code: 10306, Message: UserHasExistedErrorMsg}
-	UserExitErr           = &Err{Code: 10307, Message: UserExitErrorMsg}
+	UserCreateErr               = &Err{Code: 10401, Message: UserCreateErrorMsg}
+	UserNameIllegalErr          = &Err{Code: 10402, Message: UserNameIllegalErrorMsg} // 用户名非法
+	UserPwdIllegalErr           = &Err{Code: 10403, Message: UserPwdIllegalErrorMsg}
+	UserEmailIllegalErr         = &Err{Code: 10404, Message: UserEmailIllegalErrorMsg}
+	UserNameOrPwdIncorrectlyErr = &Err{Code: 10405, Message: UserNameOrPwdIncorrectlyErrorMsg}
+	UserHasExistedErr           = &Err{Code: 10406, Message: UserHasExistedErrorMsg}
+	UserExitErr                 = &Err{Code: 10407, Message: UserExitErrorMsg}
+
+	// Role 模块
+	RepeatedRoleErr = &Err{Code: 10501, Message: RepeatedRoleMsg}
 )
 
 const (
@@ -102,6 +106,7 @@ const (
 	AuthCheckTokenErrorMsg         string = "认证Token失败"
 	AuthCheckTokenTimeoutErrorMsg  string = "Token超时"
 	AuthAccessTokenIllegalErrorMsg string = "非法Token"
+	AuthorizeFailedMsg             string = "认证失败"
 
 	// file 模块
 	FileCreatedFailedMsg   string = "文件创建失败"
@@ -117,4 +122,7 @@ const (
 	UserNameOrPwdIncorrectlyErrorMsg string = "用户名或密码不正确"
 	UserHasExistedErrorMsg           string = "用户已存在"
 	UserExitErrorMsg                 string = "已退出"
+
+	// Role
+	RepeatedRoleMsg string = "重复的角色"
 )

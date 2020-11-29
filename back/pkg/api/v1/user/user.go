@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
-	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
+	"github.com/HaHadaxigua/melancholy/pkg/model"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/gin-gonic/gin"
