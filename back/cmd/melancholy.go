@@ -33,4 +33,5 @@ func init() {
 	conf.Setup()
 	store.Setup()
 	store.CasbinSetup()
+	store.SetupEnt()
 }

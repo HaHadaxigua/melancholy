@@ -82,6 +82,7 @@ var (
 
 	// Role 模块
 	RepeatedRoleErr = &Err{Code: 10501, Message: RepeatedRoleMsg}
+	RoleNotFoundErr = &Err{Code: 10502, Message: RoleNotExistedMsg}
 )
 
 const (
@@ -125,4 +126,5 @@ const (
 
 	// Role
 	RepeatedRoleMsg string = "重复的角色"
+	RoleNotExistedMsg string = "角色不存在"
 )

@@ -34,10 +34,11 @@ func AddRole(c *gin.Context) {
 	}
 	err = service.AddRole(req.Name)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":err.Error(),
+		})
 		return
 	}
-
 	c.JSON(http.StatusOK, msg.OK)
 }
 
@@ -49,7 +50,7 @@ func AddUserRoles(c *gin.Context){
 		return
 	}
 	type roleReq struct {
-		ID int `json:"ID"`
+		ID int `json:"id"`
 	}
 	req := &roleReq{}
 	err := c.ShouldBindJSON(req)
@@ -62,9 +63,25 @@ func AddUserRoles(c *gin.Context){
 
 	err = service.AddUserRoles(uid, req.ID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, msg.OK)
+}
+
+
+// GetUserRoles 获取用户当前拥有的角色
+func GetUserRoles(c *gin.Context){
+	uid := c.GetInt("user_id")
+	if uid < 0 {
+		c.JSON(http.StatusBadRequest, msg.InvalidParamsErr)
+		return
+	}
+	roles, err := service.GetRolesByUserID(uid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, roles)
 }

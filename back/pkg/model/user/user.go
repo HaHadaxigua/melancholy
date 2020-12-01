@@ -17,7 +17,7 @@ type User struct {
 }
 
 func (a *User) TableName() string {
-	return `user`
+	return `users`
 }
 
 //NewAccount 创建新的帐号

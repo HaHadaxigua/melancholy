@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
+	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/admin"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"strconv"
+	"strings"
 )
 
 // rbac权限认证
@@ -18,22 +19,25 @@ func Authorize(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
 	userID := c.GetInt("user_id")
 	//获取请求的URI
-	obj := c.Request.URL.RequestURI()
+	obj := strings.Split(c.Request.URL.RequestURI(), "/")[3]
 	//获取请求方法
 	act := c.Request.Method
 	//获取用户的角色
-	sub := strconv.Itoa(userID)
-	//判断策略中是否存在
-	if ok, err := e.Enforce(sub, obj, act); ok {
-		log.Printf("userID:%d,authorize success", userID)
-		c.Next()
-	} else {
-		e := msg.AuthorizeFailedErr
-		log.Printf("userID:%d, %v, caused by:%v", userID, msg.AuthorizeFailedMsg, err)
-		c.JSON(http.StatusUnauthorized, e)
-		c.Abort()
+	roles, err := service.GetRolesByUserID(userID)
+
+	for _, role := range roles {
+		//判断策略中是否存在
+		if ok, err := e.Enforce(role.Name, obj, act); ok {
+			log.Printf("userID:%d,authorize success", userID)
+			c.Next()
+			break
+		} else {
+			err = msg.AuthorizeFailedErr
+			log.Printf("userID:%d, %v, caused by:%v", userID, msg.AuthorizeFailedMsg, err)
+		}
 	}
+	c.JSON(http.StatusUnauthorized, err)
+	c.Abort()
 }

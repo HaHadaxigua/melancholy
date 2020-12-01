@@ -4,11 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouters(r *gin.RouterGroup){
+func SetupRouters(r *gin.RouterGroup) {
 	routers := r.Group("/admin")
 	{
 		routers.POST("/roles", AddRole)
 		routers.GET("/roles", GetAllRoles)
+		routers.GET("/roles/own", GetUserRoles)
 		routers.POST("/roles/addRole", AddUserRoles)
 	}
 }
