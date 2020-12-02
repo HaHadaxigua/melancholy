@@ -27,7 +27,7 @@ type User struct {
 	// State holds the value of the "state" field.
 	State user.State `json:"state,omitempty"`
 	// Salt holds the value of the "salt" field.
-	Salt string `json:"salt,omitempty"`
+	Salt string `json:"-"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -171,8 +171,7 @@ func (u *User) String() string {
 	builder.WriteString(u.Email)
 	builder.WriteString(", state=")
 	builder.WriteString(fmt.Sprintf("%v", u.State))
-	builder.WriteString(", salt=")
-	builder.WriteString(u.Salt)
+	builder.WriteString(", salt=<sensitive>")
 	builder.WriteString(", created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")

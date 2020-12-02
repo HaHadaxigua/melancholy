@@ -14,7 +14,7 @@ import (
 func SetupRouters(e *gin.Engine) {
 	// swagger相关
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	// 注册、登录
+	// 注册、登录、登出
 	SetupBasicRouters(e)
 
 	v1 := e.Group("/api/v1", middleware.JWT, middleware.Authorize)

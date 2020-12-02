@@ -898,10 +898,24 @@ func (m *UserMutation) AddedPhone() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearPhone clears the value of phone.
+func (m *UserMutation) ClearPhone() {
+	m.phone = nil
+	m.addphone = nil
+	m.clearedFields[user.FieldPhone] = struct{}{}
+}
+
+// PhoneCleared returns if the field phone was cleared in this mutation.
+func (m *UserMutation) PhoneCleared() bool {
+	_, ok := m.clearedFields[user.FieldPhone]
+	return ok
+}
+
 // ResetPhone reset all changes of the "phone" field.
 func (m *UserMutation) ResetPhone() {
 	m.phone = nil
 	m.addphone = nil
+	delete(m.clearedFields, user.FieldPhone)
 }
 
 // SetEmail sets the email field.
@@ -1404,6 +1418,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // during this mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldPhone) {
+		fields = append(fields, user.FieldPhone)
+	}
 	if m.FieldCleared(user.FieldDeletedAt) {
 		fields = append(fields, user.FieldDeletedAt)
 	}
@@ -1421,6 +1438,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldPhone:
+		m.ClearPhone()
+		return nil
 	case user.FieldDeletedAt:
 		m.ClearDeletedAt()
 		return nil

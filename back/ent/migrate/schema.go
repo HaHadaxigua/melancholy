@@ -29,7 +29,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
-		{Name: "phone", Type: field.TypeInt, Unique: true},
+		{Name: "phone", Type: field.TypeInt, Unique: true, Nullable: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}},
 		{Name: "salt", Type: field.TypeString},

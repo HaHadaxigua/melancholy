@@ -9,7 +9,6 @@ func SetupRouters(r *gin.RouterGroup) {
 	{
 		routers.POST("/roles", AddRole)
 		routers.GET("/roles", GetAllRoles)
-		routers.GET("/roles/own", GetUserRoles)
 		routers.POST("/roles/addRole", AddUserRoles)
 	}
 }

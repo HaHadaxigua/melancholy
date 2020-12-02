@@ -70,18 +70,3 @@ func AddUserRoles(c *gin.Context){
 	c.JSON(http.StatusOK, msg.OK)
 }
 
-
-// GetUserRoles 获取用户当前拥有的角色
-func GetUserRoles(c *gin.Context){
-	uid := c.GetInt("user_id")
-	if uid < 0 {
-		c.JSON(http.StatusBadRequest, msg.InvalidParamsErr)
-		return
-	}
-	roles, err := service.GetRolesByUserID(uid)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, roles)
-}

@@ -1,15 +1,39 @@
 package userv1
 
 import (
-	model "github.com/HaHadaxigua/melancholy/pkg/model/user"
+	"github.com/HaHadaxigua/melancholy/ent"
+	"github.com/HaHadaxigua/melancholy/ent/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
+	"github.com/HaHadaxigua/melancholy/pkg/tools"
 )
 
 
+//NewAccount 创建新的帐号
+func NewUser(username, password, email string) (*ent.User, error) {
+	newSalt, err := tools.GenerateSalt()
+	if err != nil {
+		return nil, err
+	}
+
+	encodePwd, err := tools.EncryptPassword(password, newSalt)
+	if err != nil {
+		return nil, err
+	}
+
+	nu := &ent.User{
+		Username: username,
+		Password: encodePwd,
+		Email:    email,
+		State:    user.State0,
+		Salt:     newSalt,
+	}
+	return nu, nil
+}
+
 
 // CreateUser 请求创建用户
-func CreateUser(r *msg.UserRequest) (*model.User, error) {
+func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	valid, err := VerifyReq(r)
 	if !valid && err != nil {
 		return nil, err
@@ -26,18 +50,18 @@ func CreateUser(r *msg.UserRequest) (*model.User, error) {
 		return nil, e
 	}
 
-	newUser, err := model.NewUser(r.Username, r.Password, r.Email)
-	err = store.CreateUser(newUser)
+	newUser, err := NewUser(r.Username, r.Password, r.Email)
+	u, err := store.CreateUser(newUser)
 	if err != nil {
 		e := msg.UserCreateErr
 		e.Cause = err.Error()
 		return nil, e
 	}
-	return newUser, nil
+	return u, nil
 }
 
 // FindUserByUsername 根据用户名找用户
-func FindUserByUsername(r *msg.UserRequest) (*model.User, error) {
+func FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
 	if !CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr
 	}
@@ -49,7 +73,7 @@ func FindUserByUsername(r *msg.UserRequest) (*model.User, error) {
 }
 
 //ListAllUser 列出所有的用户
-func ListAllUser() ([]*model.User, error) {
+func ListAllUser() ([]*ent.User, error) {
 	users, err := store.GetAllUsers()
 	if err != nil {
 		return nil, err

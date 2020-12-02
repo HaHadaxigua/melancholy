@@ -39,6 +39,14 @@ func (uc *UserCreate) SetPhone(i int) *UserCreate {
 	return uc
 }
 
+// SetNillablePhone sets the phone field if the given value is not nil.
+func (uc *UserCreate) SetNillablePhone(i *int) *UserCreate {
+	if i != nil {
+		uc.SetPhone(*i)
+	}
+	return uc
+}
+
 // SetEmail sets the email field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
@@ -189,9 +197,6 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
-	}
-	if _, ok := uc.mutation.Phone(); !ok {
-		return &ValidationError{Name: "phone", err: errors.New("ent: missing required field \"phone\"")}
 	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}

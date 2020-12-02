@@ -2,14 +2,18 @@ package api
 
 import (
 	"errors"
+	"github.com/HaHadaxigua/melancholy/pkg/middleware"
+	"github.com/HaHadaxigua/melancholy/pkg/model"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
-	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
+	"github.com/HaHadaxigua/melancholy/pkg/store"
+	storeu "github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 // @Summary Login
@@ -42,7 +46,7 @@ func Login(c *gin.Context) {
 	data := make(map[string]interface{})
 	status := msg.OK
 	if ok {
-		userId := store.CheckUserExist(email, password)
+		userId := storeu.CheckUserExist(email, password)
 		if userId > -1 {
 			token, err := tools.GenerateToken(email, password)
 			if err != nil {
@@ -96,7 +100,36 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": user,
-	})
+	c.JSON(http.StatusOK, user)
+}
+
+
+// Logout 退出登录
+func Logout(c *gin.Context) {
+	ah := middleware.AuthHeader{}
+
+	if err := c.ShouldBindHeader(&ah); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": msg.AuthAccessTokenIllegalErrorMsg,
+		})
+		return
+	}
+
+	userId := c.GetInt("user_id")
+	// 写退出表
+
+	exitLog := &model.ExitLog{
+		Date:   time.Now(),
+		UserID: userId,
+		Token:  ah.AccessToken,
+	}
+
+	err := store.SaveExitLog(exitLog)
+	if err != nil {
+		e := msg.UserExitErr
+		c.JSON(http.StatusBadRequest, e)
+	}else{
+		c.JSON(http.StatusOK, msg.Ok)
+	}
+
 }

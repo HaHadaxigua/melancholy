@@ -47,9 +47,23 @@ func (uu *UserUpdate) SetPhone(i int) *UserUpdate {
 	return uu
 }
 
+// SetNillablePhone sets the phone field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePhone(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetPhone(*i)
+	}
+	return uu
+}
+
 // AddPhone adds i to phone.
 func (uu *UserUpdate) AddPhone(i int) *UserUpdate {
 	uu.mutation.AddPhone(i)
+	return uu
+}
+
+// ClearPhone clears the value of phone.
+func (uu *UserUpdate) ClearPhone() *UserUpdate {
+	uu.mutation.ClearPhone()
 	return uu
 }
 
@@ -260,6 +274,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldPhone,
 		})
 	}
+	if uu.mutation.PhoneCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Column: user.FieldPhone,
+		})
+	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -392,9 +412,23 @@ func (uuo *UserUpdateOne) SetPhone(i int) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillablePhone sets the phone field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePhone(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetPhone(*i)
+	}
+	return uuo
+}
+
 // AddPhone adds i to phone.
 func (uuo *UserUpdateOne) AddPhone(i int) *UserUpdateOne {
 	uuo.mutation.AddPhone(i)
+	return uuo
+}
+
+// ClearPhone clears the value of phone.
+func (uuo *UserUpdateOne) ClearPhone() *UserUpdateOne {
+	uuo.mutation.ClearPhone()
 	return uuo
 }
 
@@ -600,6 +634,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
+			Column: user.FieldPhone,
+		})
+	}
+	if uuo.mutation.PhoneCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
 			Column: user.FieldPhone,
 		})
 	}
