@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/predicate"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -26,7 +27,8 @@ type UserQuery struct {
 	unique     []string
 	predicates []predicate.User
 	// eager-loading edges.
-	withRoles *RoleQuery
+	withRoles    *RoleQuery
+	withExitlogs *ExitLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -71,6 +73,28 @@ func (uq *UserQuery) QueryRoles() *RoleQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.RolesTable, user.RolesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryExitlogs chains the current query on the exitlogs edge.
+func (uq *UserQuery) QueryExitlogs() *ExitLogQuery {
+	query := &ExitLogQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(exitlog.Table, exitlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ExitlogsTable, user.ExitlogsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -248,13 +272,14 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		limit:      uq.limit,
-		offset:     uq.offset,
-		order:      append([]OrderFunc{}, uq.order...),
-		unique:     append([]string{}, uq.unique...),
-		predicates: append([]predicate.User{}, uq.predicates...),
-		withRoles:  uq.withRoles.Clone(),
+		config:       uq.config,
+		limit:        uq.limit,
+		offset:       uq.offset,
+		order:        append([]OrderFunc{}, uq.order...),
+		unique:       append([]string{}, uq.unique...),
+		predicates:   append([]predicate.User{}, uq.predicates...),
+		withRoles:    uq.withRoles.Clone(),
+		withExitlogs: uq.withExitlogs.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -269,6 +294,17 @@ func (uq *UserQuery) WithRoles(opts ...func(*RoleQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withRoles = query
+	return uq
+}
+
+//  WithExitlogs tells the query-builder to eager-loads the nodes that are connected to
+// the "exitlogs" edge. The optional arguments used to configure the query builder of the edge.
+func (uq *UserQuery) WithExitlogs(opts ...func(*ExitLogQuery)) *UserQuery {
+	query := &ExitLogQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withExitlogs = query
 	return uq
 }
 
@@ -338,8 +374,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withRoles != nil,
+			uq.withExitlogs != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -424,6 +461,35 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 			for i := range nodes {
 				nodes[i].Edges.Roles = append(nodes[i].Edges.Roles, n)
 			}
+		}
+	}
+
+	if query := uq.withExitlogs; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Exitlogs = []*ExitLog{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ExitLog(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.ExitlogsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_exitlogs
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_exitlogs" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_exitlogs" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Exitlogs = append(node.Edges.Exitlogs, n)
 		}
 	}
 

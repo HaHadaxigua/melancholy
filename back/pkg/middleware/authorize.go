@@ -20,6 +20,11 @@ func Authorize(c *gin.Context) {
 		return
 	}
 	userID := c.GetInt("user_id")
+	if userID <= 0 {
+		c.Abort()
+		c.JSON(http.StatusInternalServerError, nil)
+	}
+
 	//获取请求的URI
 	obj := strings.Split(c.Request.URL.RequestURI(), "/")[3]
 	//获取请求方法
@@ -32,12 +37,14 @@ func Authorize(c *gin.Context) {
 		if ok, err := e.Enforce(role.Name, obj, act); ok {
 			log.Printf("userID:%d,authorize success", userID)
 			c.Next()
-			break
+			return
 		} else {
 			err = msg.AuthorizeFailedErr
 			log.Printf("userID:%d, %v, caused by:%v", userID, msg.AuthorizeFailedMsg, err)
 		}
 	}
-	c.JSON(http.StatusUnauthorized, err)
 	c.Abort()
+	me := msg.AuthorizeFailedErr
+	me.Data = err
+	c.JSON(http.StatusUnauthorized, me)
 }

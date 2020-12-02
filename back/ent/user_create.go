@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -126,6 +127,21 @@ func (uc *UserCreate) AddRoles(r ...*Role) *UserCreate {
 		ids[i] = r[i].ID
 	}
 	return uc.AddRoleIDs(ids...)
+}
+
+// AddExitlogIDs adds the exitlogs edge to ExitLog by ids.
+func (uc *UserCreate) AddExitlogIDs(ids ...int) *UserCreate {
+	uc.mutation.AddExitlogIDs(ids...)
+	return uc
+}
+
+// AddExitlogs adds the exitlogs edges to ExitLog.
+func (uc *UserCreate) AddExitlogs(e ...*ExitLog) *UserCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uc.AddExitlogIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -334,6 +350,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: role.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ExitlogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
 				},
 			},
 		}

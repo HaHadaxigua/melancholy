@@ -33,6 +33,8 @@ const (
 
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeExitlogs holds the string denoting the exitlogs edge name in mutations.
+	EdgeExitlogs = "exitlogs"
 
 	// Table holds the table name of the user in the database.
 	Table = "users"
@@ -41,6 +43,13 @@ const (
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "roles"
+	// ExitlogsTable is the table the holds the exitlogs relation/edge.
+	ExitlogsTable = "exit_logs"
+	// ExitlogsInverseTable is the table name for the ExitLog entity.
+	// It exists in this package in order to avoid circular dependency with the "exitlog" package.
+	ExitlogsInverseTable = "exit_logs"
+	// ExitlogsColumn is the table column denoting the exitlogs relation/edge.
+	ExitlogsColumn = "user_exitlogs"
 )
 
 // Columns holds all SQL columns for user fields.

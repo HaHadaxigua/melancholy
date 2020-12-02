@@ -2,10 +2,11 @@ package api
 
 import (
 	"errors"
+	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
-	"github.com/HaHadaxigua/melancholy/pkg/model"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
+	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/admin"
+	serviceu "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	storeu "github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
@@ -13,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"time"
 )
 
 // @Summary Login
@@ -58,7 +58,7 @@ func Login(c *gin.Context) {
 			}
 		} else {
 			status = msg.UserNameOrPwdIncorrectlyErr
-			status.Cause = msg.UserNameOrPwdIncorrectlyErrorMsg
+			status.Data = msg.UserNameOrPwdIncorrectlyErrorMsg
 		}
 	} else {
 		for _, err := range valid.Errors {
@@ -82,12 +82,12 @@ func Register(c *gin.Context) {
 	r := &msg.UserRequest{}
 	if err := c.BindJSON(r); err != nil {
 		e := msg.BadRequest
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
 
-	user, err := service.CreateUser(r)
+	user, err := serviceu.CreateUser(r)
 	if err != nil && errors.Is(err, msg.UserHasExistedErr){
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -97,6 +97,13 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
 		})
+		return
+	}
+
+	// 赋予角色
+	err = service.AddUserRoles(user.ID, 0)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -118,13 +125,12 @@ func Logout(c *gin.Context) {
 	userId := c.GetInt("user_id")
 	// 写退出表
 
-	exitLog := &model.ExitLog{
-		Date:   time.Now(),
+	exitReq := &ent.ExitLog{
+		Token: ah.AccessToken,
 		UserID: userId,
-		Token:  ah.AccessToken,
 	}
 
-	err := store.SaveExitLog(exitLog)
+	err := store.SaveExitLog(exitReq)
 	if err != nil {
 		e := msg.UserExitErr
 		c.JSON(http.StatusBadRequest, e)

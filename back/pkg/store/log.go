@@ -1,28 +1,34 @@
 package store
 
 import (
-	"github.com/HaHadaxigua/melancholy/pkg/model"
+	"github.com/HaHadaxigua/melancholy/ent"
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 )
 
 //SaveExitLog 记录退出log
-func SaveExitLog(el *model.ExitLog) error {
-	db := GetConn()
-	if err := db.Create(el).Error; err != nil {
+func SaveExitLog(el *ent.ExitLog) error {
+	client := GetClient()
+	ctx := GetCtx()
+
+	_, err := client.ExitLog.Create().SetUserID(el.UserID).SetToken(el.Token).Save(ctx)
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
 //FindExitLog 寻找退出日志
-func FindExitLog(token string) (*model.ExitLog, error) {
-	db := GetConn()
-	el := &model.ExitLog{}
-	res := db.Model(el).Where("token = ?", token).Scan(el)
-	if res.Error != nil {
-		return nil, res.Error
-	} else if res.RowsAffected < 1 {
-		return nil, nil
-	} else {
-		return el, nil
+func FindExitLog(token string) (*ent.ExitLog, error) {
+	client := GetClient()
+	ctx := GetCtx()
+
+	el, err := client.ExitLog.Query().Where(exitlog.TokenEQ(token)).Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
 	}
+
+	return el, nil
 }

@@ -25,7 +25,7 @@ func EncryptPassword(pwd, salt string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(pwd+salt), bcrypt.DefaultCost)
 	if err != nil {
 		e := msg.EncryptPasswordErr
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		return "", e
 	}
 	return string(hash), nil

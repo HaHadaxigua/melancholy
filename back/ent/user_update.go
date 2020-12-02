@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/predicate"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -126,6 +127,21 @@ func (uu *UserUpdate) AddRoles(r ...*Role) *UserUpdate {
 	return uu.AddRoleIDs(ids...)
 }
 
+// AddExitlogIDs adds the exitlogs edge to ExitLog by ids.
+func (uu *UserUpdate) AddExitlogIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddExitlogIDs(ids...)
+	return uu
+}
+
+// AddExitlogs adds the exitlogs edges to ExitLog.
+func (uu *UserUpdate) AddExitlogs(e ...*ExitLog) *UserUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uu.AddExitlogIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -150,6 +166,27 @@ func (uu *UserUpdate) RemoveRoles(r ...*Role) *UserUpdate {
 		ids[i] = r[i].ID
 	}
 	return uu.RemoveRoleIDs(ids...)
+}
+
+// ClearExitlogs clears all "exitlogs" edges to type ExitLog.
+func (uu *UserUpdate) ClearExitlogs() *UserUpdate {
+	uu.mutation.ClearExitlogs()
+	return uu
+}
+
+// RemoveExitlogIDs removes the exitlogs edge to ExitLog by ids.
+func (uu *UserUpdate) RemoveExitlogIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveExitlogIDs(ids...)
+	return uu
+}
+
+// RemoveExitlogs removes exitlogs edges to ExitLog.
+func (uu *UserUpdate) RemoveExitlogs(e ...*ExitLog) *UserUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uu.RemoveExitlogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -375,6 +412,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ExitlogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedExitlogsIDs(); len(nodes) > 0 && !uu.mutation.ExitlogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ExitlogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -491,6 +582,21 @@ func (uuo *UserUpdateOne) AddRoles(r ...*Role) *UserUpdateOne {
 	return uuo.AddRoleIDs(ids...)
 }
 
+// AddExitlogIDs adds the exitlogs edge to ExitLog by ids.
+func (uuo *UserUpdateOne) AddExitlogIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddExitlogIDs(ids...)
+	return uuo
+}
+
+// AddExitlogs adds the exitlogs edges to ExitLog.
+func (uuo *UserUpdateOne) AddExitlogs(e ...*ExitLog) *UserUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uuo.AddExitlogIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -515,6 +621,27 @@ func (uuo *UserUpdateOne) RemoveRoles(r ...*Role) *UserUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return uuo.RemoveRoleIDs(ids...)
+}
+
+// ClearExitlogs clears all "exitlogs" edges to type ExitLog.
+func (uuo *UserUpdateOne) ClearExitlogs() *UserUpdateOne {
+	uuo.mutation.ClearExitlogs()
+	return uuo
+}
+
+// RemoveExitlogIDs removes the exitlogs edge to ExitLog by ids.
+func (uuo *UserUpdateOne) RemoveExitlogIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveExitlogIDs(ids...)
+	return uuo
+}
+
+// RemoveExitlogs removes exitlogs edges to ExitLog.
+func (uuo *UserUpdateOne) RemoveExitlogs(e ...*ExitLog) *UserUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return uuo.RemoveExitlogIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -730,6 +857,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: role.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ExitlogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedExitlogsIDs(); len(nodes) > 0 && !uuo.mutation.ExitlogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ExitlogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ExitlogsTable,
+			Columns: []string{user.ExitlogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: exitlog.FieldID,
 				},
 			},
 		}

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/predicate"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -24,9 +25,456 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeRole = "Role"
-	TypeUser = "User"
+	TypeExitLog = "ExitLog"
+	TypeRole    = "Role"
+	TypeUser    = "User"
 )
+
+// ExitLogMutation represents an operation that mutate the ExitLogs
+// nodes in the graph.
+type ExitLogMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	user_id       *int
+	adduser_id    *int
+	token         *string
+	date          *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*ExitLog, error)
+	predicates    []predicate.ExitLog
+}
+
+var _ ent.Mutation = (*ExitLogMutation)(nil)
+
+// exitlogOption allows to manage the mutation configuration using functional options.
+type exitlogOption func(*ExitLogMutation)
+
+// newExitLogMutation creates new mutation for $n.Name.
+func newExitLogMutation(c config, op Op, opts ...exitlogOption) *ExitLogMutation {
+	m := &ExitLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeExitLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withExitLogID sets the id field of the mutation.
+func withExitLogID(id int) exitlogOption {
+	return func(m *ExitLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ExitLog
+		)
+		m.oldValue = func(ctx context.Context) (*ExitLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ExitLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withExitLog sets the old ExitLog of the mutation.
+func withExitLog(node *ExitLog) exitlogOption {
+	return func(m *ExitLogMutation) {
+		m.oldValue = func(context.Context) (*ExitLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ExitLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ExitLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on ExitLog creation.
+func (m *ExitLogMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *ExitLogMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetUserID sets the user_id field.
+func (m *ExitLogMutation) SetUserID(i int) {
+	m.user_id = &i
+	m.adduser_id = nil
+}
+
+// UserID returns the user_id value in the mutation.
+func (m *ExitLogMutation) UserID() (r int, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old user_id value of the ExitLog.
+// If the ExitLog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ExitLogMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUserID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds i to user_id.
+func (m *ExitLogMutation) AddUserID(i int) {
+	if m.adduser_id != nil {
+		*m.adduser_id += i
+	} else {
+		m.adduser_id = &i
+	}
+}
+
+// AddedUserID returns the value that was added to the user_id field in this mutation.
+func (m *ExitLogMutation) AddedUserID() (r int, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUserID reset all changes of the "user_id" field.
+func (m *ExitLogMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+}
+
+// SetToken sets the token field.
+func (m *ExitLogMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the token value in the mutation.
+func (m *ExitLogMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old token value of the ExitLog.
+// If the ExitLog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ExitLogMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldToken is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken reset all changes of the "token" field.
+func (m *ExitLogMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetDate sets the date field.
+func (m *ExitLogMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the date value in the mutation.
+func (m *ExitLogMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old date value of the ExitLog.
+// If the ExitLog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ExitLogMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDate is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate reset all changes of the "date" field.
+func (m *ExitLogMutation) ResetDate() {
+	m.date = nil
+}
+
+// Op returns the operation name.
+func (m *ExitLogMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (ExitLog).
+func (m *ExitLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *ExitLogMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.user_id != nil {
+		fields = append(fields, exitlog.FieldUserID)
+	}
+	if m.token != nil {
+		fields = append(fields, exitlog.FieldToken)
+	}
+	if m.date != nil {
+		fields = append(fields, exitlog.FieldDate)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *ExitLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case exitlog.FieldUserID:
+		return m.UserID()
+	case exitlog.FieldToken:
+		return m.Token()
+	case exitlog.FieldDate:
+		return m.Date()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *ExitLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case exitlog.FieldUserID:
+		return m.OldUserID(ctx)
+	case exitlog.FieldToken:
+		return m.OldToken(ctx)
+	case exitlog.FieldDate:
+		return m.OldDate(ctx)
+	}
+	return nil, fmt.Errorf("unknown ExitLog field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *ExitLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case exitlog.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case exitlog.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case exitlog.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ExitLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *ExitLogMutation) AddedFields() []string {
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, exitlog.FieldUserID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *ExitLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case exitlog.FieldUserID:
+		return m.AddedUserID()
+	}
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *ExitLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case exitlog.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ExitLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *ExitLogMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *ExitLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ExitLogMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ExitLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *ExitLogMutation) ResetField(name string) error {
+	switch name {
+	case exitlog.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case exitlog.FieldToken:
+		m.ResetToken()
+		return nil
+	case exitlog.FieldDate:
+		m.ResetDate()
+		return nil
+	}
+	return fmt.Errorf("unknown ExitLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *ExitLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *ExitLogMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *ExitLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *ExitLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *ExitLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *ExitLogMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *ExitLogMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown ExitLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *ExitLogMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown ExitLog edge %s", name)
+}
 
 // RoleMutation represents an operation that mutate the Roles
 // nodes in the graph.
@@ -666,26 +1114,29 @@ func (m *RoleMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	username      *string
-	password      *string
-	phone         *int
-	addphone      *int
-	email         *string
-	state         *user.State
-	salt          *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	deleted_at    *time.Time
-	clearedFields map[string]struct{}
-	roles         map[int]struct{}
-	removedroles  map[int]struct{}
-	clearedroles  bool
-	done          bool
-	oldValue      func(context.Context) (*User, error)
-	predicates    []predicate.User
+	op              Op
+	typ             string
+	id              *int
+	username        *string
+	password        *string
+	phone           *int
+	addphone        *int
+	email           *string
+	state           *user.State
+	salt            *string
+	created_at      *time.Time
+	updated_at      *time.Time
+	deleted_at      *time.Time
+	clearedFields   map[string]struct{}
+	roles           map[int]struct{}
+	removedroles    map[int]struct{}
+	clearedroles    bool
+	exitlogs        map[int]struct{}
+	removedexitlogs map[int]struct{}
+	clearedexitlogs bool
+	done            bool
+	oldValue        func(context.Context) (*User, error)
+	predicates      []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1206,6 +1657,59 @@ func (m *UserMutation) ResetRoles() {
 	m.removedroles = nil
 }
 
+// AddExitlogIDs adds the exitlogs edge to ExitLog by ids.
+func (m *UserMutation) AddExitlogIDs(ids ...int) {
+	if m.exitlogs == nil {
+		m.exitlogs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.exitlogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearExitlogs clears the exitlogs edge to ExitLog.
+func (m *UserMutation) ClearExitlogs() {
+	m.clearedexitlogs = true
+}
+
+// ExitlogsCleared returns if the edge exitlogs was cleared.
+func (m *UserMutation) ExitlogsCleared() bool {
+	return m.clearedexitlogs
+}
+
+// RemoveExitlogIDs removes the exitlogs edge to ExitLog by ids.
+func (m *UserMutation) RemoveExitlogIDs(ids ...int) {
+	if m.removedexitlogs == nil {
+		m.removedexitlogs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedexitlogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedExitlogs returns the removed ids of exitlogs.
+func (m *UserMutation) RemovedExitlogsIDs() (ids []int) {
+	for id := range m.removedexitlogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ExitlogsIDs returns the exitlogs ids in the mutation.
+func (m *UserMutation) ExitlogsIDs() (ids []int) {
+	for id := range m.exitlogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetExitlogs reset all changes of the "exitlogs" edge.
+func (m *UserMutation) ResetExitlogs() {
+	m.exitlogs = nil
+	m.clearedexitlogs = false
+	m.removedexitlogs = nil
+}
+
 // Op returns the operation name.
 func (m *UserMutation) Op() Op {
 	return m.op
@@ -1487,9 +1991,12 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.roles != nil {
 		edges = append(edges, user.EdgeRoles)
+	}
+	if m.exitlogs != nil {
+		edges = append(edges, user.EdgeExitlogs)
 	}
 	return edges
 }
@@ -1504,6 +2011,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeExitlogs:
+		ids := make([]ent.Value, 0, len(m.exitlogs))
+		for id := range m.exitlogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -1511,9 +2024,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedroles != nil {
 		edges = append(edges, user.EdgeRoles)
+	}
+	if m.removedexitlogs != nil {
+		edges = append(edges, user.EdgeExitlogs)
 	}
 	return edges
 }
@@ -1528,6 +2044,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeExitlogs:
+		ids := make([]ent.Value, 0, len(m.removedexitlogs))
+		for id := range m.removedexitlogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -1535,9 +2057,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedroles {
 		edges = append(edges, user.EdgeRoles)
+	}
+	if m.clearedexitlogs {
+		edges = append(edges, user.EdgeExitlogs)
 	}
 	return edges
 }
@@ -1548,6 +2073,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeRoles:
 		return m.clearedroles
+	case user.EdgeExitlogs:
+		return m.clearedexitlogs
 	}
 	return false
 }
@@ -1567,6 +2094,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeRoles:
 		m.ResetRoles()
+		return nil
+	case user.EdgeExitlogs:
+		m.ResetExitlogs()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

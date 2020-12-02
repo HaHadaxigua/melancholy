@@ -9,6 +9,7 @@ import (
 
 	"github.com/HaHadaxigua/melancholy/ent/migrate"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 
@@ -22,6 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// ExitLog is the client for interacting with the ExitLog builders.
+	ExitLog *ExitLogClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// User is the client for interacting with the User builders.
@@ -39,6 +42,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.ExitLog = NewExitLogClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -71,10 +75,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	cfg := config{driver: tx, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Role:   NewRoleClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:     ctx,
+		config:  cfg,
+		ExitLog: NewExitLogClient(cfg),
+		Role:    NewRoleClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
@@ -89,16 +94,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	}
 	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
-		config: cfg,
-		Role:   NewRoleClient(cfg),
-		User:   NewUserClient(cfg),
+		config:  cfg,
+		ExitLog: NewExitLogClient(cfg),
+		Role:    NewRoleClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Role.
+//		ExitLog.
 //		Query().
 //		Count(ctx)
 //
@@ -120,8 +126,97 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.ExitLog.Use(hooks...)
 	c.Role.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// ExitLogClient is a client for the ExitLog schema.
+type ExitLogClient struct {
+	config
+}
+
+// NewExitLogClient returns a client for the ExitLog from the given config.
+func NewExitLogClient(c config) *ExitLogClient {
+	return &ExitLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `exitlog.Hooks(f(g(h())))`.
+func (c *ExitLogClient) Use(hooks ...Hook) {
+	c.hooks.ExitLog = append(c.hooks.ExitLog, hooks...)
+}
+
+// Create returns a create builder for ExitLog.
+func (c *ExitLogClient) Create() *ExitLogCreate {
+	mutation := newExitLogMutation(c.config, OpCreate)
+	return &ExitLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ExitLog entities.
+func (c *ExitLogClient) CreateBulk(builders ...*ExitLogCreate) *ExitLogCreateBulk {
+	return &ExitLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ExitLog.
+func (c *ExitLogClient) Update() *ExitLogUpdate {
+	mutation := newExitLogMutation(c.config, OpUpdate)
+	return &ExitLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExitLogClient) UpdateOne(el *ExitLog) *ExitLogUpdateOne {
+	mutation := newExitLogMutation(c.config, OpUpdateOne, withExitLog(el))
+	return &ExitLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExitLogClient) UpdateOneID(id int) *ExitLogUpdateOne {
+	mutation := newExitLogMutation(c.config, OpUpdateOne, withExitLogID(id))
+	return &ExitLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ExitLog.
+func (c *ExitLogClient) Delete() *ExitLogDelete {
+	mutation := newExitLogMutation(c.config, OpDelete)
+	return &ExitLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ExitLogClient) DeleteOne(el *ExitLog) *ExitLogDeleteOne {
+	return c.DeleteOneID(el.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ExitLogClient) DeleteOneID(id int) *ExitLogDeleteOne {
+	builder := c.Delete().Where(exitlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExitLogDeleteOne{builder}
+}
+
+// Query returns a query builder for ExitLog.
+func (c *ExitLogClient) Query() *ExitLogQuery {
+	return &ExitLogQuery{config: c.config}
+}
+
+// Get returns a ExitLog entity by its id.
+func (c *ExitLogClient) Get(ctx context.Context, id int) (*ExitLog, error) {
+	return c.Query().Where(exitlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExitLogClient) GetX(ctx context.Context, id int) *ExitLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ExitLogClient) Hooks() []Hook {
+	return c.hooks.ExitLog
 }
 
 // RoleClient is a client for the Role schema.
@@ -320,6 +415,22 @@ func (c *UserClient) QueryRoles(u *User) *RoleQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.RolesTable, user.RolesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryExitlogs queries the exitlogs edge of a User.
+func (c *UserClient) QueryExitlogs(u *User) *ExitLogQuery {
+	query := &ExitLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(exitlog.Table, exitlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ExitlogsTable, user.ExitlogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

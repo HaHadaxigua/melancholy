@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/schema"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -14,6 +15,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	exitlogFields := schema.ExitLog{}.Fields()
+	_ = exitlogFields
+	// exitlogDescDate is the schema descriptor for date field.
+	exitlogDescDate := exitlogFields[3].Descriptor()
+	// exitlog.DefaultDate holds the default value on creation for the date field.
+	exitlog.DefaultDate = exitlogDescDate.Default.(func() time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescCreatedAt is the schema descriptor for created_at field.

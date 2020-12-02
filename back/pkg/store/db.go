@@ -3,7 +3,6 @@ package store
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
-	"github.com/HaHadaxigua/melancholy/pkg/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -52,16 +51,3 @@ func GetConn() *gorm.DB {
 	return db
 }
 
-//IsDeleted 判断是否已经删除
-func IsDeleted(fc *model.Model) (bool, error) {
-	db := GetConn()
-	var dt string
-	if err := db.Model(fc).Select("deleted_at").Where("id = ?", fc.ID).Scan(&dt).Error; err != nil {
-		return false, err
-	}
-	if dt == "" {
-		return false, nil
-	} else {
-		return true, nil
-	}
-}

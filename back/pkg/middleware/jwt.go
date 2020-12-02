@@ -30,18 +30,18 @@ func JWT(c *gin.Context) {
 
 	if ah.AccessToken == "" {
 		status = msg.BadRequest
-		status.Cause = msg.AuthAccessTokenIllegalErrorMsg
+		status.Data = msg.AuthAccessTokenIllegalErrorMsg
 	} else {
 		claims, err := tools.ParseToken(ah.AccessToken)
 		if err != nil {
 			status = msg.AuthCheckTokenErr
-			status.Cause = msg.AuthAccessTokenIllegalErrorMsg
+			status.Data = msg.AuthAccessTokenIllegalErrorMsg
 		} else if time.Now().Unix() > claims.ExpiresAt {
 			status = msg.AuthCheckTokenTimeoutErr
 		} else { // 此时token是有效的
 			// 判断下token是否已经进入黑名单
-			exitLog, e := store.FindExitLog(ah.AccessToken)
-			if exitLog != nil || e != nil {
+			el, e := store.FindExitLog(ah.AccessToken)
+			if el != nil || e != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error":msg.UserExitErr,
 				})
@@ -57,7 +57,7 @@ func JWT(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":  status.Code,
 			"msg":   status.Message,
-			"cause": status.Cause,
+			"cause": status.Data,
 		})
 		c.Abort()
 		return

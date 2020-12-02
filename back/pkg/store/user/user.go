@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
@@ -91,8 +90,6 @@ func CheckUserExist(email, password string) int {
 		return -1
 	}
 	if u != nil {
-		fmt.Println(u.Password)
-		fmt.Println(u.Salt)
 		flag := tools.VerifyPassword(u.Password, password+u.Salt)
 		if flag {
 			return u.ID

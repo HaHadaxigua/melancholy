@@ -28,7 +28,7 @@ func AddRole(c *gin.Context) {
 	err := c.ShouldBindJSON(req)
 	if err != nil {
 		e := msg.InvalidParamsErr
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
@@ -56,7 +56,7 @@ func AddUserRoles(c *gin.Context){
 	err := c.ShouldBindJSON(req)
 	if err != nil {
 		e := msg.InvalidParamsErr
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}

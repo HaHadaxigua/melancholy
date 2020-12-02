@@ -6,41 +6,28 @@ import (
 
 //Err 自定义的错误
 type Err struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Cause   string `json:"cause"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data   interface{} `json:"cause"`
 }
 
 func (e *Err) Error() string {
-	return fmt.Sprintf("Err - code: %d, message: %s, error: %s", e.Code, e.Message, e.Cause)
+	return fmt.Sprintf("Err - code: %d, message: %s, error: %s", e.Code, e.Message, e.Data)
 }
 
 func NewErr(code int, msg string, err error) *Err {
 	return &Err{
 		Code:    code,
 		Message: msg,
-		Cause:   err.Error(),
+		Data:   err.Error(),
 	}
 }
 
-func (e *Err) AddCause(err error) {
-	e.Cause = err.Error()
+func (e *Err) AddCause(err error) *Err {
+	e.Data = err.Error()
+	return e
 }
 
-//DecodeErr 解码错误
-func DecodeErr(err error) (int, string) {
-	if err == nil {
-		return OK.Code, OK.Message
-	}
-	switch typed := err.(type) {
-	case *Err:
-		if typed.Code == ErrReq.Code {
-			typed.Message = ErrReq.Message + "Desc:" + typed.Cause
-		}
-	}
-
-	return InternalServerErr.Code, err.Error()
-}
 
 // 错误码设计： [1/2] [xx] [xx]
 // 1 为系统错误 2：普通错误
@@ -125,6 +112,6 @@ const (
 	UserExitErrorMsg                 string = "已退出"
 
 	// Role
-	RepeatedRoleMsg string = "重复的角色"
+	RepeatedRoleMsg   string = "重复的角色"
 	RoleNotExistedMsg string = "角色不存在"
 )

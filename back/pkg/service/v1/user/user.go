@@ -42,11 +42,11 @@ func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	user, err := store.GetUserByEmail(r.Email)
 	if err != nil {
 		e := msg.UserHasExistedErr
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		return nil, e
 	} else if user != nil {
 		e := msg.UserHasExistedErr
-		e.Cause = "邮箱已被注册"
+		e.Data = "邮箱已被注册"
 		return nil, e
 	}
 
@@ -54,7 +54,7 @@ func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	u, err := store.CreateUser(newUser)
 	if err != nil {
 		e := msg.UserCreateErr
-		e.Cause = err.Error()
+		e.Data = err.Error()
 		return nil, e
 	}
 	return u, nil

@@ -43,9 +43,11 @@ type User struct {
 type UserEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role
+	// Exitlogs holds the value of the exitlogs edge.
+	Exitlogs []*ExitLog
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -55,6 +57,15 @@ func (e UserEdges) RolesOrErr() ([]*Role, error) {
 		return e.Roles, nil
 	}
 	return nil, &NotLoadedError{edge: "roles"}
+}
+
+// ExitlogsOrErr returns the Exitlogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ExitlogsOrErr() ([]*ExitLog, error) {
+	if e.loadedTypes[1] {
+		return e.Exitlogs, nil
+	}
+	return nil, &NotLoadedError{edge: "exitlogs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,6 +148,11 @@ func (u *User) assignValues(values ...interface{}) error {
 // QueryRoles queries the roles edge of the User.
 func (u *User) QueryRoles() *RoleQuery {
 	return (&UserClient{config: u.config}).QueryRoles(u)
+}
+
+// QueryExitlogs queries the exitlogs edge of the User.
+func (u *User) QueryExitlogs() *ExitLogQuery {
+	return (&UserClient{config: u.config}).QueryExitlogs(u)
 }
 
 // Update returns a builder for updating this User.

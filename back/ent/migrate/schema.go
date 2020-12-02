@@ -8,6 +8,29 @@ import (
 )
 
 var (
+	// ExitLogsColumns holds the columns for the "exit_logs" table.
+	ExitLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "token", Type: field.TypeString, Unique: true},
+		{Name: "date", Type: field.TypeTime},
+		{Name: "user_exitlogs", Type: field.TypeInt, Nullable: true},
+	}
+	// ExitLogsTable holds the schema information for the "exit_logs" table.
+	ExitLogsTable = &schema.Table{
+		Name:       "exit_logs",
+		Columns:    ExitLogsColumns,
+		PrimaryKey: []*schema.Column{ExitLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "exit_logs_users_exitlogs",
+				Columns: []*schema.Column{ExitLogsColumns[4]},
+
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -73,6 +96,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ExitLogsTable,
 		RolesTable,
 		UsersTable,
 		UserRolesTable,
@@ -80,6 +104,7 @@ var (
 )
 
 func init() {
+	ExitLogsTable.ForeignKeys[0].RefTable = UsersTable
 	UserRolesTable.ForeignKeys[0].RefTable = UsersTable
 	UserRolesTable.ForeignKeys[1].RefTable = RolesTable
 }
