@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/HaHadaxigua/melancholy/ent/exitlog"
+	"github.com/HaHadaxigua/melancholy/ent/folder"
+	"github.com/HaHadaxigua/melancholy/ent/mfile"
 	"github.com/HaHadaxigua/melancholy/ent/predicate"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -26,6 +28,8 @@ const (
 
 	// Node types.
 	TypeExitLog = "ExitLog"
+	TypeFolder  = "Folder"
+	TypeMFile   = "MFile"
 	TypeRole    = "Role"
 	TypeUser    = "User"
 )
@@ -474,6 +478,2238 @@ func (m *ExitLogMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *ExitLogMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ExitLog edge %s", name)
+}
+
+// FolderMutation represents an operation that mutate the Folders
+// nodes in the graph.
+type FolderMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	parent        *int
+	addparent     *int
+	_path         *string
+	name          *string
+	author        *int
+	addauthor     *int
+	size          *int
+	addsize       *int
+	status        *folder.Status
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	clearedFields map[string]struct{}
+	mfiles        map[int]struct{}
+	removedmfiles map[int]struct{}
+	clearedmfiles bool
+	p             *int
+	clearedp      bool
+	c             map[int]struct{}
+	removedc      map[int]struct{}
+	clearedc      bool
+	done          bool
+	oldValue      func(context.Context) (*Folder, error)
+	predicates    []predicate.Folder
+}
+
+var _ ent.Mutation = (*FolderMutation)(nil)
+
+// folderOption allows to manage the mutation configuration using functional options.
+type folderOption func(*FolderMutation)
+
+// newFolderMutation creates new mutation for $n.Name.
+func newFolderMutation(c config, op Op, opts ...folderOption) *FolderMutation {
+	m := &FolderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeFolder,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withFolderID sets the id field of the mutation.
+func withFolderID(id int) folderOption {
+	return func(m *FolderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Folder
+		)
+		m.oldValue = func(ctx context.Context) (*Folder, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Folder.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withFolder sets the old Folder of the mutation.
+func withFolder(node *Folder) folderOption {
+	return func(m *FolderMutation) {
+		m.oldValue = func(context.Context) (*Folder, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m FolderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m FolderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on Folder creation.
+func (m *FolderMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *FolderMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetParent sets the parent field.
+func (m *FolderMutation) SetParent(i int) {
+	m.parent = &i
+	m.addparent = nil
+}
+
+// Parent returns the parent value in the mutation.
+func (m *FolderMutation) Parent() (r int, exists bool) {
+	v := m.parent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParent returns the old parent value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldParent(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldParent is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldParent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParent: %w", err)
+	}
+	return oldValue.Parent, nil
+}
+
+// AddParent adds i to parent.
+func (m *FolderMutation) AddParent(i int) {
+	if m.addparent != nil {
+		*m.addparent += i
+	} else {
+		m.addparent = &i
+	}
+}
+
+// AddedParent returns the value that was added to the parent field in this mutation.
+func (m *FolderMutation) AddedParent() (r int, exists bool) {
+	v := m.addparent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParent reset all changes of the "parent" field.
+func (m *FolderMutation) ResetParent() {
+	m.parent = nil
+	m.addparent = nil
+}
+
+// SetPath sets the path field.
+func (m *FolderMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the path value in the mutation.
+func (m *FolderMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old path value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPath is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath reset all changes of the "path" field.
+func (m *FolderMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetName sets the name field.
+func (m *FolderMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the name value in the mutation.
+func (m *FolderMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old name value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
+func (m *FolderMutation) ResetName() {
+	m.name = nil
+}
+
+// SetAuthor sets the author field.
+func (m *FolderMutation) SetAuthor(i int) {
+	m.author = &i
+	m.addauthor = nil
+}
+
+// Author returns the author value in the mutation.
+func (m *FolderMutation) Author() (r int, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old author value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldAuthor(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAuthor is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds i to author.
+func (m *FolderMutation) AddAuthor(i int) {
+	if m.addauthor != nil {
+		*m.addauthor += i
+	} else {
+		m.addauthor = &i
+	}
+}
+
+// AddedAuthor returns the value that was added to the author field in this mutation.
+func (m *FolderMutation) AddedAuthor() (r int, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor reset all changes of the "author" field.
+func (m *FolderMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
+}
+
+// SetSize sets the size field.
+func (m *FolderMutation) SetSize(i int) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the size value in the mutation.
+func (m *FolderMutation) Size() (r int, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old size value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldSize(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSize is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to size.
+func (m *FolderMutation) AddSize(i int) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the size field in this mutation.
+func (m *FolderMutation) AddedSize() (r int, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSize clears the value of size.
+func (m *FolderMutation) ClearSize() {
+	m.size = nil
+	m.addsize = nil
+	m.clearedFields[folder.FieldSize] = struct{}{}
+}
+
+// SizeCleared returns if the field size was cleared in this mutation.
+func (m *FolderMutation) SizeCleared() bool {
+	_, ok := m.clearedFields[folder.FieldSize]
+	return ok
+}
+
+// ResetSize reset all changes of the "size" field.
+func (m *FolderMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+	delete(m.clearedFields, folder.FieldSize)
+}
+
+// SetStatus sets the status field.
+func (m *FolderMutation) SetStatus(f folder.Status) {
+	m.status = &f
+}
+
+// Status returns the status value in the mutation.
+func (m *FolderMutation) Status() (r folder.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old status value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldStatus(ctx context.Context) (v folder.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStatus is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus reset all changes of the "status" field.
+func (m *FolderMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *FolderMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *FolderMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *FolderMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *FolderMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *FolderMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *FolderMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the deleted_at field.
+func (m *FolderMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the deleted_at value in the mutation.
+func (m *FolderMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old deleted_at value of the Folder.
+// If the Folder object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *FolderMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDeletedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of deleted_at.
+func (m *FolderMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[folder.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the field deleted_at was cleared in this mutation.
+func (m *FolderMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[folder.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt reset all changes of the "deleted_at" field.
+func (m *FolderMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, folder.FieldDeletedAt)
+}
+
+// AddMfileIDs adds the mfiles edge to MFile by ids.
+func (m *FolderMutation) AddMfileIDs(ids ...int) {
+	if m.mfiles == nil {
+		m.mfiles = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.mfiles[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMfiles clears the mfiles edge to MFile.
+func (m *FolderMutation) ClearMfiles() {
+	m.clearedmfiles = true
+}
+
+// MfilesCleared returns if the edge mfiles was cleared.
+func (m *FolderMutation) MfilesCleared() bool {
+	return m.clearedmfiles
+}
+
+// RemoveMfileIDs removes the mfiles edge to MFile by ids.
+func (m *FolderMutation) RemoveMfileIDs(ids ...int) {
+	if m.removedmfiles == nil {
+		m.removedmfiles = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedmfiles[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMfiles returns the removed ids of mfiles.
+func (m *FolderMutation) RemovedMfilesIDs() (ids []int) {
+	for id := range m.removedmfiles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MfilesIDs returns the mfiles ids in the mutation.
+func (m *FolderMutation) MfilesIDs() (ids []int) {
+	for id := range m.mfiles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMfiles reset all changes of the "mfiles" edge.
+func (m *FolderMutation) ResetMfiles() {
+	m.mfiles = nil
+	m.clearedmfiles = false
+	m.removedmfiles = nil
+}
+
+// SetPID sets the p edge to Folder by id.
+func (m *FolderMutation) SetPID(id int) {
+	m.p = &id
+}
+
+// ClearP clears the p edge to Folder.
+func (m *FolderMutation) ClearP() {
+	m.clearedp = true
+}
+
+// PCleared returns if the edge p was cleared.
+func (m *FolderMutation) PCleared() bool {
+	return m.clearedp
+}
+
+// PID returns the p id in the mutation.
+func (m *FolderMutation) PID() (id int, exists bool) {
+	if m.p != nil {
+		return *m.p, true
+	}
+	return
+}
+
+// PIDs returns the p ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// PID instead. It exists only for internal usage by the builders.
+func (m *FolderMutation) PIDs() (ids []int) {
+	if id := m.p; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetP reset all changes of the "p" edge.
+func (m *FolderMutation) ResetP() {
+	m.p = nil
+	m.clearedp = false
+}
+
+// AddCIDs adds the c edge to Folder by ids.
+func (m *FolderMutation) AddCIDs(ids ...int) {
+	if m.c == nil {
+		m.c = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.c[ids[i]] = struct{}{}
+	}
+}
+
+// ClearC clears the c edge to Folder.
+func (m *FolderMutation) ClearC() {
+	m.clearedc = true
+}
+
+// CCleared returns if the edge c was cleared.
+func (m *FolderMutation) CCleared() bool {
+	return m.clearedc
+}
+
+// RemoveCIDs removes the c edge to Folder by ids.
+func (m *FolderMutation) RemoveCIDs(ids ...int) {
+	if m.removedc == nil {
+		m.removedc = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedc[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedC returns the removed ids of c.
+func (m *FolderMutation) RemovedCIDs() (ids []int) {
+	for id := range m.removedc {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CIDs returns the c ids in the mutation.
+func (m *FolderMutation) CIDs() (ids []int) {
+	for id := range m.c {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetC reset all changes of the "c" edge.
+func (m *FolderMutation) ResetC() {
+	m.c = nil
+	m.clearedc = false
+	m.removedc = nil
+}
+
+// Op returns the operation name.
+func (m *FolderMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Folder).
+func (m *FolderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *FolderMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.parent != nil {
+		fields = append(fields, folder.FieldParent)
+	}
+	if m._path != nil {
+		fields = append(fields, folder.FieldPath)
+	}
+	if m.name != nil {
+		fields = append(fields, folder.FieldName)
+	}
+	if m.author != nil {
+		fields = append(fields, folder.FieldAuthor)
+	}
+	if m.size != nil {
+		fields = append(fields, folder.FieldSize)
+	}
+	if m.status != nil {
+		fields = append(fields, folder.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, folder.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, folder.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, folder.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *FolderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case folder.FieldParent:
+		return m.Parent()
+	case folder.FieldPath:
+		return m.Path()
+	case folder.FieldName:
+		return m.Name()
+	case folder.FieldAuthor:
+		return m.Author()
+	case folder.FieldSize:
+		return m.Size()
+	case folder.FieldStatus:
+		return m.Status()
+	case folder.FieldCreatedAt:
+		return m.CreatedAt()
+	case folder.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case folder.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *FolderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case folder.FieldParent:
+		return m.OldParent(ctx)
+	case folder.FieldPath:
+		return m.OldPath(ctx)
+	case folder.FieldName:
+		return m.OldName(ctx)
+	case folder.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case folder.FieldSize:
+		return m.OldSize(ctx)
+	case folder.FieldStatus:
+		return m.OldStatus(ctx)
+	case folder.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case folder.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case folder.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Folder field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *FolderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case folder.FieldParent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParent(v)
+		return nil
+	case folder.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case folder.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case folder.FieldAuthor:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case folder.FieldSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case folder.FieldStatus:
+		v, ok := value.(folder.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case folder.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case folder.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case folder.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Folder field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *FolderMutation) AddedFields() []string {
+	var fields []string
+	if m.addparent != nil {
+		fields = append(fields, folder.FieldParent)
+	}
+	if m.addauthor != nil {
+		fields = append(fields, folder.FieldAuthor)
+	}
+	if m.addsize != nil {
+		fields = append(fields, folder.FieldSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *FolderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case folder.FieldParent:
+		return m.AddedParent()
+	case folder.FieldAuthor:
+		return m.AddedAuthor()
+	case folder.FieldSize:
+		return m.AddedSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *FolderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case folder.FieldParent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParent(v)
+		return nil
+	case folder.FieldAuthor:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
+	case folder.FieldSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Folder numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *FolderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(folder.FieldSize) {
+		fields = append(fields, folder.FieldSize)
+	}
+	if m.FieldCleared(folder.FieldDeletedAt) {
+		fields = append(fields, folder.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *FolderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *FolderMutation) ClearField(name string) error {
+	switch name {
+	case folder.FieldSize:
+		m.ClearSize()
+		return nil
+	case folder.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Folder nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *FolderMutation) ResetField(name string) error {
+	switch name {
+	case folder.FieldParent:
+		m.ResetParent()
+		return nil
+	case folder.FieldPath:
+		m.ResetPath()
+		return nil
+	case folder.FieldName:
+		m.ResetName()
+		return nil
+	case folder.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case folder.FieldSize:
+		m.ResetSize()
+		return nil
+	case folder.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case folder.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case folder.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case folder.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Folder field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *FolderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.mfiles != nil {
+		edges = append(edges, folder.EdgeMfiles)
+	}
+	if m.p != nil {
+		edges = append(edges, folder.EdgeP)
+	}
+	if m.c != nil {
+		edges = append(edges, folder.EdgeC)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *FolderMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case folder.EdgeMfiles:
+		ids := make([]ent.Value, 0, len(m.mfiles))
+		for id := range m.mfiles {
+			ids = append(ids, id)
+		}
+		return ids
+	case folder.EdgeP:
+		if id := m.p; id != nil {
+			return []ent.Value{*id}
+		}
+	case folder.EdgeC:
+		ids := make([]ent.Value, 0, len(m.c))
+		for id := range m.c {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *FolderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedmfiles != nil {
+		edges = append(edges, folder.EdgeMfiles)
+	}
+	if m.removedc != nil {
+		edges = append(edges, folder.EdgeC)
+	}
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *FolderMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case folder.EdgeMfiles:
+		ids := make([]ent.Value, 0, len(m.removedmfiles))
+		for id := range m.removedmfiles {
+			ids = append(ids, id)
+		}
+		return ids
+	case folder.EdgeC:
+		ids := make([]ent.Value, 0, len(m.removedc))
+		for id := range m.removedc {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *FolderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedmfiles {
+		edges = append(edges, folder.EdgeMfiles)
+	}
+	if m.clearedp {
+		edges = append(edges, folder.EdgeP)
+	}
+	if m.clearedc {
+		edges = append(edges, folder.EdgeC)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *FolderMutation) EdgeCleared(name string) bool {
+	switch name {
+	case folder.EdgeMfiles:
+		return m.clearedmfiles
+	case folder.EdgeP:
+		return m.clearedp
+	case folder.EdgeC:
+		return m.clearedc
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *FolderMutation) ClearEdge(name string) error {
+	switch name {
+	case folder.EdgeP:
+		m.ClearP()
+		return nil
+	}
+	return fmt.Errorf("unknown Folder unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *FolderMutation) ResetEdge(name string) error {
+	switch name {
+	case folder.EdgeMfiles:
+		m.ResetMfiles()
+		return nil
+	case folder.EdgeP:
+		m.ResetP()
+		return nil
+	case folder.EdgeC:
+		m.ResetC()
+		return nil
+	}
+	return fmt.Errorf("unknown Folder edge %s", name)
+}
+
+// MFileMutation represents an operation that mutate the MFiles
+// nodes in the graph.
+type MFileMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	parent        *int
+	addparent     *int
+	name          *string
+	author        *int
+	addauthor     *int
+	md5           *int
+	addmd5        *int
+	size          *int
+	addsize       *int
+	_MType        *mfile.MType
+	desc          *string
+	status        *mfile.Status
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	clearedFields map[string]struct{}
+	folder        *int
+	clearedfolder bool
+	done          bool
+	oldValue      func(context.Context) (*MFile, error)
+	predicates    []predicate.MFile
+}
+
+var _ ent.Mutation = (*MFileMutation)(nil)
+
+// mfileOption allows to manage the mutation configuration using functional options.
+type mfileOption func(*MFileMutation)
+
+// newMFileMutation creates new mutation for $n.Name.
+func newMFileMutation(c config, op Op, opts ...mfileOption) *MFileMutation {
+	m := &MFileMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMFile,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMFileID sets the id field of the mutation.
+func withMFileID(id int) mfileOption {
+	return func(m *MFileMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *MFile
+		)
+		m.oldValue = func(ctx context.Context) (*MFile, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().MFile.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMFile sets the old MFile of the mutation.
+func withMFile(node *MFile) mfileOption {
+	return func(m *MFileMutation) {
+		m.oldValue = func(context.Context) (*MFile, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MFileMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MFileMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on MFile creation.
+func (m *MFileMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *MFileMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetParent sets the parent field.
+func (m *MFileMutation) SetParent(i int) {
+	m.parent = &i
+	m.addparent = nil
+}
+
+// Parent returns the parent value in the mutation.
+func (m *MFileMutation) Parent() (r int, exists bool) {
+	v := m.parent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParent returns the old parent value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldParent(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldParent is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldParent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParent: %w", err)
+	}
+	return oldValue.Parent, nil
+}
+
+// AddParent adds i to parent.
+func (m *MFileMutation) AddParent(i int) {
+	if m.addparent != nil {
+		*m.addparent += i
+	} else {
+		m.addparent = &i
+	}
+}
+
+// AddedParent returns the value that was added to the parent field in this mutation.
+func (m *MFileMutation) AddedParent() (r int, exists bool) {
+	v := m.addparent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParent reset all changes of the "parent" field.
+func (m *MFileMutation) ResetParent() {
+	m.parent = nil
+	m.addparent = nil
+}
+
+// SetName sets the name field.
+func (m *MFileMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the name value in the mutation.
+func (m *MFileMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old name value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
+func (m *MFileMutation) ResetName() {
+	m.name = nil
+}
+
+// SetAuthor sets the author field.
+func (m *MFileMutation) SetAuthor(i int) {
+	m.author = &i
+	m.addauthor = nil
+}
+
+// Author returns the author value in the mutation.
+func (m *MFileMutation) Author() (r int, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old author value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldAuthor(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAuthor is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds i to author.
+func (m *MFileMutation) AddAuthor(i int) {
+	if m.addauthor != nil {
+		*m.addauthor += i
+	} else {
+		m.addauthor = &i
+	}
+}
+
+// AddedAuthor returns the value that was added to the author field in this mutation.
+func (m *MFileMutation) AddedAuthor() (r int, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor reset all changes of the "author" field.
+func (m *MFileMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
+}
+
+// SetMd5 sets the md5 field.
+func (m *MFileMutation) SetMd5(i int) {
+	m.md5 = &i
+	m.addmd5 = nil
+}
+
+// Md5 returns the md5 value in the mutation.
+func (m *MFileMutation) Md5() (r int, exists bool) {
+	v := m.md5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMd5 returns the old md5 value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldMd5(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMd5 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMd5 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMd5: %w", err)
+	}
+	return oldValue.Md5, nil
+}
+
+// AddMd5 adds i to md5.
+func (m *MFileMutation) AddMd5(i int) {
+	if m.addmd5 != nil {
+		*m.addmd5 += i
+	} else {
+		m.addmd5 = &i
+	}
+}
+
+// AddedMd5 returns the value that was added to the md5 field in this mutation.
+func (m *MFileMutation) AddedMd5() (r int, exists bool) {
+	v := m.addmd5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMd5 reset all changes of the "md5" field.
+func (m *MFileMutation) ResetMd5() {
+	m.md5 = nil
+	m.addmd5 = nil
+}
+
+// SetSize sets the size field.
+func (m *MFileMutation) SetSize(i int) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the size value in the mutation.
+func (m *MFileMutation) Size() (r int, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old size value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldSize(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSize is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to size.
+func (m *MFileMutation) AddSize(i int) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the size field in this mutation.
+func (m *MFileMutation) AddedSize() (r int, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSize clears the value of size.
+func (m *MFileMutation) ClearSize() {
+	m.size = nil
+	m.addsize = nil
+	m.clearedFields[mfile.FieldSize] = struct{}{}
+}
+
+// SizeCleared returns if the field size was cleared in this mutation.
+func (m *MFileMutation) SizeCleared() bool {
+	_, ok := m.clearedFields[mfile.FieldSize]
+	return ok
+}
+
+// ResetSize reset all changes of the "size" field.
+func (m *MFileMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+	delete(m.clearedFields, mfile.FieldSize)
+}
+
+// SetMType sets the MType field.
+func (m *MFileMutation) SetMType(mt mfile.MType) {
+	m._MType = &mt
+}
+
+// MType returns the MType value in the mutation.
+func (m *MFileMutation) MType() (r mfile.MType, exists bool) {
+	v := m._MType
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMType returns the old MType value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldMType(ctx context.Context) (v mfile.MType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMType is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMType: %w", err)
+	}
+	return oldValue.MType, nil
+}
+
+// ResetMType reset all changes of the "MType" field.
+func (m *MFileMutation) ResetMType() {
+	m._MType = nil
+}
+
+// SetDesc sets the desc field.
+func (m *MFileMutation) SetDesc(s string) {
+	m.desc = &s
+}
+
+// Desc returns the desc value in the mutation.
+func (m *MFileMutation) Desc() (r string, exists bool) {
+	v := m.desc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDesc returns the old desc value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldDesc(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDesc is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDesc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDesc: %w", err)
+	}
+	return oldValue.Desc, nil
+}
+
+// ClearDesc clears the value of desc.
+func (m *MFileMutation) ClearDesc() {
+	m.desc = nil
+	m.clearedFields[mfile.FieldDesc] = struct{}{}
+}
+
+// DescCleared returns if the field desc was cleared in this mutation.
+func (m *MFileMutation) DescCleared() bool {
+	_, ok := m.clearedFields[mfile.FieldDesc]
+	return ok
+}
+
+// ResetDesc reset all changes of the "desc" field.
+func (m *MFileMutation) ResetDesc() {
+	m.desc = nil
+	delete(m.clearedFields, mfile.FieldDesc)
+}
+
+// SetStatus sets the status field.
+func (m *MFileMutation) SetStatus(value mfile.Status) {
+	m.status = &value
+}
+
+// Status returns the status value in the mutation.
+func (m *MFileMutation) Status() (r mfile.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old status value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldStatus(ctx context.Context) (v mfile.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStatus is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus reset all changes of the "status" field.
+func (m *MFileMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *MFileMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *MFileMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *MFileMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *MFileMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *MFileMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *MFileMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the deleted_at field.
+func (m *MFileMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the deleted_at value in the mutation.
+func (m *MFileMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old deleted_at value of the MFile.
+// If the MFile object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MFileMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDeletedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of deleted_at.
+func (m *MFileMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[mfile.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the field deleted_at was cleared in this mutation.
+func (m *MFileMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[mfile.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt reset all changes of the "deleted_at" field.
+func (m *MFileMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, mfile.FieldDeletedAt)
+}
+
+// SetFolderID sets the folder edge to Folder by id.
+func (m *MFileMutation) SetFolderID(id int) {
+	m.folder = &id
+}
+
+// ClearFolder clears the folder edge to Folder.
+func (m *MFileMutation) ClearFolder() {
+	m.clearedfolder = true
+}
+
+// FolderCleared returns if the edge folder was cleared.
+func (m *MFileMutation) FolderCleared() bool {
+	return m.clearedfolder
+}
+
+// FolderID returns the folder id in the mutation.
+func (m *MFileMutation) FolderID() (id int, exists bool) {
+	if m.folder != nil {
+		return *m.folder, true
+	}
+	return
+}
+
+// FolderIDs returns the folder ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// FolderID instead. It exists only for internal usage by the builders.
+func (m *MFileMutation) FolderIDs() (ids []int) {
+	if id := m.folder; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetFolder reset all changes of the "folder" edge.
+func (m *MFileMutation) ResetFolder() {
+	m.folder = nil
+	m.clearedfolder = false
+}
+
+// Op returns the operation name.
+func (m *MFileMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (MFile).
+func (m *MFileMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *MFileMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.parent != nil {
+		fields = append(fields, mfile.FieldParent)
+	}
+	if m.name != nil {
+		fields = append(fields, mfile.FieldName)
+	}
+	if m.author != nil {
+		fields = append(fields, mfile.FieldAuthor)
+	}
+	if m.md5 != nil {
+		fields = append(fields, mfile.FieldMd5)
+	}
+	if m.size != nil {
+		fields = append(fields, mfile.FieldSize)
+	}
+	if m._MType != nil {
+		fields = append(fields, mfile.FieldMType)
+	}
+	if m.desc != nil {
+		fields = append(fields, mfile.FieldDesc)
+	}
+	if m.status != nil {
+		fields = append(fields, mfile.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, mfile.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, mfile.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, mfile.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *MFileMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case mfile.FieldParent:
+		return m.Parent()
+	case mfile.FieldName:
+		return m.Name()
+	case mfile.FieldAuthor:
+		return m.Author()
+	case mfile.FieldMd5:
+		return m.Md5()
+	case mfile.FieldSize:
+		return m.Size()
+	case mfile.FieldMType:
+		return m.MType()
+	case mfile.FieldDesc:
+		return m.Desc()
+	case mfile.FieldStatus:
+		return m.Status()
+	case mfile.FieldCreatedAt:
+		return m.CreatedAt()
+	case mfile.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case mfile.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *MFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case mfile.FieldParent:
+		return m.OldParent(ctx)
+	case mfile.FieldName:
+		return m.OldName(ctx)
+	case mfile.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case mfile.FieldMd5:
+		return m.OldMd5(ctx)
+	case mfile.FieldSize:
+		return m.OldSize(ctx)
+	case mfile.FieldMType:
+		return m.OldMType(ctx)
+	case mfile.FieldDesc:
+		return m.OldDesc(ctx)
+	case mfile.FieldStatus:
+		return m.OldStatus(ctx)
+	case mfile.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case mfile.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case mfile.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown MFile field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *MFileMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case mfile.FieldParent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParent(v)
+		return nil
+	case mfile.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case mfile.FieldAuthor:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case mfile.FieldMd5:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMd5(v)
+		return nil
+	case mfile.FieldSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case mfile.FieldMType:
+		v, ok := value.(mfile.MType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMType(v)
+		return nil
+	case mfile.FieldDesc:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDesc(v)
+		return nil
+	case mfile.FieldStatus:
+		v, ok := value.(mfile.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case mfile.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case mfile.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case mfile.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MFile field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *MFileMutation) AddedFields() []string {
+	var fields []string
+	if m.addparent != nil {
+		fields = append(fields, mfile.FieldParent)
+	}
+	if m.addauthor != nil {
+		fields = append(fields, mfile.FieldAuthor)
+	}
+	if m.addmd5 != nil {
+		fields = append(fields, mfile.FieldMd5)
+	}
+	if m.addsize != nil {
+		fields = append(fields, mfile.FieldSize)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *MFileMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case mfile.FieldParent:
+		return m.AddedParent()
+	case mfile.FieldAuthor:
+		return m.AddedAuthor()
+	case mfile.FieldMd5:
+		return m.AddedMd5()
+	case mfile.FieldSize:
+		return m.AddedSize()
+	}
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *MFileMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case mfile.FieldParent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParent(v)
+		return nil
+	case mfile.FieldAuthor:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
+	case mfile.FieldMd5:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMd5(v)
+		return nil
+	case mfile.FieldSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MFile numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *MFileMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(mfile.FieldSize) {
+		fields = append(fields, mfile.FieldSize)
+	}
+	if m.FieldCleared(mfile.FieldDesc) {
+		fields = append(fields, mfile.FieldDesc)
+	}
+	if m.FieldCleared(mfile.FieldDeletedAt) {
+		fields = append(fields, mfile.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *MFileMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MFileMutation) ClearField(name string) error {
+	switch name {
+	case mfile.FieldSize:
+		m.ClearSize()
+		return nil
+	case mfile.FieldDesc:
+		m.ClearDesc()
+		return nil
+	case mfile.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown MFile nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *MFileMutation) ResetField(name string) error {
+	switch name {
+	case mfile.FieldParent:
+		m.ResetParent()
+		return nil
+	case mfile.FieldName:
+		m.ResetName()
+		return nil
+	case mfile.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case mfile.FieldMd5:
+		m.ResetMd5()
+		return nil
+	case mfile.FieldSize:
+		m.ResetSize()
+		return nil
+	case mfile.FieldMType:
+		m.ResetMType()
+		return nil
+	case mfile.FieldDesc:
+		m.ResetDesc()
+		return nil
+	case mfile.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case mfile.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case mfile.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case mfile.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown MFile field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *MFileMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.folder != nil {
+		edges = append(edges, mfile.EdgeFolder)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *MFileMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case mfile.EdgeFolder:
+		if id := m.folder; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *MFileMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *MFileMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *MFileMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedfolder {
+		edges = append(edges, mfile.EdgeFolder)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *MFileMutation) EdgeCleared(name string) bool {
+	switch name {
+	case mfile.EdgeFolder:
+		return m.clearedfolder
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *MFileMutation) ClearEdge(name string) error {
+	switch name {
+	case mfile.EdgeFolder:
+		m.ClearFolder()
+		return nil
+	}
+	return fmt.Errorf("unknown MFile unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *MFileMutation) ResetEdge(name string) error {
+	switch name {
+	case mfile.EdgeFolder:
+		m.ResetFolder()
+		return nil
+	}
+	return fmt.Errorf("unknown MFile edge %s", name)
 }
 
 // RoleMutation represents an operation that mutate the Roles

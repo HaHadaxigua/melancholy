@@ -31,6 +31,66 @@ var (
 			},
 		},
 	}
+	// FoldersColumns holds the columns for the "folders" table.
+	FoldersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "parent", Type: field.TypeInt},
+		{Name: "path", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "author", Type: field.TypeInt},
+		{Name: "size", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "folder_c", Type: field.TypeInt, Nullable: true},
+	}
+	// FoldersTable holds the schema information for the "folders" table.
+	FoldersTable = &schema.Table{
+		Name:       "folders",
+		Columns:    FoldersColumns,
+		PrimaryKey: []*schema.Column{FoldersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "folders_folders_c",
+				Columns: []*schema.Column{FoldersColumns[10]},
+
+				RefColumns: []*schema.Column{FoldersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// MfilesColumns holds the columns for the "mfiles" table.
+	MfilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "parent", Type: field.TypeInt, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "author", Type: field.TypeInt},
+		{Name: "md5", Type: field.TypeInt, Unique: true},
+		{Name: "size", Type: field.TypeInt, Nullable: true},
+		{Name: "mtype", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
+		{Name: "desc", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "folder_mfiles", Type: field.TypeInt, Nullable: true},
+	}
+	// MfilesTable holds the schema information for the "mfiles" table.
+	MfilesTable = &schema.Table{
+		Name:       "mfiles",
+		Columns:    MfilesColumns,
+		PrimaryKey: []*schema.Column{MfilesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "mfiles_folders_mfiles",
+				Columns: []*schema.Column{MfilesColumns[12]},
+
+				RefColumns: []*schema.Column{FoldersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -97,6 +157,8 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ExitLogsTable,
+		FoldersTable,
+		MfilesTable,
 		RolesTable,
 		UsersTable,
 		UserRolesTable,
@@ -105,6 +167,8 @@ var (
 
 func init() {
 	ExitLogsTable.ForeignKeys[0].RefTable = UsersTable
+	FoldersTable.ForeignKeys[0].RefTable = FoldersTable
+	MfilesTable.ForeignKeys[0].RefTable = FoldersTable
 	UserRolesTable.ForeignKeys[0].RefTable = UsersTable
 	UserRolesTable.ForeignKeys[1].RefTable = RolesTable
 }

@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"github.com/HaHadaxigua/melancholy/pkg/api"
+	"github.com/HaHadaxigua/melancholy/pkg/api/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
 	"github.com/gin-gonic/gin"
 	_ "github.com/razeencheng/demo-go/swaggo-gin/docs"
@@ -22,7 +22,7 @@ func StartServer() {
 
 	Se.Engine = gin.Default()
 
-	api.SetupRouters(Se.Engine)
+	v1.SetupRouters(Se.Engine)
 
 	hs := &http.Server{
 		Addr:           conf.C.Application.Domain,

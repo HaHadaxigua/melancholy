@@ -1,15 +1,15 @@
-package admin
+package v1
 
 import (
 	"errors"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
+	store2 "github.com/HaHadaxigua/melancholy/pkg/store"
 )
 
 //  GetAllRoles 获取所有的角色
 func GetAllRoles() ([]*ent.Role, error){
-	roles, err := store.GetAllRoles()
+	roles, err := store2.GetAllRoles()
 	if err != nil {
 		return nil, err
 	}
@@ -18,7 +18,7 @@ func GetAllRoles() ([]*ent.Role, error){
 
 // AddRole 添加用角色
 func AddRole(name string) error{
-	role, err := store.CreateRole(name)
+	role, err := store2.CreateRole(name)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func AddRole(name string) error{
 
 // AddRoleToUser 添加用户角色
 func AddUserRoles(uID, rID int) error {
-	err := store.AddUserRoles(rID, uID)
+	err := store2.AddUserRoles(rID, uID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return msg.RoleNotFoundErr
@@ -42,7 +42,7 @@ func AddUserRoles(uID, rID int) error {
 
 // GetRoleByUserID 根据用户id寻找角色
 func GetRolesByUserID(uID int) ([]*ent.Role, error){
-	res, err := store.GetRolesByUserID(uID)
+	res, err := store2.GetRolesByUserID(uID)
 	if err != nil {
 		return nil, err
 	}

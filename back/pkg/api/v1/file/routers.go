@@ -1,22 +1,23 @@
 package file
 
 import (
+	"github.com/HaHadaxigua/melancholy/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-// SetupRouters 设置file模块的嵌套路由组
-func SetupRouters(r *gin.RouterGroup) {
-	fr := r.Group("/file")
-	{
-		// Test
-		fr.GET("/download", Hello)
+// SetupFileRouters 设置file模块的嵌套路由组
+func SetupFileRouters(r *gin.RouterGroup) {
+	// open
 
-		// 文件夹
-		fr.POST("/create", CreateFolder) // 创建文件夹
-		fr.GET("/folders", GetFolders)   // 获取当前文件夹下的子文件夹
-		fr.GET("/path", GetDirs)
-		// 视频文件
-		fr.POST("/upload/video", UploadVideoFile)
-		fr.GET("/download/video", DownloadVideoFile)
-	}
+	// secured
+	//r.Use(middleware.JWT, middleware.Authorize)
+	secured := r.Group("/file", middleware.JWT)
+	// 文件夹
+	secured.POST("/create", CreateFolder)    // 创建文件夹
+	secured.GET("/folders/:pid", GetFolders) // 获取当前文件夹下的子文件夹
+	secured.GET("/path", GetDirs)
+	// 视频文件
+	secured.POST("/upload/video", UploadVideoFile)
+	secured.GET("/download/video", DownloadVideoFile)
+
 }

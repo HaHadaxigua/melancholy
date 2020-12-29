@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/admin"
+	"github.com/HaHadaxigua/melancholy/pkg/service/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +30,7 @@ func Authorize(c *gin.Context) {
 	//获取请求方法
 	act := c.Request.Method
 	//获取用户的角色
-	roles, err := service.GetRolesByUserID(userID)
+	roles, err := v1.GetRolesByUserID(userID)
 
 	for _, role := range roles {
 		//判断策略中是否存在

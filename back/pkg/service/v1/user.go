@@ -1,15 +1,15 @@
-package userv1
+package v1
 
 import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	store "github.com/HaHadaxigua/melancholy/pkg/store/user"
+	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 )
 
 
-//NewAccount 创建新的帐号
+// NewAccount
 func NewUser(username, password, email string) (*ent.User, error) {
 	newSalt, err := tools.GenerateSalt()
 	if err != nil {
@@ -32,9 +32,9 @@ func NewUser(username, password, email string) (*ent.User, error) {
 }
 
 
-// CreateUser 请求创建用户
+// CreateUser
 func CreateUser(r *msg.UserRequest) (*ent.User, error) {
-	valid, err := VerifyReq(r)
+	valid, err := CheckReq(r)
 	if !valid && err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	return u, nil
 }
 
-// FindUserByUsername 根据用户名找用户
+// FindUserByUsername
 func FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
 	if !CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr
@@ -72,7 +72,7 @@ func FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
 	return tu, nil
 }
 
-//ListAllUser 列出所有的用户
+// ListAllUser
 func ListAllUser() ([]*ent.User, error) {
 	users, err := store.GetAllUsers()
 	if err != nil {
@@ -81,8 +81,8 @@ func ListAllUser() ([]*ent.User, error) {
 	return users, nil
 }
 
-// VerifyReq 验证请求合法性
-func VerifyReq(r *msg.UserRequest) (bool, error) {
+// VerifyReq
+func CheckReq(r *msg.UserRequest) (bool, error) {
 	if !CheckUsername(r.Username) {
 		return false, msg.UserNameOrPwdIncorrectlyErr
 	}

@@ -3,7 +3,6 @@ package middleware
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
-	"github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -48,7 +47,7 @@ func JWT(c *gin.Context) {
 				c.Abort()
 			}
 
-			userId := user.CheckUserExist(claims.Email, claims.Password)
+			userId := store.CheckUserExist(claims.Email, claims.Password)
 			c.Set("user_id", userId)
 		}
 	}

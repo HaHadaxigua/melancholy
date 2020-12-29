@@ -14,6 +14,10 @@ type Tx struct {
 	config
 	// ExitLog is the client for interacting with the ExitLog builders.
 	ExitLog *ExitLogClient
+	// Folder is the client for interacting with the Folder builders.
+	Folder *FolderClient
+	// MFile is the client for interacting with the MFile builders.
+	MFile *MFileClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// User is the client for interacting with the User builders.
@@ -154,6 +158,8 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.ExitLog = NewExitLogClient(tx.config)
+	tx.Folder = NewFolderClient(tx.config)
+	tx.MFile = NewMFileClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

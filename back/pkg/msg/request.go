@@ -2,20 +2,16 @@ package msg
 
 import "time"
 
-//DirRequest 文件夹请求
-type FolderRequest struct {
-	Creator  int64  `json:"creator"`
-	Name     string `json:"name"`
-	ParentId int64  `json:"parentId"`
+
+type CreateFolderReq struct {
+	Name string `json:"name"`
+	ParentID int `json:"parentID"`
 }
 
-//NewDirRequest 构造请求
-func NewDirRequest(c, p int64, n string) *FolderRequest {
-	return &FolderRequest{
-		Creator:  c,
-		Name:     n,
-		ParentId: p,
-	}
+type FolderRequest struct {
+	Creator  int    `json:"creator"`
+	ParentId int    `json:"parentId"`
+	Name     string `json:"name"`
 }
 
 //VideoRequest 视频请求

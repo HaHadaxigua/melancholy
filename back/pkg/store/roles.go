@@ -1,16 +1,15 @@
-package user
+package store
 
 import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
 )
 
 // CreateRoles 创建用户
 func CreateRole(name string) (*ent.Role, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 
 	r, err := client.Role.Create().SetName(name).SetStatus("0").Save(ctx)
 	if err != nil {
@@ -22,8 +21,8 @@ func CreateRole(name string) (*ent.Role, error) {
 
 // GetAllRoles 获取所有的角色
 func GetAllRoles() ([]*ent.Role, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	roles, err := client.Role.Query().Where(role.DeletedAtIsNil()).All(ctx)
 	if err != nil {
 		return nil, err
@@ -33,8 +32,8 @@ func GetAllRoles() ([]*ent.Role, error) {
 
 // AddUserRoles 添加角色给用户
 func AddUserRoles(roleID, userID int) error {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	// todo: 判断角色是否真实存在
 	_, err := client.Role.Query().Where(role.IDEQ(roleID)).Only(ctx)
 	if err != nil {
@@ -48,8 +47,8 @@ func AddUserRoles(roleID, userID int) error {
 }
 
 func GetRolesByUserID(uID int) ([]*ent.Role, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 
 	roles, err := client.User.Query().Where(user.IDEQ(uID)).QueryRoles().All(ctx)
 	if err != nil {

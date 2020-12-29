@@ -22,6 +22,32 @@ func (f ExitLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The FolderFunc type is an adapter to allow the use of ordinary
+// function as Folder mutator.
+type FolderFunc func(context.Context, *ent.FolderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FolderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.FolderMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FolderMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The MFileFunc type is an adapter to allow the use of ordinary
+// function as MFile mutator.
+type MFileFunc func(context.Context, *ent.MFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.MFileMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MFileMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The RoleFunc type is an adapter to allow the use of ordinary
 // function as Role mutator.
 type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)

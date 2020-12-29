@@ -1,17 +1,16 @@
-package user
+package store
 
 import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/user"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 )
 
 // CreateUser 创建用户
 func CreateUser(req *ent.User) (*ent.User, error) {
 	//db := store.GetConn()
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	u, err := client.User.Create().
 		SetUsername(req.Username).
 		SetPassword(req.Password).
@@ -27,8 +26,8 @@ func CreateUser(req *ent.User) (*ent.User, error) {
 
 // GetUserById 根据用户id搜索用户
 func GetUserById(id int) (*ent.User, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	u, err := client.User.Query().Where(user.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err){
@@ -41,8 +40,8 @@ func GetUserById(id int) (*ent.User, error) {
 
 // GetUserByName 根据用户名找到用户
 func GetUserByName(name string) (*ent.User, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	u, err := client.User.Query().Where(user.UsernameEQ(name)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err){
@@ -55,8 +54,8 @@ func GetUserByName(name string) (*ent.User, error) {
 
 // GetUserByEmail 根据邮箱找到用户
 func GetUserByEmail(email string) (*ent.User, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	u, err := client.User.Query().Where(user.EmailEQ(email)).Only(ctx)
 	if err != nil{
 		if ent.IsNotFound(err){
@@ -69,12 +68,12 @@ func GetUserByEmail(email string) (*ent.User, error) {
 
 // GetAllUsers  找到所有的用户
 func GetAllUsers() ([]*ent.User, error) {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	users, err := client.User.Query().All(ctx)
 	if err != nil {
 		if ent.IsNotFound(err){
-			return nil, nil
+			return []*ent.User{}, nil
 		}
 		return nil, err
 	}
@@ -83,8 +82,8 @@ func GetAllUsers() ([]*ent.User, error) {
 
 // CheckUserExist判断用户是否存在, 存在则返回用户id, 不存在则返回-1
 func CheckUserExist(email, password string) int {
-	client := store.GetClient()
-	ctx := store.GetCtx()
+	client := GetClient()
+	ctx := GetCtx()
 	u, err := client.User.Query().Where(user.EmailEQ(email)).Only(ctx)
 	if err != nil {
 		return -1

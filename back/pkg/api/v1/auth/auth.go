@@ -1,14 +1,12 @@
-package api
+package auth
 
 import (
 	"errors"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/admin"
-	serviceu "github.com/HaHadaxigua/melancholy/pkg/service/v1/user"
+	"github.com/HaHadaxigua/melancholy/pkg/service/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
-	storeu "github.com/HaHadaxigua/melancholy/pkg/store/user"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -46,7 +44,7 @@ func Login(c *gin.Context) {
 	data := make(map[string]interface{})
 	status := msg.OK
 	if ok {
-		userId := storeu.CheckUserExist(email, password)
+		userId := store.CheckUserExist(email, password)
 		if userId > -1 {
 			token, err := tools.GenerateToken(email, password)
 			if err != nil {
@@ -87,7 +85,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user, err := serviceu.CreateUser(r)
+	user, err := v1.CreateUser(r)
 	if err != nil && errors.Is(err, msg.UserHasExistedErr){
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -101,7 +99,7 @@ func Register(c *gin.Context) {
 	}
 
 	// 赋予角色
-	err = service.AddUserRoles(user.ID, 0)
+	err = v1.AddUserRoles(user.ID, 0)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -109,7 +107,6 @@ func Register(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
-
 
 // Logout 退出登录
 func Logout(c *gin.Context) {

@@ -9,6 +9,12 @@ import (
 // ExitLog is the predicate function for exitlog builders.
 type ExitLog func(*sql.Selector)
 
+// Folder is the predicate function for folder builders.
+type Folder func(*sql.Selector)
+
+// MFile is the predicate function for mfile builders.
+type MFile func(*sql.Selector)
+
 // Role is the predicate function for role builders.
 type Role func(*sql.Selector)
 

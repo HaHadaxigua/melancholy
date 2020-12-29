@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/HaHadaxigua/melancholy/ent/exitlog"
+	"github.com/HaHadaxigua/melancholy/ent/folder"
+	"github.com/HaHadaxigua/melancholy/ent/mfile"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/schema"
 	"github.com/HaHadaxigua/melancholy/ent/user"
@@ -21,6 +23,42 @@ func init() {
 	exitlogDescDate := exitlogFields[3].Descriptor()
 	// exitlog.DefaultDate holds the default value on creation for the date field.
 	exitlog.DefaultDate = exitlogDescDate.Default.(func() time.Time)
+	folderFields := schema.Folder{}.Fields()
+	_ = folderFields
+	// folderDescSize is the schema descriptor for size field.
+	folderDescSize := folderFields[5].Descriptor()
+	// folder.DefaultSize holds the default value on creation for the size field.
+	folder.DefaultSize = folderDescSize.Default.(int)
+	// folderDescCreatedAt is the schema descriptor for created_at field.
+	folderDescCreatedAt := folderFields[7].Descriptor()
+	// folder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	folder.DefaultCreatedAt = folderDescCreatedAt.Default.(func() time.Time)
+	// folderDescUpdatedAt is the schema descriptor for updated_at field.
+	folderDescUpdatedAt := folderFields[8].Descriptor()
+	// folder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	folder.DefaultUpdatedAt = folderDescUpdatedAt.Default.(func() time.Time)
+	// folder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	folder.UpdateDefaultUpdatedAt = folderDescUpdatedAt.UpdateDefault.(func() time.Time)
+	mfileFields := schema.MFile{}.Fields()
+	_ = mfileFields
+	// mfileDescSize is the schema descriptor for size field.
+	mfileDescSize := mfileFields[5].Descriptor()
+	// mfile.DefaultSize holds the default value on creation for the size field.
+	mfile.DefaultSize = mfileDescSize.Default.(int)
+	// mfileDescDesc is the schema descriptor for desc field.
+	mfileDescDesc := mfileFields[7].Descriptor()
+	// mfile.DefaultDesc holds the default value on creation for the desc field.
+	mfile.DefaultDesc = mfileDescDesc.Default.(string)
+	// mfileDescCreatedAt is the schema descriptor for created_at field.
+	mfileDescCreatedAt := mfileFields[9].Descriptor()
+	// mfile.DefaultCreatedAt holds the default value on creation for the created_at field.
+	mfile.DefaultCreatedAt = mfileDescCreatedAt.Default.(func() time.Time)
+	// mfileDescUpdatedAt is the schema descriptor for updated_at field.
+	mfileDescUpdatedAt := mfileFields[10].Descriptor()
+	// mfile.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	mfile.DefaultUpdatedAt = mfileDescUpdatedAt.Default.(func() time.Time)
+	// mfile.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	mfile.UpdateDefaultUpdatedAt = mfileDescUpdatedAt.UpdateDefault.(func() time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescCreatedAt is the schema descriptor for created_at field.

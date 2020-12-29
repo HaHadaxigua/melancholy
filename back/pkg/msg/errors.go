@@ -8,18 +8,18 @@ import (
 type Err struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
-	Data   interface{} `json:"cause"`
+	Data    interface{} `json:"cause"`
 }
 
 func (e *Err) Error() string {
 	return fmt.Sprintf("Err - code: %d, message: %s, error: %s", e.Code, e.Message, e.Data)
 }
 
-func NewErr(code int, msg string, err error) *Err {
+func NewErr(err error) *Err {
 	return &Err{
-		Code:    code,
-		Message: msg,
-		Data:   err.Error(),
+		Code:    UnKnown.Code,
+		Message: Unknown,
+		Data:    err,
 	}
 }
 
@@ -28,7 +28,6 @@ func (e *Err) AddCause(err error) *Err {
 	return e
 }
 
-
 // 错误码设计： [1/2] [xx] [xx]
 // 1 为系统错误 2：普通错误
 // 第二个xx 表示出错的模块
@@ -36,6 +35,7 @@ func (e *Err) AddCause(err error) *Err {
 
 var (
 	OK                = &Err{Code: 6, Message: Ok}
+	UnKnown           = &Err{Code: 12345, Message: Unknown}
 	InternalServerErr = &Err{Code: 10001, Message: InternalServerErrorMsg}
 	ErrReq            = &Err{Code: 10002, Message: ErrReqMsg}
 
@@ -75,6 +75,9 @@ var (
 const (
 	// Success
 	Ok = "Success"
+
+	// Unknown
+	Unknown = "UnKnown"
 
 	// Default
 	InternalServerErrorMsg = "内部服务器错误"

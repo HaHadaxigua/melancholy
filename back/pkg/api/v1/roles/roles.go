@@ -2,14 +2,14 @@ package roles
 
 import (
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	service "github.com/HaHadaxigua/melancholy/pkg/service/v1/admin"
+	"github.com/HaHadaxigua/melancholy/pkg/service/v1"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-//GetAllRoles all roles
+// GetAllRoles all roles
 func GetAllRoles(c *gin.Context) {
-	roles, err := service.GetAllRoles()
+	roles, err := v1.GetAllRoles()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -19,7 +19,7 @@ func GetAllRoles(c *gin.Context) {
 	})
 }
 
-//AddRole 添加角色
+// AddRole 添加角色
 func AddRole(c *gin.Context) {
 	type roleReq struct {
 		Name string `json:"name"`
@@ -32,7 +32,7 @@ func AddRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
-	err = service.AddRole(req.Name)
+	err = v1.AddRole(req.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":err.Error(),
@@ -42,7 +42,7 @@ func AddRole(c *gin.Context) {
 	c.JSON(http.StatusOK, msg.OK)
 }
 
-//AddRoleToUser 给用户添加权限
+// AddRoleToUser 给用户添加权限
 func AddUserRoles(c *gin.Context){
 	uid := c.GetInt("user_id")
 	if uid < 0 {
@@ -61,7 +61,7 @@ func AddUserRoles(c *gin.Context){
 		return
 	}
 
-	err = service.AddUserRoles(uid, req.ID)
+	err = v1.AddUserRoles(uid, req.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return

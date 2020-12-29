@@ -25,6 +25,8 @@ type config struct {
 // hooks per client, for fast access.
 type hooks struct {
 	ExitLog []ent.Hook
+	Folder  []ent.Hook
+	MFile   []ent.Hook
 	Role    []ent.Hook
 	User    []ent.Hook
 }

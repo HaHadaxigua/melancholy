@@ -11,6 +11,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/facebook/ent v0.5.1
 	github.com/gin-gonic/gin v1.6.3
+	github.com/google/uuid v1.1.2
 	github.com/razeencheng/demo-go/swaggo-gin v0.0.0-20200816064548-40680422f857
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.7.1

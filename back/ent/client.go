@@ -10,6 +10,8 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent/migrate"
 
 	"github.com/HaHadaxigua/melancholy/ent/exitlog"
+	"github.com/HaHadaxigua/melancholy/ent/folder"
+	"github.com/HaHadaxigua/melancholy/ent/mfile"
 	"github.com/HaHadaxigua/melancholy/ent/role"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 
@@ -25,6 +27,10 @@ type Client struct {
 	Schema *migrate.Schema
 	// ExitLog is the client for interacting with the ExitLog builders.
 	ExitLog *ExitLogClient
+	// Folder is the client for interacting with the Folder builders.
+	Folder *FolderClient
+	// MFile is the client for interacting with the MFile builders.
+	MFile *MFileClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// User is the client for interacting with the User builders.
@@ -43,6 +49,8 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.ExitLog = NewExitLogClient(c.config)
+	c.Folder = NewFolderClient(c.config)
+	c.MFile = NewMFileClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -78,6 +86,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:     ctx,
 		config:  cfg,
 		ExitLog: NewExitLogClient(cfg),
+		Folder:  NewFolderClient(cfg),
+		MFile:   NewMFileClient(cfg),
 		Role:    NewRoleClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -96,6 +106,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:  cfg,
 		ExitLog: NewExitLogClient(cfg),
+		Folder:  NewFolderClient(cfg),
+		MFile:   NewMFileClient(cfg),
 		Role:    NewRoleClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -127,6 +139,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.ExitLog.Use(hooks...)
+	c.Folder.Use(hooks...)
+	c.MFile.Use(hooks...)
 	c.Role.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -217,6 +231,246 @@ func (c *ExitLogClient) GetX(ctx context.Context, id int) *ExitLog {
 // Hooks returns the client hooks.
 func (c *ExitLogClient) Hooks() []Hook {
 	return c.hooks.ExitLog
+}
+
+// FolderClient is a client for the Folder schema.
+type FolderClient struct {
+	config
+}
+
+// NewFolderClient returns a client for the Folder from the given config.
+func NewFolderClient(c config) *FolderClient {
+	return &FolderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `folder.Hooks(f(g(h())))`.
+func (c *FolderClient) Use(hooks ...Hook) {
+	c.hooks.Folder = append(c.hooks.Folder, hooks...)
+}
+
+// Create returns a create builder for Folder.
+func (c *FolderClient) Create() *FolderCreate {
+	mutation := newFolderMutation(c.config, OpCreate)
+	return &FolderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Folder entities.
+func (c *FolderClient) CreateBulk(builders ...*FolderCreate) *FolderCreateBulk {
+	return &FolderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Folder.
+func (c *FolderClient) Update() *FolderUpdate {
+	mutation := newFolderMutation(c.config, OpUpdate)
+	return &FolderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FolderClient) UpdateOne(f *Folder) *FolderUpdateOne {
+	mutation := newFolderMutation(c.config, OpUpdateOne, withFolder(f))
+	return &FolderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FolderClient) UpdateOneID(id int) *FolderUpdateOne {
+	mutation := newFolderMutation(c.config, OpUpdateOne, withFolderID(id))
+	return &FolderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Folder.
+func (c *FolderClient) Delete() *FolderDelete {
+	mutation := newFolderMutation(c.config, OpDelete)
+	return &FolderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *FolderClient) DeleteOne(f *Folder) *FolderDeleteOne {
+	return c.DeleteOneID(f.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *FolderClient) DeleteOneID(id int) *FolderDeleteOne {
+	builder := c.Delete().Where(folder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FolderDeleteOne{builder}
+}
+
+// Query returns a query builder for Folder.
+func (c *FolderClient) Query() *FolderQuery {
+	return &FolderQuery{config: c.config}
+}
+
+// Get returns a Folder entity by its id.
+func (c *FolderClient) Get(ctx context.Context, id int) (*Folder, error) {
+	return c.Query().Where(folder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FolderClient) GetX(ctx context.Context, id int) *Folder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryMfiles queries the mfiles edge of a Folder.
+func (c *FolderClient) QueryMfiles(f *Folder) *MFileQuery {
+	query := &MFileQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(mfile.Table, mfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, folder.MfilesTable, folder.MfilesColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryP queries the p edge of a Folder.
+func (c *FolderClient) QueryP(f *Folder) *FolderQuery {
+	query := &FolderQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, folder.PTable, folder.PColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryC queries the c edge of a Folder.
+func (c *FolderClient) QueryC(f *Folder) *FolderQuery {
+	query := &FolderQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(folder.Table, folder.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, folder.CTable, folder.CColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *FolderClient) Hooks() []Hook {
+	return c.hooks.Folder
+}
+
+// MFileClient is a client for the MFile schema.
+type MFileClient struct {
+	config
+}
+
+// NewMFileClient returns a client for the MFile from the given config.
+func NewMFileClient(c config) *MFileClient {
+	return &MFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mfile.Hooks(f(g(h())))`.
+func (c *MFileClient) Use(hooks ...Hook) {
+	c.hooks.MFile = append(c.hooks.MFile, hooks...)
+}
+
+// Create returns a create builder for MFile.
+func (c *MFileClient) Create() *MFileCreate {
+	mutation := newMFileMutation(c.config, OpCreate)
+	return &MFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MFile entities.
+func (c *MFileClient) CreateBulk(builders ...*MFileCreate) *MFileCreateBulk {
+	return &MFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MFile.
+func (c *MFileClient) Update() *MFileUpdate {
+	mutation := newMFileMutation(c.config, OpUpdate)
+	return &MFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MFileClient) UpdateOne(m *MFile) *MFileUpdateOne {
+	mutation := newMFileMutation(c.config, OpUpdateOne, withMFile(m))
+	return &MFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MFileClient) UpdateOneID(id int) *MFileUpdateOne {
+	mutation := newMFileMutation(c.config, OpUpdateOne, withMFileID(id))
+	return &MFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MFile.
+func (c *MFileClient) Delete() *MFileDelete {
+	mutation := newMFileMutation(c.config, OpDelete)
+	return &MFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *MFileClient) DeleteOne(m *MFile) *MFileDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *MFileClient) DeleteOneID(id int) *MFileDeleteOne {
+	builder := c.Delete().Where(mfile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MFileDeleteOne{builder}
+}
+
+// Query returns a query builder for MFile.
+func (c *MFileClient) Query() *MFileQuery {
+	return &MFileQuery{config: c.config}
+}
+
+// Get returns a MFile entity by its id.
+func (c *MFileClient) Get(ctx context.Context, id int) (*MFile, error) {
+	return c.Query().Where(mfile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MFileClient) GetX(ctx context.Context, id int) *MFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryFolder queries the folder edge of a MFile.
+func (c *MFileClient) QueryFolder(m *MFile) *FolderQuery {
+	query := &FolderQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mfile.Table, mfile.FieldID, id),
+			sqlgraph.To(folder.Table, folder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, mfile.FolderTable, mfile.FolderColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MFileClient) Hooks() []Hook {
+	return c.hooks.MFile
 }
 
 // RoleClient is a client for the Role schema.
