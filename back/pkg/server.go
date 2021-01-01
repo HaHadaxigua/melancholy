@@ -17,7 +17,6 @@ type SE struct {
 var Se SE
 
 func StartServer() {
-	//S = &Server{}
 	gin.SetMode(conf.C.Mode)
 
 	Se.Engine = gin.Default()
