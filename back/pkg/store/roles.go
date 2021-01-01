@@ -6,7 +6,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent/user"
 )
 
-// CreateRoles 创建用户
 func CreateRole(name string) (*ent.Role, error) {
 	client := GetClient()
 	ctx := GetCtx()
@@ -19,8 +18,7 @@ func CreateRole(name string) (*ent.Role, error) {
 	return r, err
 }
 
-// GetAllRoles 获取所有的角色
-func GetAllRoles() ([]*ent.Role, error) {
+func ListRoles() ([]*ent.Role, error) {
 	client := GetClient()
 	ctx := GetCtx()
 	roles, err := client.Role.Query().Where(role.DeletedAtIsNil()).All(ctx)
@@ -30,11 +28,21 @@ func GetAllRoles() ([]*ent.Role, error) {
 	return roles, nil
 }
 
-// AddUserRoles 添加角色给用户
-func AddUserRoles(roleID, userID int) error {
+func ListRolesByUserID(uID int) ([]*ent.Role, error) {
 	client := GetClient()
 	ctx := GetCtx()
-	// todo: 判断角色是否真实存在
+
+	roles, err := client.User.Query().Where(user.IDEQ(uID)).QueryRoles().All(ctx)
+	if err != nil {
+		return []*ent.Role{}, err
+	}
+	return roles, nil
+}
+
+// append role to user
+func AppendRoleToUser(roleID, userID int) error {
+	client := GetClient()
+	ctx := GetCtx()
 	_, err := client.Role.Query().Where(role.IDEQ(roleID)).Only(ctx)
 	if err != nil {
 		return err
@@ -44,15 +52,4 @@ func AddUserRoles(roleID, userID int) error {
 		return err
 	}
 	return nil
-}
-
-func GetRolesByUserID(uID int) ([]*ent.Role, error) {
-	client := GetClient()
-	ctx := GetCtx()
-
-	roles, err := client.User.Query().Where(user.IDEQ(uID)).QueryRoles().All(ctx)
-	if err != nil {
-		return []*ent.Role{}, err
-	}
-	return roles, nil
 }

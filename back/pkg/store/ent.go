@@ -26,8 +26,8 @@ func SetupEnt() {
 	client, err = ent.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
+		panic(err)
 	}
-
 	ctx = context.Background()
 }
 

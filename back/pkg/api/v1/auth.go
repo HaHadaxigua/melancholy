@@ -1,11 +1,11 @@
-package auth
+package v1
 
 import (
 	"errors"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
-	"github.com/HaHadaxigua/melancholy/pkg/service/v1"
+	v1 "github.com/HaHadaxigua/melancholy/pkg/service/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
@@ -13,6 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
+
+func SetupAuthRouters(r *gin.RouterGroup) {
+	// open
+	r.POST("/login", Login)
+	r.POST("/register", Register) // 注册用户
+	r.GET("/logout", Logout)
+}
 
 // @Summary Login
 // @Description 登录接口
@@ -22,15 +29,16 @@ import (
 // @Param who query string true "人名"
 // @Success 200 {string} string "{"msg": "hello Razeen"}"
 // @Failure 400 {string} string "{"msg": "who are you"}"
-// @Router /login [get]
+// @Router /login [POST]
 //Login
 func Login(c *gin.Context) {
-	email := c.Query("email")
-	password := c.Query("password")
-	if email == "" || password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "badRequest",
-		})
+	req := &msg.LoginReq{}
+	if err := c.BindJSON(req); err != nil {
+		c.JSON(http.StatusBadRequest, msg.BadRequest)
+		return
+	}
+	if req.Email == "" || req.Password == "" {
+		c.JSON(http.StatusBadRequest, msg.UserNameOrPwdIncorrectlyErr)
 		return
 	}
 	type auth struct {
@@ -38,15 +46,15 @@ func Login(c *gin.Context) {
 		Password string `valid:"Required; MaxSize(50)"`
 	}
 	valid := validation.Validation{}
-	a := auth{Email: email, Password: password}
+	a := auth{Email: req.Email, Password: req.Password}
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
 	status := msg.OK
 	if ok {
-		userId := store.CheckUserExist(email, password)
+		userId := store.CheckUserExist(req.Email, req.Password)
 		if userId > -1 {
-			token, err := tools.GenerateToken(email, password)
+			token, err := tools.JwtGenerateToken(userId, req.Email, req.Password, 2)
 			if err != nil {
 				status = msg.AuthCheckTokenErr
 			} else {
@@ -86,12 +94,12 @@ func Register(c *gin.Context) {
 	}
 
 	user, err := v1.CreateUser(r)
-	if err != nil && errors.Is(err, msg.UserHasExistedErr){
+	if err != nil && errors.Is(err, msg.UserHasExistedErr) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
 		})
 		return
-	}else if err != nil {
+	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
 		})
@@ -99,11 +107,11 @@ func Register(c *gin.Context) {
 	}
 
 	// 赋予角色
-	err = v1.AddUserRoles(user.ID, 0)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
+	//err = v1.AddUserRoles(user.ID, 0)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, err)
+	//	return
+	//}
 
 	c.JSON(http.StatusOK, user)
 }
@@ -123,7 +131,7 @@ func Logout(c *gin.Context) {
 	// 写退出表
 
 	exitReq := &ent.ExitLog{
-		Token: ah.AccessToken,
+		Token:  ah.AccessToken,
 		UserID: userId,
 	}
 
@@ -131,8 +139,9 @@ func Logout(c *gin.Context) {
 	if err != nil {
 		e := msg.UserExitErr
 		c.JSON(http.StatusBadRequest, e)
-	}else{
+	} else {
 		c.JSON(http.StatusOK, msg.Ok)
 	}
 
 }
+

@@ -1,10 +1,7 @@
-package v1
+package api
 
 import (
-	"github.com/HaHadaxigua/melancholy/pkg/api/v1/auth"
-	"github.com/HaHadaxigua/melancholy/pkg/api/v1/file"
-	"github.com/HaHadaxigua/melancholy/pkg/api/v1/roles"
-	"github.com/HaHadaxigua/melancholy/pkg/api/v1/user"
+	api "github.com/HaHadaxigua/melancholy/pkg/api/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/consts"
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
 	"github.com/gin-gonic/gin"
@@ -20,13 +17,12 @@ func SetupRouters(e *gin.Engine) {
 	e.Use(middleware.Cors)
 	// swagger相关
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	// 注册、登录、登出
 
 	v1 := e.Group(consts.ApiV1)
 	{
-		auth.SetupAuthRouters(v1)
-		roles.SetupRoleRouters(v1)
-		file.SetupFileRouters(v1)
-		user.SetupUserRouters(v1)
+		api.SetupAuthRouters(v1)
+		api.SetupRoleRouters(v1)
+		api.SetupFileRouters(v1)
+		api.SetupUserRouters(v1)
 	}
 }

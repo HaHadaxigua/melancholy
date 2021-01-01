@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 func Cors(c *gin.Context) {
 	//method := c.Request.Method
 	origin := c.Request.Header.Get("Origin") //请求头部

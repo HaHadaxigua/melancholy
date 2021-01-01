@@ -8,13 +8,14 @@ Application:
   ReadTimeout: 1
   WriterTimeout: 2
   Location: F:\melancholy
-  JwtSecret: 43f776358a
+  AppSecret: 43f776358a
+  AppIss: github.com/HaHadaxigua/melancholy
 Database:
   Dbtype: mysql
   Host: 127.0.0.1
   Port: 3307
   Name: melancholy
-  Password: 123
+  Password: 123456
   Username: root
 Gorm:
   LogMode: 0

@@ -8,7 +8,6 @@ import (
 
 // CreateUser 创建用户
 func CreateUser(req *ent.User) (*ent.User, error) {
-	//db := store.GetConn()
 	client := GetClient()
 	ctx := GetCtx()
 	u, err := client.User.Create().

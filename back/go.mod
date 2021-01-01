@@ -15,6 +15,7 @@ require (
 	github.com/razeencheng/demo-go/swaggo-gin v0.0.0-20200816064548-40680422f857
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.6.5
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

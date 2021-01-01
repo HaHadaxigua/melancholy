@@ -2,6 +2,11 @@ package msg
 
 import "time"
 
+type LoginReq struct {
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
 
 type CreateFolderReq struct {
 	Name string `json:"name"`

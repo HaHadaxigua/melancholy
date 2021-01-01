@@ -28,6 +28,11 @@ func (e *Err) AddCause(err error) *Err {
 	return e
 }
 
+func OkResp(data interface{}) *Err{
+	OK.Data = data
+	return OK
+}
+
 // 错误码设计： [1/2] [xx] [xx]
 // 1 为系统错误 2：普通错误
 // 第二个xx 表示出错的模块

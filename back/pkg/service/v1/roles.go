@@ -9,7 +9,7 @@ import (
 
 //  GetAllRoles 获取所有的角色
 func GetAllRoles() ([]*ent.Role, error){
-	roles, err := store2.GetAllRoles()
+	roles, err := store2.ListRoles()
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func AddRole(name string) error{
 
 // AddRoleToUser 添加用户角色
 func AddUserRoles(uID, rID int) error {
-	err := store2.AddUserRoles(rID, uID)
+	err := store2.AppendRoleToUser(rID, uID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return msg.RoleNotFoundErr
@@ -42,7 +42,7 @@ func AddUserRoles(uID, rID int) error {
 
 // GetRoleByUserID 根据用户id寻找角色
 func GetRolesByUserID(uID int) ([]*ent.Role, error){
-	res, err := store2.GetRolesByUserID(uID)
+	res, err := store2.ListRolesByUserID(uID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
@@ -31,7 +32,7 @@ func JWT(c *gin.Context) {
 		status = msg.BadRequest
 		status.Data = msg.AuthAccessTokenIllegalErrorMsg
 	} else {
-		claims, err := tools.ParseToken(ah.AccessToken)
+		claims, err := tools.JwtParseToken(ah.AccessToken)
 		if err != nil {
 			status = msg.AuthCheckTokenErr
 			status.Data = msg.AuthAccessTokenIllegalErrorMsg
@@ -39,14 +40,17 @@ func JWT(c *gin.Context) {
 			status = msg.AuthCheckTokenTimeoutErr
 		} else { // 此时token是有效的
 			// 判断下token是否已经进入黑名单
-			el, e := store.FindExitLog(ah.AccessToken)
-			if el != nil || e != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error":msg.UserExitErr,
-				})
+			el, errr := store.FindExitLog(ah.AccessToken)
+			if el != nil {
+				c.JSON(http.StatusBadRequest, msg.UserExitErr)
 				c.Abort()
 			}
-
+			if errr != nil {
+				if !ent.IsNotFound(errr) {
+					c.JSON(http.StatusInternalServerError, msg.UnKnown)
+					c.Abort()
+				}
+			}
 			userId := store.CheckUserExist(claims.Email, claims.Password)
 			c.Set("user_id", userId)
 		}

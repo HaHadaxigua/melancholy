@@ -1,47 +1,56 @@
 package tools
 
 import (
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
-var jwtSecret = []byte(conf.C.Application.JwtSecret)
+var jwtSecret = []byte(conf.C.Application.AppSecret)
 
-type Claims struct {
-	Email string `json:"email"`
+// custom claims
+type userStdClaims struct {
+	Email    string `json:"email"`
 	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
-//GenerateToken 生成token
-func GenerateToken(email, password string) (string, error) {
+func JwtGenerateToken(userID int, email, password string, d time.Duration) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(24 * time.Hour) // 设置两小时后过期
+	expireTime := nowTime.Add(d * time.Hour) // 设置两小时后过期
 
-	claims := Claims{
+	uClaims := userStdClaims{
 		email,
 		password,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
-			Issuer:    "admin",
+			IssuedAt:  nowTime.Unix(),
+			Issuer:    conf.C.Application.AppIss,
+			Id:        fmt.Sprintf("%d", userID),
 		},
 	}
 
-	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, uClaims)
 	token, err := tokenClaims.SignedString(jwtSecret)
+	if err != nil {
+		logrus.WithError(err).Fatal("config is wrong, can not generate jwt")
+	}
 	return token, err
 }
 
+func JwtParseToken(token string) (*userStdClaims, error) {
+	if token == "" {
+		return nil, fmt.Errorf("no token is found in Authorization Bearer")
+	}
 
-//ParseToken 解析token
-func ParseToken(token string)(*Claims, error){
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	tokenClaims, err := jwt.ParseWithClaims(token, &userStdClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
 
 	if tokenClaims != nil {
-		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
+		if claims, ok := tokenClaims.Claims.(*userStdClaims); ok && tokenClaims.Valid {
 			return claims, nil
 		}
 	}
