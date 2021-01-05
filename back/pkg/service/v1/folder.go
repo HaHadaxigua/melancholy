@@ -7,8 +7,26 @@ import (
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 )
 
+var FolderService IFolderService
+
+type IFolderService interface {
+	CreateFolder(r *msg.FolderRequest) error
+	ListCurrentFolder(uid, pid int) ([]*ent.Folder, error)
+	genPath(pid int, name string) (string, error)
+}
+
+type folderService struct {
+	folderStore store.IFolderStore
+}
+
+func NewFolderService() *folderService{
+	return &folderService{
+		folderStore: store.FolderStore,
+	}
+}
+
 func NewFolder(aid, pid int, name string) (*ent.Folder, error){
-	path, err := genPath(pid, name)
+	path, err := FolderService.genPath(pid, name)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +39,7 @@ func NewFolder(aid, pid int, name string) (*ent.Folder, error){
 }
 
 // CreateFolder
-func CreateFolder(r *msg.FolderRequest) error {
+func(fs *folderService) CreateFolder(r *msg.FolderRequest) error {
 	if !VerifyReq(r) {
 		return nil
 	}
@@ -29,35 +47,36 @@ func CreateFolder(r *msg.FolderRequest) error {
 	if err != nil {
 		return err
 	}
-	err = store.CreateFolder(f)
+	err = fs.folderStore.CreateFolder(f)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
-	res, err := store.GetFolderByUserID(uid, 0)
+func(fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
+	res, err := fs.folderStore.GetFolderByUserID(uid, 0)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func ListRootFolder(uid int) (*ent.Folder, error) {
-	res, err := store.GetRootFolder(uid)
+func(fs *folderService) ListRootFolder(uid int) (*ent.Folder, error) {
+	res, err := fs.folderStore.GetRootFolder(uid)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func genPath(pid int, name string) (string, error) {
-	curFolder, err := store.GetFolderByID(pid)
+// fixme: failed
+func(fs *folderService) genPath(pid int, name string) (string, error) {
+	curFolder, err := fs.folderStore.GetFolderByID(pid)
 	if err != nil {
 		return "", err
 	}
-	subFolders, err := store.GetSubFolders(pid)
+	subFolders, err := fs.folderStore.GetSubFolders(pid)
 	if err != nil {
 		return "", err
 	}

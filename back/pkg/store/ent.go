@@ -29,6 +29,8 @@ func SetupEnt() {
 		panic(err)
 	}
 	ctx = context.Background()
+
+	setupStore(client, ctx)
 }
 
 func GetClient() *ent.Client {
@@ -37,4 +39,8 @@ func GetClient() *ent.Client {
 
 func GetCtx() context.Context{
 	return ctx
+}
+
+func setupStore(client *ent.Client, ctx context.Context){
+	FolderStore = NewFolderStore(client, ctx)
 }

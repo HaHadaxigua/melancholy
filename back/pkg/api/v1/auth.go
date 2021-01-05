@@ -30,7 +30,7 @@ func SetupAuthRouters(r *gin.RouterGroup) {
 // @Success 200 {string} string "{"msg": "hello Razeen"}"
 // @Failure 400 {string} string "{"msg": "who are you"}"
 // @Router /login [POST]
-//Login
+// Login
 func Login(c *gin.Context) {
 	req := &msg.LoginReq{}
 	if err := c.BindJSON(req); err != nil {
@@ -83,7 +83,7 @@ func Login(c *gin.Context) {
 	}
 }
 
-//Register
+// Register
 func Register(c *gin.Context) {
 	r := &msg.UserRequest{}
 	if err := c.BindJSON(r); err != nil {
@@ -105,13 +105,6 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
-
-	// 赋予角色
-	//err = v1.AddUserRoles(user.ID, 0)
-	//if err != nil {
-	//	c.JSON(http.StatusInternalServerError, err)
-	//	return
-	//}
 
 	c.JSON(http.StatusOK, user)
 }

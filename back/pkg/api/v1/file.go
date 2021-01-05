@@ -20,12 +20,9 @@ func SetupFileRouters(r *gin.RouterGroup) {
 	// 文件夹
 	secured.POST("/create", CreateFolder)     // 创建文件夹
 	secured.GET("/folders/:pid", ListFolders) // 获取当前文件夹下的子文件夹
-	secured.GET("/path", GetDirs)
-
-
 }
 
-//CreateFolder 创建文件夹
+// CreateFolder 创建文件夹
 func CreateFolder(c *gin.Context) {
 	req := &msg.CreateFolderReq{}
 	err := c.BindJSON(req)
@@ -39,7 +36,7 @@ func CreateFolder(c *gin.Context) {
 		Name: req.Name,
 		ParentId: req.ParentID,
 	}
-	err = service.CreateFolder(r)
+	err = service.FolderService.CreateFolder(r)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, msg.NewErr(err))
 		return
@@ -55,14 +52,10 @@ func ListFolders(c *gin.Context) {
 		return
 	}
 	uid := c.GetInt(consts.UserID)
-	folders, err := service.ListCurrentFolder(uid, pid)
+	folders, err := service.FolderService.ListCurrentFolder(uid, pid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, msg.NewErr(err))
 		return
 	}
 	c.JSON(http.StatusOK, msg.OkResp(folders))
-}
-
-func GetDirs(c *gin.Context) {
-
 }

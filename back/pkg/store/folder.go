@@ -1,14 +1,35 @@
 package store
 
 import (
+	"context"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/folder"
 )
 
-func CreateFolder(r *ent.Folder) error {
-	client := GetClient()
-	ctx := GetCtx()
-	r, err := client.Folder.Create().
+var FolderStore *folderStore
+
+type IFolderStore interface {
+	CreateFolder(r *ent.Folder) error
+	GetFolderByID(id int) (*ent.Folder, error)
+	GetSubFolders(pid int) ([]*ent.Folder, error)
+	GetFolderByUserID(uid, pid int) ([]*ent.Folder, error)
+	GetRootFolder(uid int) (*ent.Folder, error)
+}
+
+type folderStore struct {
+	client *ent.Client
+	ctx    context.Context
+}
+
+func NewFolderStore(client *ent.Client, ctx context.Context) *folderStore {
+	return &folderStore{
+		client: client,
+		ctx:    ctx,
+	}
+}
+
+func (fs *folderStore) CreateFolder(r *ent.Folder) error {
+	r, err := fs.client.Folder.Create().
 		SetName(r.Name).
 		SetAuthor(r.Author).
 		SetParent(r.Parent).
@@ -20,44 +41,32 @@ func CreateFolder(r *ent.Folder) error {
 	return nil
 }
 
-func GetFolderByID(id int) (*ent.Folder, error) {
-	client := GetClient()
-	ctx := GetCtx()
-
-	f, err := client.Folder.Query().Where(folder.IDEQ(id)).Only(ctx)
+func (fs *folderStore) GetFolderByID(id int) (*ent.Folder, error) {
+	f, err := fs.client.Folder.Query().Where(folder.IDEQ(id)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return f, nil
 }
 
-func GetSubFolders(pid int) ([]*ent.Folder, error) {
-	client := GetClient()
-	ctx := GetCtx()
-
-	res, err := client.Folder.Query().Where(folder.IDEQ(pid)).QueryC().All(ctx)
+func (fs *folderStore) GetSubFolders(pid int) ([]*ent.Folder, error) {
+	res, err := fs.client.Folder.Query().Where(folder.IDEQ(pid)).QueryC().All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func GetFolderByUserID(uid, pid int) ([]*ent.Folder, error) {
-	client := GetClient()
-	ctx := GetCtx()
-
-	f, err := client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(pid)).All(ctx)
+func (fs *folderStore) GetFolderByUserID(uid, pid int) ([]*ent.Folder, error) {
+	f, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(pid)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return f, nil
 }
 
-func GetRootFolder(uid int)(*ent.Folder, error){
-	client := GetClient()
-	ctx := GetCtx()
-
-	res, err := client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(0)).QueryC().Only(ctx)
+func (fs *folderStore) GetRootFolder(uid int) (*ent.Folder, error) {
+	res, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(0)).QueryC().Only(ctx)
 	if err != nil {
 		return nil, err
 	}

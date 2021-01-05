@@ -5,7 +5,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 )
 
-//SaveExitLog 记录退出log
+// SaveExitLog 记录退出log
 func SaveExitLog(el *ent.ExitLog) error {
 	client := GetClient()
 	ctx := GetCtx()
@@ -17,7 +17,7 @@ func SaveExitLog(el *ent.ExitLog) error {
 	return nil
 }
 
-//FindExitLog 寻找退出日志
+// FindExitLog 寻找退出日志
 func FindExitLog(token string) (*ent.ExitLog, error) {
 	client := GetClient()
 	ctx := GetCtx()
