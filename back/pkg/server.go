@@ -39,6 +39,9 @@ func StartServer() {
 	}
 }
 
-func setupService(){
+func setupService() {
 	v1.FolderService = v1.NewFolderService()
+	v1.RoleService = v1.NewRoleService()
+	v1.UserService = v1.NewUserService()
+	v1.ExitLogService = v1.NewExitLogService()
 }

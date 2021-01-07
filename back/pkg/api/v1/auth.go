@@ -6,7 +6,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/pkg/middleware"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	v1 "github.com/HaHadaxigua/melancholy/pkg/service/v1"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -52,7 +51,7 @@ func Login(c *gin.Context) {
 	data := make(map[string]interface{})
 	status := msg.OK
 	if ok {
-		userId := store.CheckUserExist(req.Email, req.Password)
+		userId := v1.UserService.CheckUserExist(req.Email, req.Password)
 		if userId > -1 {
 			token, err := tools.JwtGenerateToken(userId, req.Email, req.Password, 2)
 			if err != nil {
@@ -93,7 +92,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user, err := v1.CreateUser(r)
+	user, err := v1.UserService.CreateUser(r)
 	if err != nil && errors.Is(err, msg.UserHasExistedErr) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -109,7 +108,7 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Logout 退出登录
+// Logout
 func Logout(c *gin.Context) {
 	ah := middleware.AuthHeader{}
 
@@ -128,7 +127,7 @@ func Logout(c *gin.Context) {
 		UserID: userId,
 	}
 
-	err := store.SaveExitLog(exitReq)
+	err := v1.ExitLogService.SaveExitLog(exitReq)
 	if err != nil {
 		e := msg.UserExitErr
 		c.JSON(http.StatusBadRequest, e)
@@ -137,4 +136,3 @@ func Logout(c *gin.Context) {
 	}
 
 }
-

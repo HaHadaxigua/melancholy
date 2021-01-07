@@ -1,28 +1,40 @@
 package store
 
 import (
+	"context"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/exitlog"
 )
 
-// SaveExitLog 记录退出log
-func SaveExitLog(el *ent.ExitLog) error {
-	client := GetClient()
-	ctx := GetCtx()
+var ExitLogStore IExitLogStore
 
-	_, err := client.ExitLog.Create().SetUserID(el.UserID).SetToken(el.Token).Save(ctx)
+type IExitLogStore interface {
+	SaveExitLog(el *ent.ExitLog) error
+	GetExitLog(token string) (*ent.ExitLog, error)
+}
+
+type exitLogStore struct {
+	client *ent.Client
+	ctx    context.Context
+}
+
+func NewExitLogStore(client *ent.Client, ctx context.Context) *exitLogStore {
+	return &exitLogStore{
+		client: client,
+		ctx:    ctx,
+	}
+}
+
+func (es *exitLogStore) SaveExitLog(el *ent.ExitLog) error {
+	_, err := es.client.ExitLog.Create().SetUserID(el.UserID).SetToken(el.Token).Save(es.ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// FindExitLog 寻找退出日志
-func FindExitLog(token string) (*ent.ExitLog, error) {
-	client := GetClient()
-	ctx := GetCtx()
-
-	el, err := client.ExitLog.Query().Where(exitlog.TokenEQ(token)).Only(ctx)
+func (es *exitLogStore) GetExitLog(token string) (*ent.ExitLog, error) {
+	el, err := es.client.ExitLog.Query().Where(exitlog.TokenEQ(token)).Only(es.ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil

@@ -8,6 +8,25 @@ import (
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 )
 
+var UserService IUserService
+
+type IUserService interface {
+	CreateUser(r *msg.UserRequest) (*ent.User, error)
+	FindUserByUsername(r *msg.UserRequest) (*ent.User, error)
+	ListAllUser() ([]*ent.User, error)
+	GetStore() store.IUserStore
+	CheckUserExist(email, password string) int
+}
+
+type userService struct {
+	userStore store.IUserStore
+}
+
+func NewUserService() *userService {
+	return &userService{
+		userStore: store.UserStore,
+	}
+}
 
 // NewAccount
 func NewUser(username, password, email string) (*ent.User, error) {
@@ -31,15 +50,14 @@ func NewUser(username, password, email string) (*ent.User, error) {
 	return nu, nil
 }
 
-
 // CreateUser
-func CreateUser(r *msg.UserRequest) (*ent.User, error) {
+func (us *userService) CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	valid, err := CheckReq(r)
 	if !valid && err != nil {
 		return nil, err
 	}
 
-	user, err := store.GetUserByEmail(r.Email)
+	user, err := us.userStore.GetUserByEmail(r.Email)
 	if err != nil {
 		e := msg.UserHasExistedErr
 		e.Data = err.Error()
@@ -51,7 +69,7 @@ func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 	}
 
 	newUser, err := NewUser(r.Username, r.Password, r.Email)
-	u, err := store.CreateUser(newUser)
+	u, err := us.userStore.CreateUser(newUser)
 	if err != nil {
 		e := msg.UserCreateErr
 		e.Data = err.Error()
@@ -61,11 +79,11 @@ func CreateUser(r *msg.UserRequest) (*ent.User, error) {
 }
 
 // FindUserByUsername
-func FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
+func (us *userService) FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
 	if !CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr
 	}
-	tu, err := store.GetUserByName(r.Username)
+	tu, err := us.userStore.GetUserByName(r.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -73,13 +91,22 @@ func FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
 }
 
 // ListAllUser
-func ListAllUser() ([]*ent.User, error) {
-	users, err := store.GetAllUsers()
+func (us *userService) ListAllUser() ([]*ent.User, error) {
+	users, err := us.userStore.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
 }
+
+func (us *userService) GetStore() store.IUserStore {
+	return us.userStore
+}
+
+func (us *userService) CheckUserExist(email, password string) int {
+	return us.userStore.CheckUserExist(email, password)
+}
+
 
 // VerifyReq
 func CheckReq(r *msg.UserRequest) (bool, error) {
@@ -109,3 +136,4 @@ func CheckPassword(password string) bool {
 func CheckEmail(email string) bool {
 	return true
 }
+

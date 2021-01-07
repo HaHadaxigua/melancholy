@@ -10,8 +10,8 @@ import (
 	"net/url"
 )
 
-var client *ent.Client
-var ctx context.Context
+//var client *ent.Client
+//var ctx context.Context
 
 func SetupEnt() {
 	var err error
@@ -23,24 +23,19 @@ func SetupEnt() {
 		conf.C.Database.Name,
 		url.QueryEscape("'Asia/Shanghai'"))
 
-	client, err = ent.Open("mysql", dsn)
+	client, err := ent.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
-	ctx = context.Background()
+	ctx := context.Background()
 
 	setupStore(client, ctx)
 }
 
-func GetClient() *ent.Client {
-	return client
-}
-
-func GetCtx() context.Context{
-	return ctx
-}
-
-func setupStore(client *ent.Client, ctx context.Context){
+func setupStore(client *ent.Client, ctx context.Context) {
 	FolderStore = NewFolderStore(client, ctx)
+	UserStore = NewUserStore(client, ctx)
+	RoleStore = NewRoleStore(client, ctx)
+	ExitLogStore = NewExitLogStore(client, ctx)
 }

@@ -18,7 +18,7 @@ func SetupRoleRouters(r *gin.RouterGroup) {
 
 // GetAllRoles all roles
 func GetAllRoles(c *gin.Context) {
-	roles, err := service.GetAllRoles()
+	roles, err := service.RoleService.GetAllRoles()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -41,7 +41,7 @@ func AddRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
-	err = service.AddRole(req.Name)
+	err = service.RoleService.AddRole(req.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -70,7 +70,7 @@ func AddUserRoles(c *gin.Context) {
 		return
 	}
 
-	err = service.AddUserRoles(uid, req.ID)
+	err = service.RoleService.AddUserRoles(uid, req.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return

@@ -30,7 +30,7 @@ func Authorize(c *gin.Context) {
 	//获取请求方法
 	act := c.Request.Method
 	//获取用户的角色
-	roles, err := v1.GetRolesByUserID(userID)
+	roles, err := v1.RoleService.GetRolesByUserID(userID)
 
 	for _, role := range roles {
 		//判断策略中是否存在

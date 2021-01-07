@@ -34,7 +34,7 @@ func (fs *folderStore) CreateFolder(r *ent.Folder) error {
 		SetAuthor(r.Author).
 		SetParent(r.Parent).
 		SetPath(r.Path).
-		Save(ctx)
+		Save(fs.ctx)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (fs *folderStore) CreateFolder(r *ent.Folder) error {
 }
 
 func (fs *folderStore) GetFolderByID(id int) (*ent.Folder, error) {
-	f, err := fs.client.Folder.Query().Where(folder.IDEQ(id)).Only(ctx)
+	f, err := fs.client.Folder.Query().Where(folder.IDEQ(id)).Only(fs.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (fs *folderStore) GetFolderByID(id int) (*ent.Folder, error) {
 }
 
 func (fs *folderStore) GetSubFolders(pid int) ([]*ent.Folder, error) {
-	res, err := fs.client.Folder.Query().Where(folder.IDEQ(pid)).QueryC().All(ctx)
+	res, err := fs.client.Folder.Query().Where(folder.IDEQ(pid)).QueryC().All(fs.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (fs *folderStore) GetSubFolders(pid int) ([]*ent.Folder, error) {
 }
 
 func (fs *folderStore) GetFolderByUserID(uid, pid int) ([]*ent.Folder, error) {
-	f, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(pid)).All(ctx)
+	f, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(pid)).All(fs.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (fs *folderStore) GetFolderByUserID(uid, pid int) ([]*ent.Folder, error) {
 }
 
 func (fs *folderStore) GetRootFolder(uid int) (*ent.Folder, error) {
-	res, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(0)).QueryC().Only(ctx)
+	res, err := fs.client.Folder.Query().Where(folder.AuthorEQ(uid), folder.ParentEQ(0)).QueryC().Only(fs.ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
+	"github.com/HaHadaxigua/melancholy/pkg/service/v1"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
 	"github.com/gin-gonic/gin"
@@ -10,12 +11,12 @@ import (
 	"time"
 )
 
-//AuthHeader 绑定的请求头
+// AuthHeader
 type AuthHeader struct {
 	AccessToken string `header:"Access-Token"`
 }
 
-// JWT中间件
+// JWT
 func JWT(c *gin.Context) {
 	status := msg.OK
 
@@ -40,7 +41,7 @@ func JWT(c *gin.Context) {
 			status = msg.AuthCheckTokenTimeoutErr
 		} else { // 此时token是有效的
 			// 判断下token是否已经进入黑名单
-			el, errr := store.FindExitLog(ah.AccessToken)
+			el, errr := store.ExitLogStore.GetExitLog(ah.AccessToken)
 			if el != nil {
 				c.JSON(http.StatusBadRequest, msg.UserExitErr)
 				c.Abort()
@@ -51,7 +52,7 @@ func JWT(c *gin.Context) {
 					c.Abort()
 				}
 			}
-			userId := store.CheckUserExist(claims.Email, claims.Password)
+			userId := v1.UserService.CheckUserExist(claims.Email, claims.Password)
 			c.Set("user_id", userId)
 		}
 	}
