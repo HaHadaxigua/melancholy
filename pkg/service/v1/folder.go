@@ -25,13 +25,13 @@ func NewFolderService() *folderService{
 	}
 }
 
-func NewFolder(aid, pid int, name string) (*ent.Folder, error){
+func NewFolder(authorID, pid int, name string) (*ent.Folder, error){
 	path, err := FolderService.genPath(pid, name)
 	if err != nil {
 		return nil, err
 	}
 	return &ent.Folder{
-		Author: aid,
+		Author: authorID,
 		Parent: pid,
 		Name:   name,
 		Path:   path,
