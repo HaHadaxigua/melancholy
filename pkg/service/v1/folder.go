@@ -88,3 +88,17 @@ func(fs *folderService) genPath(pid int, name string) (string, error) {
 	res := fmt.Sprintf("%s/%s", curFolder.Path, name)
 	return res, nil
 }
+
+
+/**
+To verify req is legal
+1. is path real existed
+2. have repeated name?
+*/
+func VerifyReq(r *msg.FolderRequest) bool {
+	if r.Creator <= 0 || r.Name == "" || r.Name == " " || r.ParentId < 0 {
+		return false
+	}
+	return true
+}
+

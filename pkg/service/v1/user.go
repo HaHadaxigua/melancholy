@@ -52,7 +52,7 @@ func NewUser(username, password, email string) (*ent.User, error) {
 
 // CreateUser
 func (us *userService) CreateUser(r *msg.UserRequest) (*ent.User, error) {
-	valid, err := CheckReq(r)
+	valid, err := CheckCreateUserReq(r)
 	if !valid && err != nil {
 		return nil, err
 	}
@@ -63,6 +63,7 @@ func (us *userService) CreateUser(r *msg.UserRequest) (*ent.User, error) {
 		e.Data = err.Error()
 		return nil, e
 	} else if user != nil {
+		// fixme
 		e := msg.UserHasExistedErr
 		e.Data = "邮箱已被注册"
 		return nil, e
@@ -107,9 +108,7 @@ func (us *userService) CheckUserExist(email, password string) int {
 	return us.userStore.CheckUserExist(email, password)
 }
 
-
-// VerifyReq
-func CheckReq(r *msg.UserRequest) (bool, error) {
+func CheckCreateUserReq(r *msg.UserRequest) (bool, error) {
 	if !CheckUsername(r.Username) {
 		return false, msg.UserNameOrPwdIncorrectlyErr
 	}
@@ -120,20 +119,5 @@ func CheckReq(r *msg.UserRequest) (bool, error) {
 		return false, msg.UserEmailIllegalErr
 	}
 	return true, msg.OK
-}
-
-// todo 用户名合法性
-func CheckUsername(username string) bool {
-	return true
-}
-
-// todo 密码合法性
-func CheckPassword(password string) bool {
-	return true
-}
-
-// todo 邮箱合法性
-func CheckEmail(email string) bool {
-	return true
 }
 

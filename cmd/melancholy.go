@@ -24,14 +24,12 @@ import (
 
 // this is the entrance of the backend
 func main() {
-	//_ = pkg.S.Run()
 	pkg.StartServer()
 }
 
 func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
 	conf.Setup()
-	//store.Setup()
 	store.CasbinSetup()
 	store.SetupEnt()
 }

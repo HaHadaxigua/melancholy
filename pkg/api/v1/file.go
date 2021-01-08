@@ -22,7 +22,7 @@ func SetupFileRouters(r *gin.RouterGroup) {
 	secured.GET("/folders/:pid", ListFolders) // 获取当前文件夹下的子文件夹
 }
 
-// CreateFolder 创建文件夹
+// CreateFolder
 func CreateFolder(c *gin.Context) {
 	req := &msg.CreateFolderReq{}
 	err := c.BindJSON(req)
@@ -44,7 +44,7 @@ func CreateFolder(c *gin.Context) {
 	c.JSON(http.StatusOK, msg.OK)
 }
 
-// ListFolders 获取当前目录下的文件夹
+// ListFolders
 func ListFolders(c *gin.Context) {
 	pid, err := strconv.Atoi(c.Param("pid"))
 	if err != nil {
