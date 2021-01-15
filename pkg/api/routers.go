@@ -11,9 +11,7 @@ import (
 
 // SetupRouters
 func SetupRouters(e *gin.Engine) {
-	// cors
-
-	//支持跨域
+	// support cors
 	e.Use(middleware.Cors)
 	// swagger-path
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
