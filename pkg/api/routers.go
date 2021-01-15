@@ -9,13 +9,13 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
-//SetupRouters 设置gin的路由
+// SetupRouters
 func SetupRouters(e *gin.Engine) {
 	// cors
 
 	//支持跨域
 	e.Use(middleware.Cors)
-	// swagger相关
+	// swagger-path
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := e.Group(consts.ApiV1)

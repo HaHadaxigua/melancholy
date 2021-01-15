@@ -19,13 +19,13 @@ type folderService struct {
 	folderStore store.IFolderStore
 }
 
-func NewFolderService() *folderService{
+func NewFolderService() *folderService {
 	return &folderService{
 		folderStore: store.FolderStore,
 	}
 }
 
-func NewFolder(authorID, pid int, name string) (*ent.Folder, error){
+func NewFolder(authorID, pid int, name string) (*ent.Folder, error) {
 	path, err := FolderService.genPath(pid, name)
 	if err != nil {
 		return nil, err
@@ -39,11 +39,11 @@ func NewFolder(authorID, pid int, name string) (*ent.Folder, error){
 }
 
 // CreateFolder
-func(fs *folderService) CreateFolder(r *msg.FolderRequest) error {
+func (fs *folderService) CreateFolder(r *msg.FolderRequest) error {
 	if !VerifyReq(r) {
 		return nil
 	}
-	f, err  := NewFolder(r.Creator, r.ParentId, r.Name)
+	f, err := NewFolder(r.Creator, r.ParentId, r.Name)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func(fs *folderService) CreateFolder(r *msg.FolderRequest) error {
 	return nil
 }
 
-func(fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
+func (fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
 	res, err := fs.folderStore.GetFolderByUserID(uid, 0)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func(fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
 	return res, nil
 }
 
-func(fs *folderService) ListRootFolder(uid int) (*ent.Folder, error) {
+func (fs *folderService) ListRootFolder(uid int) (*ent.Folder, error) {
 	res, err := fs.folderStore.GetRootFolder(uid)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func(fs *folderService) ListRootFolder(uid int) (*ent.Folder, error) {
 }
 
 // fixme: failed
-func(fs *folderService) genPath(pid int, name string) (string, error) {
+func (fs *folderService) genPath(pid int, name string) (string, error) {
 	curFolder, err := fs.folderStore.GetFolderByID(pid)
 	if err != nil {
 		return "", err
@@ -89,9 +89,8 @@ func(fs *folderService) genPath(pid int, name string) (string, error) {
 	return res, nil
 }
 
-
 /**
-To verify req is legal
+Verify the request whether legal or not.
 1. is path real existed
 2. have repeated name?
 */
@@ -101,4 +100,3 @@ func VerifyReq(r *msg.FolderRequest) bool {
 	}
 	return true
 }
-

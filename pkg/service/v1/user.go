@@ -118,6 +118,5 @@ func CheckCreateUserReq(r *msg.UserRequest) (bool, error) {
 	if !CheckEmail(r.Email) {
 		return false, msg.UserEmailIllegalErr
 	}
-	return true, msg.OK
+	return true, nil
 }
-
