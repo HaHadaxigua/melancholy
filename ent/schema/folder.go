@@ -19,7 +19,7 @@ func (Folder) Fields() []ent.Field {
 		field.Int("parent"),
 		field.String("path"),
 		field.String("name"),
-		field.Int("author"),
+		field.Int("owner"),
 		field.Int("size").Optional().Default(0),
 		field.Enum("status").Values("0", "10", "20").Default("0"),
 		field.Time("created_at").Default(time.Now).Immutable(),

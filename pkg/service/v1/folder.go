@@ -31,7 +31,7 @@ func NewFolder(authorID, pid int, name string) (*ent.Folder, error) {
 		return nil, err
 	}
 	return &ent.Folder{
-		Author: authorID,
+		Owner:  authorID,
 		Parent: pid,
 		Name:   name,
 		Path:   path,

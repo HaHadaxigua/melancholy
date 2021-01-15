@@ -114,10 +114,10 @@ func Name(v string) predicate.Folder {
 	})
 }
 
-// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
-func Author(v int) predicate.Folder {
+// Owner applies equality check predicate on the "owner" field. It's identical to OwnerEQ.
+func Owner(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldAuthor), v))
+		s.Where(sql.EQ(s.C(FieldOwner), v))
 	})
 }
 
@@ -447,22 +447,22 @@ func NameContainsFold(v string) predicate.Folder {
 	})
 }
 
-// AuthorEQ applies the EQ predicate on the "author" field.
-func AuthorEQ(v int) predicate.Folder {
+// OwnerEQ applies the EQ predicate on the "owner" field.
+func OwnerEQ(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldAuthor), v))
+		s.Where(sql.EQ(s.C(FieldOwner), v))
 	})
 }
 
-// AuthorNEQ applies the NEQ predicate on the "author" field.
-func AuthorNEQ(v int) predicate.Folder {
+// OwnerNEQ applies the NEQ predicate on the "owner" field.
+func OwnerNEQ(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldAuthor), v))
+		s.Where(sql.NEQ(s.C(FieldOwner), v))
 	})
 }
 
-// AuthorIn applies the In predicate on the "author" field.
-func AuthorIn(vs ...int) predicate.Folder {
+// OwnerIn applies the In predicate on the "owner" field.
+func OwnerIn(vs ...int) predicate.Folder {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -474,12 +474,12 @@ func AuthorIn(vs ...int) predicate.Folder {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldAuthor), v...))
+		s.Where(sql.In(s.C(FieldOwner), v...))
 	})
 }
 
-// AuthorNotIn applies the NotIn predicate on the "author" field.
-func AuthorNotIn(vs ...int) predicate.Folder {
+// OwnerNotIn applies the NotIn predicate on the "owner" field.
+func OwnerNotIn(vs ...int) predicate.Folder {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -491,35 +491,35 @@ func AuthorNotIn(vs ...int) predicate.Folder {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldAuthor), v...))
+		s.Where(sql.NotIn(s.C(FieldOwner), v...))
 	})
 }
 
-// AuthorGT applies the GT predicate on the "author" field.
-func AuthorGT(v int) predicate.Folder {
+// OwnerGT applies the GT predicate on the "owner" field.
+func OwnerGT(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldAuthor), v))
+		s.Where(sql.GT(s.C(FieldOwner), v))
 	})
 }
 
-// AuthorGTE applies the GTE predicate on the "author" field.
-func AuthorGTE(v int) predicate.Folder {
+// OwnerGTE applies the GTE predicate on the "owner" field.
+func OwnerGTE(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldAuthor), v))
+		s.Where(sql.GTE(s.C(FieldOwner), v))
 	})
 }
 
-// AuthorLT applies the LT predicate on the "author" field.
-func AuthorLT(v int) predicate.Folder {
+// OwnerLT applies the LT predicate on the "owner" field.
+func OwnerLT(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldAuthor), v))
+		s.Where(sql.LT(s.C(FieldOwner), v))
 	})
 }
 
-// AuthorLTE applies the LTE predicate on the "author" field.
-func AuthorLTE(v int) predicate.Folder {
+// OwnerLTE applies the LTE predicate on the "owner" field.
+func OwnerLTE(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldAuthor), v))
+		s.Where(sql.LTE(s.C(FieldOwner), v))
 	})
 }
 

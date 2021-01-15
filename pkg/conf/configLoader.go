@@ -29,7 +29,7 @@ func Setup() {
 	v = GetViper()
 	// viper进行设置 读配置文件
 	v.SetConfigFile("./application.yml")
-	v.AddConfigPath("../etc")
+	v.AddConfigPath("./etc")
 	v.SetConfigName("application")
 	v.SetConfigType("yml")
 	err := v.ReadInConfig()

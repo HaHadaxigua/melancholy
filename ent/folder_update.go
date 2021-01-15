@@ -53,16 +53,16 @@ func (fu *FolderUpdate) SetName(s string) *FolderUpdate {
 	return fu
 }
 
-// SetAuthor sets the author field.
-func (fu *FolderUpdate) SetAuthor(i int) *FolderUpdate {
-	fu.mutation.ResetAuthor()
-	fu.mutation.SetAuthor(i)
+// SetOwner sets the owner field.
+func (fu *FolderUpdate) SetOwner(i int) *FolderUpdate {
+	fu.mutation.ResetOwner()
+	fu.mutation.SetOwner(i)
 	return fu
 }
 
-// AddAuthor adds i to author.
-func (fu *FolderUpdate) AddAuthor(i int) *FolderUpdate {
-	fu.mutation.AddAuthor(i)
+// AddOwner adds i to owner.
+func (fu *FolderUpdate) AddOwner(i int) *FolderUpdate {
+	fu.mutation.AddOwner(i)
 	return fu
 }
 
@@ -357,18 +357,18 @@ func (fu *FolderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: folder.FieldName,
 		})
 	}
-	if value, ok := fu.mutation.Author(); ok {
+	if value, ok := fu.mutation.Owner(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: folder.FieldAuthor,
+			Column: folder.FieldOwner,
 		})
 	}
-	if value, ok := fu.mutation.AddedAuthor(); ok {
+	if value, ok := fu.mutation.AddedOwner(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: folder.FieldAuthor,
+			Column: folder.FieldOwner,
 		})
 	}
 	if value, ok := fu.mutation.Size(); ok {
@@ -604,16 +604,16 @@ func (fuo *FolderUpdateOne) SetName(s string) *FolderUpdateOne {
 	return fuo
 }
 
-// SetAuthor sets the author field.
-func (fuo *FolderUpdateOne) SetAuthor(i int) *FolderUpdateOne {
-	fuo.mutation.ResetAuthor()
-	fuo.mutation.SetAuthor(i)
+// SetOwner sets the owner field.
+func (fuo *FolderUpdateOne) SetOwner(i int) *FolderUpdateOne {
+	fuo.mutation.ResetOwner()
+	fuo.mutation.SetOwner(i)
 	return fuo
 }
 
-// AddAuthor adds i to author.
-func (fuo *FolderUpdateOne) AddAuthor(i int) *FolderUpdateOne {
-	fuo.mutation.AddAuthor(i)
+// AddOwner adds i to owner.
+func (fuo *FolderUpdateOne) AddOwner(i int) *FolderUpdateOne {
+	fuo.mutation.AddOwner(i)
 	return fuo
 }
 
@@ -906,18 +906,18 @@ func (fuo *FolderUpdateOne) sqlSave(ctx context.Context) (_node *Folder, err err
 			Column: folder.FieldName,
 		})
 	}
-	if value, ok := fuo.mutation.Author(); ok {
+	if value, ok := fuo.mutation.Owner(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: folder.FieldAuthor,
+			Column: folder.FieldOwner,
 		})
 	}
-	if value, ok := fuo.mutation.AddedAuthor(); ok {
+	if value, ok := fuo.mutation.AddedOwner(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: folder.FieldAuthor,
+			Column: folder.FieldOwner,
 		})
 	}
 	if value, ok := fuo.mutation.Size(); ok {

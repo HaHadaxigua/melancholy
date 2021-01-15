@@ -18,8 +18,8 @@ const (
 	FieldPath = "path"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldAuthor holds the string denoting the author field in the database.
-	FieldAuthor = "author"
+	// FieldOwner holds the string denoting the owner field in the database.
+	FieldOwner = "owner"
 	// FieldSize holds the string denoting the size field in the database.
 	FieldSize = "size"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -63,7 +63,7 @@ var Columns = []string{
 	FieldParent,
 	FieldPath,
 	FieldName,
-	FieldAuthor,
+	FieldOwner,
 	FieldSize,
 	FieldStatus,
 	FieldCreatedAt,

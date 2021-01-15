@@ -22,8 +22,8 @@ type Folder struct {
 	Path string `json:"path,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Author holds the value of the "author" field.
-	Author int `json:"author,omitempty"`
+	// Owner holds the value of the "owner" field.
+	Owner int `json:"owner,omitempty"`
 	// Size holds the value of the "size" field.
 	Size int `json:"size,omitempty"`
 	// Status holds the value of the "status" field.
@@ -92,7 +92,7 @@ func (*Folder) scanValues() []interface{} {
 		&sql.NullInt64{},  // parent
 		&sql.NullString{}, // path
 		&sql.NullString{}, // name
-		&sql.NullInt64{},  // author
+		&sql.NullInt64{},  // owner
 		&sql.NullInt64{},  // size
 		&sql.NullString{}, // status
 		&sql.NullTime{},   // created_at
@@ -136,9 +136,9 @@ func (f *Folder) assignValues(values ...interface{}) error {
 		f.Name = value.String
 	}
 	if value, ok := values[3].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field author", values[3])
+		return fmt.Errorf("unexpected type %T for field owner", values[3])
 	} else if value.Valid {
-		f.Author = int(value.Int64)
+		f.Owner = int(value.Int64)
 	}
 	if value, ok := values[4].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field size", values[4])
@@ -222,8 +222,8 @@ func (f *Folder) String() string {
 	builder.WriteString(f.Path)
 	builder.WriteString(", name=")
 	builder.WriteString(f.Name)
-	builder.WriteString(", author=")
-	builder.WriteString(fmt.Sprintf("%v", f.Author))
+	builder.WriteString(", owner=")
+	builder.WriteString(fmt.Sprintf("%v", f.Owner))
 	builder.WriteString(", size=")
 	builder.WriteString(fmt.Sprintf("%v", f.Size))
 	builder.WriteString(", status=")

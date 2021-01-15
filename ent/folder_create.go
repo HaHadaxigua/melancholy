@@ -39,9 +39,9 @@ func (fc *FolderCreate) SetName(s string) *FolderCreate {
 	return fc
 }
 
-// SetAuthor sets the author field.
-func (fc *FolderCreate) SetAuthor(i int) *FolderCreate {
-	fc.mutation.SetAuthor(i)
+// SetOwner sets the owner field.
+func (fc *FolderCreate) SetOwner(i int) *FolderCreate {
+	fc.mutation.SetOwner(i)
 	return fc
 }
 
@@ -251,8 +251,8 @@ func (fc *FolderCreate) check() error {
 	if _, ok := fc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
-	if _, ok := fc.mutation.Author(); !ok {
-		return &ValidationError{Name: "author", err: errors.New("ent: missing required field \"author\"")}
+	if _, ok := fc.mutation.Owner(); !ok {
+		return &ValidationError{Name: "owner", err: errors.New("ent: missing required field \"owner\"")}
 	}
 	if _, ok := fc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
@@ -325,13 +325,13 @@ func (fc *FolderCreate) createSpec() (*Folder, *sqlgraph.CreateSpec) {
 		})
 		_node.Name = value
 	}
-	if value, ok := fc.mutation.Author(); ok {
+	if value, ok := fc.mutation.Owner(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: folder.FieldAuthor,
+			Column: folder.FieldOwner,
 		})
-		_node.Author = value
+		_node.Owner = value
 	}
 	if value, ok := fc.mutation.Size(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

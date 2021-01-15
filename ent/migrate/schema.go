@@ -37,7 +37,7 @@ var (
 		{Name: "parent", Type: field.TypeInt},
 		{Name: "path", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
-		{Name: "author", Type: field.TypeInt},
+		{Name: "owner", Type: field.TypeInt},
 		{Name: "size", Type: field.TypeInt, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
 		{Name: "created_at", Type: field.TypeTime},

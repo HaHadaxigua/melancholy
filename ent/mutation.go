@@ -491,8 +491,8 @@ type FolderMutation struct {
 	addparent     *int
 	_path         *string
 	name          *string
-	author        *int
-	addauthor     *int
+	owner         *int
+	addowner      *int
 	size          *int
 	addsize       *int
 	status        *folder.Status
@@ -729,61 +729,61 @@ func (m *FolderMutation) ResetName() {
 	m.name = nil
 }
 
-// SetAuthor sets the author field.
-func (m *FolderMutation) SetAuthor(i int) {
-	m.author = &i
-	m.addauthor = nil
+// SetOwner sets the owner field.
+func (m *FolderMutation) SetOwner(i int) {
+	m.owner = &i
+	m.addowner = nil
 }
 
-// Author returns the author value in the mutation.
-func (m *FolderMutation) Author() (r int, exists bool) {
-	v := m.author
+// Owner returns the owner value in the mutation.
+func (m *FolderMutation) Owner() (r int, exists bool) {
+	v := m.owner
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAuthor returns the old author value of the Folder.
+// OldOwner returns the old owner value of the Folder.
 // If the Folder object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *FolderMutation) OldAuthor(ctx context.Context) (v int, err error) {
+func (m *FolderMutation) OldOwner(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldAuthor is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldOwner is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldAuthor requires an ID field in the mutation")
+		return v, fmt.Errorf("OldOwner requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+		return v, fmt.Errorf("querying old value for OldOwner: %w", err)
 	}
-	return oldValue.Author, nil
+	return oldValue.Owner, nil
 }
 
-// AddAuthor adds i to author.
-func (m *FolderMutation) AddAuthor(i int) {
-	if m.addauthor != nil {
-		*m.addauthor += i
+// AddOwner adds i to owner.
+func (m *FolderMutation) AddOwner(i int) {
+	if m.addowner != nil {
+		*m.addowner += i
 	} else {
-		m.addauthor = &i
+		m.addowner = &i
 	}
 }
 
-// AddedAuthor returns the value that was added to the author field in this mutation.
-func (m *FolderMutation) AddedAuthor() (r int, exists bool) {
-	v := m.addauthor
+// AddedOwner returns the value that was added to the owner field in this mutation.
+func (m *FolderMutation) AddedOwner() (r int, exists bool) {
+	v := m.addowner
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetAuthor reset all changes of the "author" field.
-func (m *FolderMutation) ResetAuthor() {
-	m.author = nil
-	m.addauthor = nil
+// ResetOwner reset all changes of the "owner" field.
+func (m *FolderMutation) ResetOwner() {
+	m.owner = nil
+	m.addowner = nil
 }
 
 // SetSize sets the size field.
@@ -1187,8 +1187,8 @@ func (m *FolderMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, folder.FieldName)
 	}
-	if m.author != nil {
-		fields = append(fields, folder.FieldAuthor)
+	if m.owner != nil {
+		fields = append(fields, folder.FieldOwner)
 	}
 	if m.size != nil {
 		fields = append(fields, folder.FieldSize)
@@ -1219,8 +1219,8 @@ func (m *FolderMutation) Field(name string) (ent.Value, bool) {
 		return m.Path()
 	case folder.FieldName:
 		return m.Name()
-	case folder.FieldAuthor:
-		return m.Author()
+	case folder.FieldOwner:
+		return m.Owner()
 	case folder.FieldSize:
 		return m.Size()
 	case folder.FieldStatus:
@@ -1246,8 +1246,8 @@ func (m *FolderMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldPath(ctx)
 	case folder.FieldName:
 		return m.OldName(ctx)
-	case folder.FieldAuthor:
-		return m.OldAuthor(ctx)
+	case folder.FieldOwner:
+		return m.OldOwner(ctx)
 	case folder.FieldSize:
 		return m.OldSize(ctx)
 	case folder.FieldStatus:
@@ -1288,12 +1288,12 @@ func (m *FolderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case folder.FieldAuthor:
+	case folder.FieldOwner:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAuthor(v)
+		m.SetOwner(v)
 		return nil
 	case folder.FieldSize:
 		v, ok := value.(int)
@@ -1341,8 +1341,8 @@ func (m *FolderMutation) AddedFields() []string {
 	if m.addparent != nil {
 		fields = append(fields, folder.FieldParent)
 	}
-	if m.addauthor != nil {
-		fields = append(fields, folder.FieldAuthor)
+	if m.addowner != nil {
+		fields = append(fields, folder.FieldOwner)
 	}
 	if m.addsize != nil {
 		fields = append(fields, folder.FieldSize)
@@ -1357,8 +1357,8 @@ func (m *FolderMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case folder.FieldParent:
 		return m.AddedParent()
-	case folder.FieldAuthor:
-		return m.AddedAuthor()
+	case folder.FieldOwner:
+		return m.AddedOwner()
 	case folder.FieldSize:
 		return m.AddedSize()
 	}
@@ -1377,12 +1377,12 @@ func (m *FolderMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddParent(v)
 		return nil
-	case folder.FieldAuthor:
+	case folder.FieldOwner:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddAuthor(v)
+		m.AddOwner(v)
 		return nil
 	case folder.FieldSize:
 		v, ok := value.(int)
@@ -1443,8 +1443,8 @@ func (m *FolderMutation) ResetField(name string) error {
 	case folder.FieldName:
 		m.ResetName()
 		return nil
-	case folder.FieldAuthor:
-		m.ResetAuthor()
+	case folder.FieldOwner:
+		m.ResetOwner()
 		return nil
 	case folder.FieldSize:
 		m.ResetSize()
