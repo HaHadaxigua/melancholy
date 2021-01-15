@@ -2,16 +2,16 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dev ]
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/zrx
 
     - name: Set up Go
       uses: actions/setup-go@v2

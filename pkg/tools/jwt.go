@@ -5,6 +5,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/pkg/conf"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type userStdClaims struct {
 
 func JwtGenerateToken(userID int, email, password string, d time.Duration) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(d * time.Hour) // 设置两小时后过期
+	expireTime := nowTime.Add(d * time.Hour) // set the time of expire
 
 	uClaims := userStdClaims{
 		email,
@@ -28,7 +29,7 @@ func JwtGenerateToken(userID int, email, password string, d time.Duration) (stri
 			ExpiresAt: expireTime.Unix(),
 			IssuedAt:  nowTime.Unix(),
 			Issuer:    conf.C.Application.AppIss,
-			Id:        fmt.Sprintf("%d", userID),
+			Id:        strconv.Itoa(userID),
 		},
 	}
 
@@ -36,8 +37,9 @@ func JwtGenerateToken(userID int, email, password string, d time.Duration) (stri
 	token, err := tokenClaims.SignedString(jwtSecret)
 	if err != nil {
 		logrus.WithError(err).Fatal("config is wrong, can not generate jwt")
+		return "", err
 	}
-	return token, err
+	return token, nil
 }
 
 func JwtParseToken(token string) (*userStdClaims, error) {
