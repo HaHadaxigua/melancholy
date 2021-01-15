@@ -35,7 +35,6 @@ var (
 	FoldersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "parent", Type: field.TypeInt},
-		{Name: "path", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "owner", Type: field.TypeInt},
 		{Name: "size", Type: field.TypeInt, Nullable: true},
@@ -53,7 +52,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "folders_folders_c",
-				Columns: []*schema.Column{FoldersColumns[10]},
+				Columns: []*schema.Column{FoldersColumns[9]},
 
 				RefColumns: []*schema.Column{FoldersColumns[0]},
 				OnDelete:   schema.SetNull,

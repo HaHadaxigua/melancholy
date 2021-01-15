@@ -44,26 +44,26 @@ var (
 	InternalServerErr = &Err{Code: 10001, Message: InternalServerErrorMsg}
 	ErrReq            = &Err{Code: 10002, Message: ErrReqMsg}
 
-	// 请求相关
+	// Request
 	BadRequest       = &Err{Code: 20001, Message: BadRequestMsg}
 	InvalidParamsErr = &Err{Code: 20002, Message: InvalidParamsErrorMsg}
 
-	// Tools 模块
+	// Tools
 	GenerateSaltErr    = &Err{Code: 10103, Message: GenerateSaltErrorMsg}
 	EncryptPasswordErr = &Err{Code: 10104, Message: EncryptPasswordErrorMsg}
 
-	// Auth 模块
+	// Auth
 	AuthCheckTokenErr         = &Err{Code: 10201, Message: AuthCheckTokenErrorMsg}
 	AuthCheckTokenTimeoutErr  = &Err{Code: 10202, Message: AuthCheckTokenTimeoutErrorMsg}
 	AuthAccessTokenIllegalErr = &Err{Code: 10203, Message: AuthAccessTokenIllegalErrorMsg}
 	AuthorizeFailedErr        = &Err{Code: 10204, Message: AuthorizeFailedMsg}
 
-	// File 模块
+	// File
 	FileSaveErr     = &Err{Code: 10301, Message: FileSaveFailedErrorMsg}
 	FileRepeatErr   = &Err{Code: 10302, Message: FileRepeatedErrorMsg}
 	FileNotFoundErr = &Err{Code: 10303, Message: FileNotFoundErrorMsg}
 
-	// User 模块
+	// User
 	UserCreateErr               = &Err{Code: 10401, Message: UserCreateErrorMsg}
 	UserNameIllegalErr          = &Err{Code: 10402, Message: UserNameIllegalErrorMsg} // 用户名非法
 	UserPwdIllegalErr           = &Err{Code: 10403, Message: UserPwdIllegalErrorMsg}
@@ -72,7 +72,7 @@ var (
 	UserHasExistedErr           = &Err{Code: 10406, Message: UserHasExistedErrorMsg}
 	UserExitErr                 = &Err{Code: 10407, Message: UserExitErrorMsg}
 
-	// Role 模块
+	// Role
 	RepeatedRoleErr = &Err{Code: 10501, Message: RepeatedRoleMsg}
 	RoleNotFoundErr = &Err{Code: 10502, Message: RoleNotExistedMsg}
 )
@@ -87,30 +87,30 @@ const (
 	// Default
 	InternalServerErrorMsg = "内部服务器错误"
 
-	// request 模块
+	// request
 	ErrReqMsg             string = "不合法的请求构建"
 	BadRequestMsg         string = "请求非法"
 	InvalidParamsErrorMsg string = "参数非法"
 
 	BindJsonFailedMsg string = "绑定前端数据失败"
 
-	// Tools 模块
+	// Tools
 	GenerateSaltErrorMsg    string = "生成盐失败"
 	EncryptPasswordErrorMsg string = "加密密码失败"
 
-	// Auth 模块
+	// Auth
 	AuthCheckTokenErrorMsg         string = "认证Token失败"
 	AuthCheckTokenTimeoutErrorMsg  string = "Token超时"
 	AuthAccessTokenIllegalErrorMsg string = "非法Token"
 	AuthorizeFailedMsg             string = "认证失败"
 
-	// file 模块
+	// fi
 	FileCreatedFailedMsg   string = "文件创建失败"
 	FileSaveFailedErrorMsg string = "文件保存失败"
 	FileRepeatedErrorMsg   string = "文件重名"
 	FileNotFoundErrorMsg   string = "文件未找到"
 
-	// User 模块
+	// User
 	UserCreateErrorMsg               string = "用户创建失败"
 	UserNameIllegalErrorMsg          string = "名称非法"
 	UserPwdIllegalErrorMsg           string = "密码非法"

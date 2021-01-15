@@ -41,12 +41,6 @@ func (fu *FolderUpdate) AddParent(i int) *FolderUpdate {
 	return fu
 }
 
-// SetPath sets the path field.
-func (fu *FolderUpdate) SetPath(s string) *FolderUpdate {
-	fu.mutation.SetPath(s)
-	return fu
-}
-
 // SetName sets the name field.
 func (fu *FolderUpdate) SetName(s string) *FolderUpdate {
 	fu.mutation.SetName(s)
@@ -343,13 +337,6 @@ func (fu *FolderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: folder.FieldParent,
 		})
 	}
-	if value, ok := fu.mutation.Path(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: folder.FieldPath,
-		})
-	}
 	if value, ok := fu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -589,12 +576,6 @@ func (fuo *FolderUpdateOne) SetParent(i int) *FolderUpdateOne {
 // AddParent adds i to parent.
 func (fuo *FolderUpdateOne) AddParent(i int) *FolderUpdateOne {
 	fuo.mutation.AddParent(i)
-	return fuo
-}
-
-// SetPath sets the path field.
-func (fuo *FolderUpdateOne) SetPath(s string) *FolderUpdateOne {
-	fuo.mutation.SetPath(s)
 	return fuo
 }
 
@@ -890,13 +871,6 @@ func (fuo *FolderUpdateOne) sqlSave(ctx context.Context) (_node *Folder, err err
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: folder.FieldParent,
-		})
-	}
-	if value, ok := fuo.mutation.Path(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: folder.FieldPath,
 		})
 	}
 	if value, ok := fuo.mutation.Name(); ok {

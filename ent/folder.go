@@ -18,8 +18,6 @@ type Folder struct {
 	ID int `json:"id,omitempty"`
 	// Parent holds the value of the "parent" field.
 	Parent int `json:"parent,omitempty"`
-	// Path holds the value of the "path" field.
-	Path string `json:"path,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Owner holds the value of the "owner" field.
@@ -90,7 +88,6 @@ func (*Folder) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullInt64{},  // parent
-		&sql.NullString{}, // path
 		&sql.NullString{}, // name
 		&sql.NullInt64{},  // owner
 		&sql.NullInt64{},  // size
@@ -126,47 +123,42 @@ func (f *Folder) assignValues(values ...interface{}) error {
 		f.Parent = int(value.Int64)
 	}
 	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field path", values[1])
-	} else if value.Valid {
-		f.Path = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[2])
+		return fmt.Errorf("unexpected type %T for field name", values[1])
 	} else if value.Valid {
 		f.Name = value.String
 	}
-	if value, ok := values[3].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field owner", values[3])
+	if value, ok := values[2].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field owner", values[2])
 	} else if value.Valid {
 		f.Owner = int(value.Int64)
 	}
-	if value, ok := values[4].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field size", values[4])
+	if value, ok := values[3].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field size", values[3])
 	} else if value.Valid {
 		f.Size = int(value.Int64)
 	}
-	if value, ok := values[5].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field status", values[5])
+	if value, ok := values[4].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field status", values[4])
 	} else if value.Valid {
 		f.Status = folder.Status(value.String)
 	}
-	if value, ok := values[6].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field created_at", values[6])
+	if value, ok := values[5].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[5])
 	} else if value.Valid {
 		f.CreatedAt = value.Time
 	}
-	if value, ok := values[7].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field updated_at", values[7])
+	if value, ok := values[6].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[6])
 	} else if value.Valid {
 		f.UpdatedAt = value.Time
 	}
-	if value, ok := values[8].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field deleted_at", values[8])
+	if value, ok := values[7].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field deleted_at", values[7])
 	} else if value.Valid {
 		f.DeletedAt = new(time.Time)
 		*f.DeletedAt = value.Time
 	}
-	values = values[9:]
+	values = values[8:]
 	if len(values) == len(folder.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field folder_c", value)
@@ -218,8 +210,6 @@ func (f *Folder) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", f.ID))
 	builder.WriteString(", parent=")
 	builder.WriteString(fmt.Sprintf("%v", f.Parent))
-	builder.WriteString(", path=")
-	builder.WriteString(f.Path)
 	builder.WriteString(", name=")
 	builder.WriteString(f.Name)
 	builder.WriteString(", owner=")

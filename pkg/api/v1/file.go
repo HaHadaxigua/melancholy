@@ -32,8 +32,8 @@ func CreateFolder(c *gin.Context) {
 	}
 	uid := c.GetInt(consts.UserID)
 	r := &msg.FolderRequest{
-		Creator: uid,
-		Name: req.Name,
+		Creator:  uid,
+		Filename: req.Name,
 		ParentId: req.ParentID,
 	}
 	err = service.FolderService.CreateFolder(r)
@@ -44,15 +44,17 @@ func CreateFolder(c *gin.Context) {
 	c.JSON(http.StatusOK, msg.OK)
 }
 
-// ListFolders
+/**
+ListFolders cid represents the current path
+ */
 func ListFolders(c *gin.Context) {
-	pid, err := strconv.Atoi(c.Param("pid"))
+	pid, err := strconv.Atoi(c.Param("cid"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, msg.InvalidParamsErr)
 		return
 	}
 	uid := c.GetInt(consts.UserID)
-	folders, err := service.FolderService.ListCurrentFolder(uid, pid)
+	folders, err := service.FolderService.ListFolder(uid, pid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, msg.NewErr(err))
 		return

@@ -100,13 +100,6 @@ func Parent(v int) predicate.Folder {
 	})
 }
 
-// Path applies equality check predicate on the "path" field. It's identical to PathEQ.
-func Path(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldPath), v))
-	})
-}
-
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
@@ -222,117 +215,6 @@ func ParentLT(v int) predicate.Folder {
 func ParentLTE(v int) predicate.Folder {
 	return predicate.Folder(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldParent), v))
-	})
-}
-
-// PathEQ applies the EQ predicate on the "path" field.
-func PathEQ(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldPath), v))
-	})
-}
-
-// PathNEQ applies the NEQ predicate on the "path" field.
-func PathNEQ(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldPath), v))
-	})
-}
-
-// PathIn applies the In predicate on the "path" field.
-func PathIn(vs ...string) predicate.Folder {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Folder(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldPath), v...))
-	})
-}
-
-// PathNotIn applies the NotIn predicate on the "path" field.
-func PathNotIn(vs ...string) predicate.Folder {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Folder(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldPath), v...))
-	})
-}
-
-// PathGT applies the GT predicate on the "path" field.
-func PathGT(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldPath), v))
-	})
-}
-
-// PathGTE applies the GTE predicate on the "path" field.
-func PathGTE(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldPath), v))
-	})
-}
-
-// PathLT applies the LT predicate on the "path" field.
-func PathLT(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldPath), v))
-	})
-}
-
-// PathLTE applies the LTE predicate on the "path" field.
-func PathLTE(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldPath), v))
-	})
-}
-
-// PathContains applies the Contains predicate on the "path" field.
-func PathContains(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldPath), v))
-	})
-}
-
-// PathHasPrefix applies the HasPrefix predicate on the "path" field.
-func PathHasPrefix(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldPath), v))
-	})
-}
-
-// PathHasSuffix applies the HasSuffix predicate on the "path" field.
-func PathHasSuffix(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldPath), v))
-	})
-}
-
-// PathEqualFold applies the EqualFold predicate on the "path" field.
-func PathEqualFold(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldPath), v))
-	})
-}
-
-// PathContainsFold applies the ContainsFold predicate on the "path" field.
-func PathContainsFold(v string) predicate.Folder {
-	return predicate.Folder(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldPath), v))
 	})
 }
 

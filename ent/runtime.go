@@ -26,15 +26,15 @@ func init() {
 	folderFields := schema.Folder{}.Fields()
 	_ = folderFields
 	// folderDescSize is the schema descriptor for size field.
-	folderDescSize := folderFields[5].Descriptor()
+	folderDescSize := folderFields[4].Descriptor()
 	// folder.DefaultSize holds the default value on creation for the size field.
 	folder.DefaultSize = folderDescSize.Default.(int)
 	// folderDescCreatedAt is the schema descriptor for created_at field.
-	folderDescCreatedAt := folderFields[7].Descriptor()
+	folderDescCreatedAt := folderFields[6].Descriptor()
 	// folder.DefaultCreatedAt holds the default value on creation for the created_at field.
 	folder.DefaultCreatedAt = folderDescCreatedAt.Default.(func() time.Time)
 	// folderDescUpdatedAt is the schema descriptor for updated_at field.
-	folderDescUpdatedAt := folderFields[8].Descriptor()
+	folderDescUpdatedAt := folderFields[7].Descriptor()
 	// folder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	folder.DefaultUpdatedAt = folderDescUpdatedAt.Default.(func() time.Time)
 	// folder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

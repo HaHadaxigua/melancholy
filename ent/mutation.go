@@ -489,7 +489,6 @@ type FolderMutation struct {
 	id            *int
 	parent        *int
 	addparent     *int
-	_path         *string
 	name          *string
 	owner         *int
 	addowner      *int
@@ -653,43 +652,6 @@ func (m *FolderMutation) AddedParent() (r int, exists bool) {
 func (m *FolderMutation) ResetParent() {
 	m.parent = nil
 	m.addparent = nil
-}
-
-// SetPath sets the path field.
-func (m *FolderMutation) SetPath(s string) {
-	m._path = &s
-}
-
-// Path returns the path value in the mutation.
-func (m *FolderMutation) Path() (r string, exists bool) {
-	v := m._path
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPath returns the old path value of the Folder.
-// If the Folder object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *FolderMutation) OldPath(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldPath is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldPath requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPath: %w", err)
-	}
-	return oldValue.Path, nil
-}
-
-// ResetPath reset all changes of the "path" field.
-func (m *FolderMutation) ResetPath() {
-	m._path = nil
 }
 
 // SetName sets the name field.
@@ -1177,12 +1139,9 @@ func (m *FolderMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *FolderMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.parent != nil {
 		fields = append(fields, folder.FieldParent)
-	}
-	if m._path != nil {
-		fields = append(fields, folder.FieldPath)
 	}
 	if m.name != nil {
 		fields = append(fields, folder.FieldName)
@@ -1215,8 +1174,6 @@ func (m *FolderMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case folder.FieldParent:
 		return m.Parent()
-	case folder.FieldPath:
-		return m.Path()
 	case folder.FieldName:
 		return m.Name()
 	case folder.FieldOwner:
@@ -1242,8 +1199,6 @@ func (m *FolderMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case folder.FieldParent:
 		return m.OldParent(ctx)
-	case folder.FieldPath:
-		return m.OldPath(ctx)
 	case folder.FieldName:
 		return m.OldName(ctx)
 	case folder.FieldOwner:
@@ -1273,13 +1228,6 @@ func (m *FolderMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetParent(v)
-		return nil
-	case folder.FieldPath:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPath(v)
 		return nil
 	case folder.FieldName:
 		v, ok := value.(string)
@@ -1436,9 +1384,6 @@ func (m *FolderMutation) ResetField(name string) error {
 	switch name {
 	case folder.FieldParent:
 		m.ResetParent()
-		return nil
-	case folder.FieldPath:
-		m.ResetPath()
 		return nil
 	case folder.FieldName:
 		m.ResetName()

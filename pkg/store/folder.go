@@ -33,7 +33,6 @@ func (fs *folderStore) CreateFolder(r *ent.Folder) error {
 		SetName(r.Name).
 		SetOwner(r.Owner).
 		SetParent(r.Parent).
-		SetPath(r.Path).
 		Save(fs.ctx)
 	if err != nil {
 		return err

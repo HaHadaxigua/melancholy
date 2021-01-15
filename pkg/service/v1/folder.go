@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"fmt"
 	"github.com/HaHadaxigua/melancholy/ent"
+	"github.com/HaHadaxigua/melancholy/pkg/common"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 )
@@ -11,8 +11,7 @@ var FolderService IFolderService
 
 type IFolderService interface {
 	CreateFolder(r *msg.FolderRequest) error
-	ListCurrentFolder(uid, pid int) ([]*ent.Folder, error)
-	genPath(pid int, name string) (string, error)
+	ListFolder(uid, pid int) ([]*ent.Folder, error)
 }
 
 type folderService struct {
@@ -26,24 +25,19 @@ func NewFolderService() *folderService {
 }
 
 func NewFolder(authorID, pid int, name string) (*ent.Folder, error) {
-	path, err := FolderService.genPath(pid, name)
-	if err != nil {
-		return nil, err
-	}
 	return &ent.Folder{
 		Owner:  authorID,
 		Parent: pid,
 		Name:   name,
-		Path:   path,
 	}, nil
 }
 
 // CreateFolder
 func (fs *folderService) CreateFolder(r *msg.FolderRequest) error {
-	if !VerifyReq(r) {
-		return nil
+	if !common.VerifyFileName(r.Filename) {
+		return msg.InvalidParamsErr
 	}
-	f, err := NewFolder(r.Creator, r.ParentId, r.Name)
+	f, err := NewFolder(r.Creator, r.ParentId, r.Filename)
 	if err != nil {
 		return err
 	}
@@ -54,7 +48,8 @@ func (fs *folderService) CreateFolder(r *msg.FolderRequest) error {
 	return nil
 }
 
-func (fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) {
+// fixme: generate tree struct
+func (fs *folderService) ListFolder(uid, cid int) ([]*ent.Folder, error) {
 	res, err := fs.folderStore.GetFolderByUserID(uid, 0)
 	if err != nil {
 		return nil, err
@@ -62,41 +57,11 @@ func (fs *folderService) ListCurrentFolder(uid, pid int) ([]*ent.Folder, error) 
 	return res, nil
 }
 
+// fixme:
 func (fs *folderService) ListRootFolder(uid int) (*ent.Folder, error) {
 	res, err := fs.folderStore.GetRootFolder(uid)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
-}
-
-// fixme: failed
-func (fs *folderService) genPath(pid int, name string) (string, error) {
-	curFolder, err := fs.folderStore.GetFolderByID(pid)
-	if err != nil {
-		return "", err
-	}
-	subFolders, err := fs.folderStore.GetSubFolders(pid)
-	if err != nil {
-		return "", err
-	}
-	for _, sub := range subFolders {
-		if sub.Name == name {
-			return "", msg.FileRepeatErr
-		}
-	}
-	res := fmt.Sprintf("%s/%s", curFolder.Path, name)
-	return res, nil
-}
-
-/**
-Verify the request whether legal or not.
-1. is path real existed
-2. have repeated name?
-*/
-func VerifyReq(r *msg.FolderRequest) bool {
-	if r.Creator <= 0 || r.Name == "" || r.Name == " " || r.ParentId < 0 {
-		return false
-	}
-	return true
 }

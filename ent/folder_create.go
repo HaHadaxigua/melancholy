@@ -27,12 +27,6 @@ func (fc *FolderCreate) SetParent(i int) *FolderCreate {
 	return fc
 }
 
-// SetPath sets the path field.
-func (fc *FolderCreate) SetPath(s string) *FolderCreate {
-	fc.mutation.SetPath(s)
-	return fc
-}
-
 // SetName sets the name field.
 func (fc *FolderCreate) SetName(s string) *FolderCreate {
 	fc.mutation.SetName(s)
@@ -245,9 +239,6 @@ func (fc *FolderCreate) check() error {
 	if _, ok := fc.mutation.Parent(); !ok {
 		return &ValidationError{Name: "parent", err: errors.New("ent: missing required field \"parent\"")}
 	}
-	if _, ok := fc.mutation.Path(); !ok {
-		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
-	}
 	if _, ok := fc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
 	}
@@ -308,14 +299,6 @@ func (fc *FolderCreate) createSpec() (*Folder, *sqlgraph.CreateSpec) {
 			Column: folder.FieldParent,
 		})
 		_node.Parent = value
-	}
-	if value, ok := fc.mutation.Path(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: folder.FieldPath,
-		})
-		_node.Path = value
 	}
 	if value, ok := fc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

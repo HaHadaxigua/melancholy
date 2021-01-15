@@ -16,7 +16,7 @@ type CreateFolderReq struct {
 type FolderRequest struct {
 	Creator  int    `json:"creator"`
 	ParentId int    `json:"parentId"`
-	Name     string `json:"name"`
+	Filename string `json:"filename"`
 }
 
 //VideoRequest 视频请求

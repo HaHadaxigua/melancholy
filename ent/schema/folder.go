@@ -17,7 +17,6 @@ func (Folder) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").Unique(),
 		field.Int("parent"),
-		field.String("path"),
 		field.String("name"),
 		field.Int("owner"),
 		field.Int("size").Optional().Default(0),

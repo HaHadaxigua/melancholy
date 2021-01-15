@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/user"
+	"github.com/HaHadaxigua/melancholy/pkg/common"
 	"github.com/HaHadaxigua/melancholy/pkg/msg"
 	"github.com/HaHadaxigua/melancholy/pkg/store"
 	"github.com/HaHadaxigua/melancholy/pkg/tools"
@@ -81,7 +82,7 @@ func (us *userService) CreateUser(r *msg.UserRequest) (*ent.User, error) {
 
 // FindUserByUsername
 func (us *userService) FindUserByUsername(r *msg.UserRequest) (*ent.User, error) {
-	if !CheckUsername(r.Username) {
+	if !common.CheckUsername(r.Username) {
 		return nil, msg.UserNameIllegalErr
 	}
 	tu, err := us.userStore.GetUserByName(r.Username)
@@ -109,13 +110,13 @@ func (us *userService) CheckUserExist(email, password string) int {
 }
 
 func CheckCreateUserReq(r *msg.UserRequest) (bool, error) {
-	if !CheckUsername(r.Username) {
+	if !common.CheckUsername(r.Username) {
 		return false, msg.UserNameOrPwdIncorrectlyErr
 	}
-	if !CheckPassword(r.Password) {
+	if !common.CheckPassword(r.Password) {
 		return false, msg.UserPwdIllegalErr
 	}
-	if !CheckEmail(r.Email) {
+	if !common.CheckEmail(r.Email) {
 		return false, msg.UserEmailIllegalErr
 	}
 	return true, nil

@@ -14,8 +14,6 @@ const (
 	FieldID = "id"
 	// FieldParent holds the string denoting the parent field in the database.
 	FieldParent = "parent"
-	// FieldPath holds the string denoting the path field in the database.
-	FieldPath = "path"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldOwner holds the string denoting the owner field in the database.
@@ -61,7 +59,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldParent,
-	FieldPath,
 	FieldName,
 	FieldOwner,
 	FieldSize,
