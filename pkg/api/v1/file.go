@@ -46,7 +46,8 @@ func CreateFolder(c *gin.Context) {
 
 /**
 ListFolders cid represents the current path
- */
+文件表需要用字符ID以及用户ID作为主键
+*/
 func ListFolders(c *gin.Context) {
 	pid, err := strconv.Atoi(c.Param("cid"))
 	if err != nil {
