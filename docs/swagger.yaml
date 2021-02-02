@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /handler/v1
 host: 127.0.0.1:8990
 info:
   contact:

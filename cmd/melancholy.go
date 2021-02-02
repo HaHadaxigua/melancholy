@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/HaHadaxigua/melancholy/pkg"
-	"github.com/HaHadaxigua/melancholy/pkg/conf"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
+	"github.com/HaHadaxigua/melancholy/internal"
+	"github.com/HaHadaxigua/melancholy/internal/basic/store"
+	"github.com/HaHadaxigua/melancholy/internal/conf"
 )
 
 // @title Swagger Example API
@@ -20,16 +20,16 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host 127.0.0.1:8990
-// @BasePath /api/v1
+// @BasePath /handler/v1
 
 // this is the entrance of the backend
 func main() {
-	pkg.StartServer()
+	internal.StartServer()
 }
 
 func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
 	conf.Setup()
 	store.CasbinSetup()
-	store.SetupEnt()
+	internal.SetupEnt()
 }
