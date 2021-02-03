@@ -278,7 +278,7 @@ func (rq *RoleQuery) WithUsers(opts ...func(*UserQuery)) *RoleQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Filename string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -304,7 +304,7 @@ func (rq *RoleQuery) GroupBy(field string, fields ...string) *RoleGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Filename string `json:"name,omitempty"`
 //	}
 //
 //	client.Role.Query().

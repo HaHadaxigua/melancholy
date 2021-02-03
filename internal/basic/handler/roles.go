@@ -6,8 +6,8 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
-	module "github.com/HaHadaxigua/melancholy/internal/log"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	logModule "github.com/HaHadaxigua/melancholy/internal/log"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,18 +27,18 @@ func SetupAuthRouters(r gin.IRouter) {
 // @Accept json
 // @Produce json
 // @Param who query string true "人名"
-// @Success 200 {string} string "{"msg": "hello Razeen"}"
-// @Failure 400 {string} string "{"msg": "who are you"}"
+// @Success 200 {string} string "{"response": "hello Razeen"}"
+// @Failure 400 {string} string "{"response": "who are you"}"
 // @Router /login [POST]
 // Login
 func Login(c *gin.Context) {
-	req := &msg.LoginReq{}
+	req := &response.LoginReq{}
 	if err := c.BindJSON(req); err != nil {
-		c.JSON(http.StatusBadRequest, msg.BadRequest)
+		c.JSON(http.StatusBadRequest, response.BadRequest)
 		return
 	}
 	if req.Email == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, msg.UserNameOrPwdIncorrectlyErr)
+		c.JSON(http.StatusBadRequest, response.UserNameOrPwdIncorrectlyErr)
 		return
 	}
 	type auth struct {
@@ -50,21 +50,21 @@ func Login(c *gin.Context) {
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
-	status := msg.OK
+	status := response.OK
 	if ok {
 		userId := service.UserService.CheckUserExist(req.Email, req.Password)
 		if userId > -1 {
 			token, err := tools.JwtGenerateToken(userId, req.Email, req.Password, 2)
 			if err != nil {
-				status = msg.AuthCheckTokenErr
+				status = response.AuthCheckTokenErr
 			} else {
 				data["token"] = token
-				status = msg.OK
+				status = response.OK
 				c.Set("user_id", userId)
 			}
 		} else {
-			status = msg.UserNameOrPwdIncorrectlyErr
-			status.Data = msg.UserNameOrPwdIncorrectlyErrorMsg
+			status = response.UserNameOrPwdIncorrectlyErr
+			status.Data = response.UserNameOrPwdIncorrectlyErrorMsg
 		}
 	} else {
 		for _, err := range valid.Errors {
@@ -72,12 +72,12 @@ func Login(c *gin.Context) {
 		}
 	}
 
-	if status != msg.OK {
+	if status != response.OK {
 		c.JSON(http.StatusBadRequest, status)
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code": status.Code,
-			"msg":  status.Message,
+			"response":  status.Message,
 			"data": data,
 		})
 	}
@@ -85,16 +85,16 @@ func Login(c *gin.Context) {
 
 // Register
 func Register(c *gin.Context) {
-	r := &msg.UserRequest{}
+	r := &response.UserRequest{}
 	if err := c.BindJSON(r); err != nil {
-		e := msg.BadRequest
+		e := response.BadRequest
 		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
 	}
 
 	user, err := service.UserService.CreateUser(r)
-	if err != nil && errors.Is(err, msg.UserHasExistedErr) {
+	if err != nil && errors.Is(err, response.UserHasExistedErr) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
 		})
@@ -115,25 +115,24 @@ func Logout(c *gin.Context) {
 
 	if err := c.ShouldBindHeader(&ah); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": msg.AuthAccessTokenIllegalErrorMsg,
+			"response": response.AuthAccessTokenIllegalErrorMsg,
 		})
 		return
 	}
 
 	userId := c.GetInt("user_id")
-	// 写退出表
 
 	exitReq := &ent.ExitLog{
 		Token:  ah.AccessToken,
 		UserID: userId,
 	}
 
-	err := module.ModuleLog.LogService.NewExitLog(exitReq)
+	err := logModule.ModuleLog.LogService.NewExitLog(exitReq)
 	if err != nil {
-		e := msg.UserExitErr
+		e := response.UserExitErr
 		c.JSON(http.StatusBadRequest, e)
 	} else {
-		c.JSON(http.StatusOK, msg.Ok)
+		c.JSON(http.StatusOK, response.Ok)
 	}
 
 }

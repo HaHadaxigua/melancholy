@@ -1,17 +1,18 @@
 package handler
 
 import (
+	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/file/msg"
+	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/HaHadaxigua/melancholy/internal/global/consts"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
-	"github.com/HaHadaxigua/melancholy/pkg/middleware"
-	service "github.com/HaHadaxigua/melancholy/pkg/service/v1"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
 // SetupFileRouters 设置file模块的嵌套路由组
-func SetupFileRouters(r *gin.RouterGroup) {
+func SetupFileRouters(r gin.IRouter) {
 	// open
 
 	// secured
@@ -24,24 +25,17 @@ func SetupFileRouters(r *gin.RouterGroup) {
 
 // CreateFolder
 func CreateFolder(c *gin.Context) {
-	req := &msg.CreateFolderReq{}
-	err := c.BindJSON(req)
-	if err != nil {
+	req := &msg.ReqFolderCreate{}
+	if err := c.BindJSON(req); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	uid := c.GetInt(consts.UserID)
-	r := &msg.FolderRequest{
-		Creator:  uid,
-		Filename: req.Name,
-		ParentId: req.ParentID,
-	}
-	err = service.FolderService.CreateFolder(r)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, msg.NewErr(err))
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FolderService.Create(req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, msg.OK)
+	c.JSON(http.StatusOK, response.OK)
 }
 
 /**
@@ -51,14 +45,14 @@ ListFolders cid represents the current path
 func ListFolders(c *gin.Context) {
 	pid, err := strconv.Atoi(c.Param("cid"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, msg.InvalidParamsErr)
+		c.JSON(http.StatusBadRequest, response.InvalidParamsErr)
 		return
 	}
 	uid := c.GetInt(consts.UserID)
 	folders, err := service.FolderService.ListFolder(uid, pid)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, msg.NewErr(err))
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, msg.OkResp(folders))
+	c.JSON(http.StatusOK, response.OkResp(folders))
 }

@@ -6,21 +6,21 @@
 package test
 
 import (
-	tools2 "github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestCheckEmail(t *testing.T) {
 	emailOk := "123@qq.com"
-	assert.Equal(t, true, tools2.CheckEmail(emailOk))
+	assert.Equal(t, true, tools.CheckEmail(emailOk))
 	emailFalse := "122123.com"
-	assert.Equal(t, false, tools2.CheckEmail(emailFalse))
+	assert.Equal(t, false, tools.CheckEmail(emailFalse))
 }
 
 func TestCheckUsername(t *testing.T) {
 	userNameOk := "ax21"
-	assert.Equal(t, true, tools2.CheckUsername(userNameOk))
+	assert.Equal(t, true, tools.CheckUsername(userNameOk))
 	userNameFailed := "@!"
-	assert.Equal(t, false, tools2.CheckUsername(userNameFailed))
+	assert.Equal(t, false, tools.CheckUsername(userNameFailed))
 }

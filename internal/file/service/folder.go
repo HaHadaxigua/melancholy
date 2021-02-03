@@ -1,17 +1,18 @@
-package v1
+package service
 
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/ent"
-	tools2 "github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
-	"github.com/HaHadaxigua/melancholy/pkg/store"
+	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/file/msg"
+	"github.com/HaHadaxigua/melancholy/internal/file/store"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 )
 
 var FolderService IFolderService
 
 type IFolderService interface {
-	CreateFolder(r *msg.FolderRequest) error
+	Create(r *msg.ReqFolderCreate) error
 	ListFolder(uid, pid int) ([]*ent.Folder, error)
 }
 
@@ -57,11 +58,11 @@ func NewFolder(authorID, pid int, name string) (*ent.Folder, error) {
 }
 
 // CreateFolder
-func (fs *folderService) CreateFolder(r *msg.FolderRequest) error {
-	if !tools2.VerifyFileName(r.Filename) {
-		return msg.InvalidParamsErr
+func (fs *folderService) Create(r *msg.ReqFolderCreate) error {
+	if !tools.VerifyFileName(r.Filename) {
+		return response.InvalidParamsErr
 	}
-	f, err := NewFolder(r.Creator, r.ParentId, r.Filename)
+	f, err := NewFolder(r.UserID, r.ParentID, r.Filename)
 	if err != nil {
 		return err
 	}

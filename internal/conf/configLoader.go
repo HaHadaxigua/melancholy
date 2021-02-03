@@ -2,7 +2,7 @@ package conf
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -23,9 +23,9 @@ func Setup() {
 		validConfigFileExtensionMap[ext] = true
 	}
 	// 将日志格式设置为json
-	log.SetFormatter(&log.JSONFormatter{})
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// 将日志输出到标准输出
-	log.SetOutput(os.Stdout)
+	logrus.SetOutput(os.Stdout)
 	v = GetViper()
 	// viper进行设置 读配置文件
 	v.SetConfigFile("./application.yml")
@@ -34,10 +34,10 @@ func Setup() {
 	v.SetConfigType("yml")
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Panicf("failed to parse config file [%s]", err.Error())
+		logrus.Panicf("failed to parse config file [%s]", err.Error())
 	}
 	if err = v.Unmarshal(&C); err != nil {
-		log.Panicf("failed to decode into struct [%s]", err.Error())
+		logrus.Panicf("failed to decode into struct [%s]", err.Error())
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/file"
 	"github.com/HaHadaxigua/melancholy/internal/global/consts"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -52,4 +53,5 @@ func startService(e *gin.Engine) {
 	router := e.Group(consts.ApiV1)
 
 	basic.Module.StartService(router)
+	file.Module.StartService(router)
 }

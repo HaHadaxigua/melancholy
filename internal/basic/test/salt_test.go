@@ -6,6 +6,6 @@ import (
 )
 
 func TestGenerateSalt(t *testing.T) {
-	tools.tools.GenerateSalt()
+	tools.GenerateSalt()
 
 }

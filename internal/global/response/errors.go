@@ -1,4 +1,4 @@
-package msg
+package response
 
 import (
 	"fmt"

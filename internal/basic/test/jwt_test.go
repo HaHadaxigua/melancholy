@@ -8,7 +8,7 @@ import (
 )
 
 func TestJwtToken(t *testing.T){
-	token, err := tools.tools.JwtGenerateToken(2, "123", "123", 2)
+	token, err := tools.JwtGenerateToken(2, "123", "123", 2)
 	assert.Nil(t, err)
 	fmt.Println(token)
 

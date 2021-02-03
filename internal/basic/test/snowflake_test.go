@@ -7,7 +7,7 @@ import (
 )
 
 func TestSnowflakeId(t *testing.T) {
-	id, err := tools.tools.SnowflakeId()
+	id, err := tools.SnowflakeId()
 	if err != nil {
 		fmt.Println(err.Error())
 	}

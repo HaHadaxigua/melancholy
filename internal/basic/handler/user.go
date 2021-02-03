@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -35,7 +35,7 @@ func AddRole(c *gin.Context) {
 	req := &roleReq{}
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		e := msg.InvalidParamsErr
+		e := response.InvalidParamsErr
 		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
@@ -47,14 +47,14 @@ func AddRole(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, msg.OK)
+	c.JSON(http.StatusOK, response.OK)
 }
 
 // AddRoleToUser 给用户添加权限
 func AddUserRoles(c *gin.Context) {
 	uid := c.GetInt("user_id")
 	if uid < 0 {
-		c.JSON(http.StatusBadRequest, msg.InvalidParamsErr)
+		c.JSON(http.StatusBadRequest, response.InvalidParamsErr)
 		return
 	}
 	type roleReq struct {
@@ -63,7 +63,7 @@ func AddUserRoles(c *gin.Context) {
 	req := &roleReq{}
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		e := msg.InvalidParamsErr
+		e := response.InvalidParamsErr
 		e.Data = err.Error()
 		c.JSON(http.StatusBadRequest, e)
 		return
@@ -75,5 +75,5 @@ func AddUserRoles(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, msg.OK)
+	c.JSON(http.StatusOK, response.OK)
 }

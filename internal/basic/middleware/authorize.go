@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -39,12 +39,12 @@ func Authorize(c *gin.Context) {
 			c.Next()
 			return
 		} else {
-			err = msg.AuthorizeFailedErr
-			log.Printf("userID:%d, %v, caused by:%v", userID, msg.AuthorizeFailedMsg, err)
+			err = response.AuthorizeFailedErr
+			log.Printf("userID:%d, %v, caused by:%v", userID, response.AuthorizeFailedMsg, err)
 		}
 	}
 	c.Abort()
-	me := msg.AuthorizeFailedErr
+	me := response.AuthorizeFailedErr
 	me.Data = err
 	c.JSON(http.StatusUnauthorized, me)
 }

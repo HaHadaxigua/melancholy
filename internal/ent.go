@@ -6,6 +6,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/file"
 	log "github.com/sirupsen/logrus"
 	_ "gorm.io/driver/mysql"
 	"net/url"
@@ -36,7 +37,7 @@ func SetupEnt() {
 
 func setupStore(client *ent.Client, ctx context.Context) {
 	basic.Module.SetupStore(client, ctx)
-
+	file.Module.SetupStore(client, ctx)
 	//FolderStore = file.store.NewFolderStore(client, ctx)
 	//UserStore = NewUserStore(client, ctx)
 	//RoleStore = NewRoleStore(client, ctx)

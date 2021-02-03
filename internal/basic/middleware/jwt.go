@@ -4,7 +4,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"github.com/HaHadaxigua/melancholy/internal/log/store"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -18,37 +18,37 @@ type AuthHeader struct {
 
 // JWT
 func JWT(c *gin.Context) {
-	status := msg.OK
+	status := response.OK
 
 	ah := AuthHeader{}
 
 	if err := c.ShouldBindHeader(&ah); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": msg.AuthAccessTokenIllegalErrorMsg,
+			"response": response.AuthAccessTokenIllegalErrorMsg,
 		})
 		return
 	}
 
 	if ah.AccessToken == "" {
-		status = msg.BadRequest
-		status.Data = msg.AuthAccessTokenIllegalErrorMsg
+		status = response.BadRequest
+		status.Data = response.AuthAccessTokenIllegalErrorMsg
 	} else {
 		claims, err := tools.JwtParseToken(ah.AccessToken)
 		if err != nil {
-			status = msg.AuthCheckTokenErr
-			status.Data = msg.AuthAccessTokenIllegalErrorMsg
+			status = response.AuthCheckTokenErr
+			status.Data = response.AuthAccessTokenIllegalErrorMsg
 		} else if time.Now().Unix() > claims.ExpiresAt {
-			status = msg.AuthCheckTokenTimeoutErr
+			status = response.AuthCheckTokenTimeoutErr
 		} else { // 此时token是有效的
 			// 判断下token是否已经进入黑名单
 			el, errr := store.ExitLogStore.GetExitLog(ah.AccessToken)
 			if el != nil {
-				c.JSON(http.StatusBadRequest, msg.UserExitErr)
+				c.JSON(http.StatusBadRequest, response.UserExitErr)
 				c.Abort()
 			}
 			if errr != nil {
 				if !ent.IsNotFound(errr) {
-					c.JSON(http.StatusInternalServerError, msg.UnKnown)
+					c.JSON(http.StatusInternalServerError, response.UnKnown)
 					c.Abort()
 				}
 			}
@@ -57,10 +57,10 @@ func JWT(c *gin.Context) {
 		}
 	}
 
-	if status != msg.OK {
+	if status != response.OK {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":  status.Code,
-			"msg":   status.Message,
+			"response":   status.Message,
 			"cause": status.Data,
 		})
 		c.Abort()

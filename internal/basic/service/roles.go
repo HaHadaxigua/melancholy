@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 )
 
 var RoleService IRoleService
@@ -42,7 +42,7 @@ func (rs *roleService) AddRole(name string) error {
 		return err
 	}
 	if role == nil {
-		return errors.New(msg.RepeatedRoleMsg)
+		return errors.New(response.RepeatedRoleMsg)
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (rs *roleService) AddUserRoles(uID, rID int) error {
 	err := rs.roleStore.AppendRoleToUser(rID, uID)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return msg.RoleNotFoundErr
+			return response.RoleNotFoundErr
 		}
 		return err
 	}

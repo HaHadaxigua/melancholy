@@ -56,7 +56,7 @@ var _ ent.Mutation = (*ExitLogMutation)(nil)
 // exitlogOption allows to manage the mutation configuration using functional options.
 type exitlogOption func(*ExitLogMutation)
 
-// newExitLogMutation creates new mutation for $n.Name.
+// newExitLogMutation creates new mutation for $n.Filename.
 func newExitLogMutation(c config, op Op, opts ...exitlogOption) *ExitLogMutation {
 	m := &ExitLogMutation{
 		config:        c,
@@ -517,7 +517,7 @@ var _ ent.Mutation = (*FolderMutation)(nil)
 // folderOption allows to manage the mutation configuration using functional options.
 type folderOption func(*FolderMutation)
 
-// newFolderMutation creates new mutation for $n.Name.
+// newFolderMutation creates new mutation for $n.Filename.
 func newFolderMutation(c config, op Op, opts ...folderOption) *FolderMutation {
 	m := &FolderMutation{
 		config:        c,
@@ -1577,7 +1577,7 @@ var _ ent.Mutation = (*MFileMutation)(nil)
 // mfileOption allows to manage the mutation configuration using functional options.
 type mfileOption func(*MFileMutation)
 
-// newMFileMutation creates new mutation for $n.Name.
+// newMFileMutation creates new mutation for $n.Filename.
 func newMFileMutation(c config, op Op, opts ...mfileOption) *MFileMutation {
 	m := &MFileMutation{
 		config:        c,
@@ -2683,7 +2683,7 @@ var _ ent.Mutation = (*RoleMutation)(nil)
 // roleOption allows to manage the mutation configuration using functional options.
 type roleOption func(*RoleMutation)
 
-// newRoleMutation creates new mutation for $n.Name.
+// newRoleMutation creates new mutation for $n.Filename.
 func newRoleMutation(c config, op Op, opts ...roleOption) *RoleMutation {
 	m := &RoleMutation{
 		config:        c,
@@ -3325,7 +3325,7 @@ var _ ent.Mutation = (*UserMutation)(nil)
 // userOption allows to manage the mutation configuration using functional options.
 type userOption func(*UserMutation)
 
-// newUserMutation creates new mutation for $n.Name.
+// newUserMutation creates new mutation for $n.Filename.
 func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 	m := &UserMutation{
 		config:        c,

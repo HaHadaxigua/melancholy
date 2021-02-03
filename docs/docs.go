@@ -57,13 +57,13 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"msg\": \"hello Razeen\"}",
+                        "description": "{\"response\": \"hello Razeen\"}",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "{\"msg\": \"who are you\"}",
+                        "description": "{\"response\": \"who are you\"}",
                         "schema": {
                             "type": "string"
                         }

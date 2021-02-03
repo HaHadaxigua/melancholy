@@ -1,4 +1,4 @@
-package msg
+package response
 
 const (
 	FileDir  int64 = 5201

@@ -3,7 +3,7 @@ package tools
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/HaHadaxigua/melancholy/internal/global/msg"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,7 +13,7 @@ func GenerateSalt() (string, error) {
 	salt := make([]byte, 32)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return "", msg.GenerateSaltErr
+		return "", response.GenerateSaltErr
 	}
 	return hex.EncodeToString(salt), nil
 	//生成密文
@@ -24,7 +24,7 @@ func GenerateSalt() (string, error) {
 func EncryptPassword(pwd, salt string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(pwd+salt), bcrypt.DefaultCost)
 	if err != nil {
-		e := msg.EncryptPasswordErr
+		e := response.EncryptPasswordErr
 		e.Data = err.Error()
 		return "", e
 	}

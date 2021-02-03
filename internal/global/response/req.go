@@ -1,4 +1,4 @@
-package msg
+package response
 
 import "time"
 
@@ -8,16 +8,7 @@ type LoginReq struct {
 }
 
 
-type CreateFolderReq struct {
-	Name string `json:"name"`
-	ParentID int `json:"parentID"`
-}
 
-type FolderRequest struct {
-	Creator  int    `json:"creator"`
-	ParentId int    `json:"parentId"`
-	Filename string `json:"filename"`
-}
 
 //VideoRequest 视频请求
 type VideoRequest struct {
