@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/ent"
-	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
-	"github.com/HaHadaxigua/melancholy/internal/file"
 	log "github.com/sirupsen/logrus"
 	_ "gorm.io/driver/mysql"
 	"net/url"
@@ -14,6 +12,11 @@ import (
 
 //var client *ent.Client
 //var ctx context.Context
+
+var (
+	_client *ent.Client
+	_ctx    context.Context
+)
 
 func SetupEnt() {
 	var err error
@@ -25,21 +28,17 @@ func SetupEnt() {
 		conf.C.Database.Name,
 		url.QueryEscape("'Asia/Shanghai'"))
 
-	client, err := ent.Open("mysql", dsn)
+	_client, err = ent.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
-	ctx := context.Background()
-
-	setupStore(client, ctx)
+	_ctx = context.Background()
 }
 
-func setupStore(client *ent.Client, ctx context.Context) {
-	basic.Module.SetupStore(client, ctx)
-	file.Module.SetupStore(client, ctx)
-	//FolderStore = file.store.NewFolderStore(client, ctx)
-	//UserStore = NewUserStore(client, ctx)
-	//RoleStore = NewRoleStore(client, ctx)
-	//ExitLogStore = NewExitLogStore(client, ctx)
+func GetClient() *ent.Client {
+	return _client
+}
+func GetCtx() context.Context {
+	return _ctx
 }

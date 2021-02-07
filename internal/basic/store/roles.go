@@ -8,7 +8,6 @@ import (
 )
 
 
-var RoleStore IRoleStore
 
 type IRoleStore interface {
 	CreateRole(name string) (*ent.Role, error)

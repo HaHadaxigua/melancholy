@@ -46,15 +46,15 @@ func init() {
 	// mfile.DefaultSize holds the default value on creation for the size field.
 	mfile.DefaultSize = mfileDescSize.Default.(int)
 	// mfileDescDesc is the schema descriptor for desc field.
-	mfileDescDesc := mfileFields[7].Descriptor()
+	mfileDescDesc := mfileFields[6].Descriptor()
 	// mfile.DefaultDesc holds the default value on creation for the desc field.
 	mfile.DefaultDesc = mfileDescDesc.Default.(string)
 	// mfileDescCreatedAt is the schema descriptor for created_at field.
-	mfileDescCreatedAt := mfileFields[9].Descriptor()
+	mfileDescCreatedAt := mfileFields[8].Descriptor()
 	// mfile.DefaultCreatedAt holds the default value on creation for the created_at field.
 	mfile.DefaultCreatedAt = mfileDescCreatedAt.Default.(func() time.Time)
 	// mfileDescUpdatedAt is the schema descriptor for updated_at field.
-	mfileDescUpdatedAt := mfileFields[10].Descriptor()
+	mfileDescUpdatedAt := mfileFields[9].Descriptor()
 	// mfile.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	mfile.DefaultUpdatedAt = mfileDescUpdatedAt.Default.(func() time.Time)
 	// mfile.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

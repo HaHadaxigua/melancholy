@@ -100,20 +100,6 @@ func (mu *MFileUpdate) ClearSize() *MFileUpdate {
 	return mu
 }
 
-// SetMType sets the MType field.
-func (mu *MFileUpdate) SetMType(mt mfile.MType) *MFileUpdate {
-	mu.mutation.SetMType(mt)
-	return mu
-}
-
-// SetNillableMType sets the MType field if the given value is not nil.
-func (mu *MFileUpdate) SetNillableMType(mt *mfile.MType) *MFileUpdate {
-	if mt != nil {
-		mu.SetMType(*mt)
-	}
-	return mu
-}
-
 // SetDesc sets the desc field.
 func (mu *MFileUpdate) SetDesc(s string) *MFileUpdate {
 	mu.mutation.SetDesc(s)
@@ -272,11 +258,6 @@ func (mu *MFileUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (mu *MFileUpdate) check() error {
-	if v, ok := mu.mutation.MType(); ok {
-		if err := mfile.MTypeValidator(v); err != nil {
-			return &ValidationError{Name: "MType", err: fmt.Errorf("ent: validator failed for field \"MType\": %w", err)}
-		}
-	}
 	if v, ok := mu.mutation.Status(); ok {
 		if err := mfile.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf("ent: validator failed for field \"status\": %w", err)}
@@ -370,13 +351,6 @@ func (mu *MFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Column: mfile.FieldSize,
-		})
-	}
-	if value, ok := mu.mutation.MType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeEnum,
-			Value:  value,
-			Column: mfile.FieldMType,
 		})
 	}
 	if value, ok := mu.mutation.Desc(); ok {
@@ -544,20 +518,6 @@ func (muo *MFileUpdateOne) ClearSize() *MFileUpdateOne {
 	return muo
 }
 
-// SetMType sets the MType field.
-func (muo *MFileUpdateOne) SetMType(mt mfile.MType) *MFileUpdateOne {
-	muo.mutation.SetMType(mt)
-	return muo
-}
-
-// SetNillableMType sets the MType field if the given value is not nil.
-func (muo *MFileUpdateOne) SetNillableMType(mt *mfile.MType) *MFileUpdateOne {
-	if mt != nil {
-		muo.SetMType(*mt)
-	}
-	return muo
-}
-
 // SetDesc sets the desc field.
 func (muo *MFileUpdateOne) SetDesc(s string) *MFileUpdateOne {
 	muo.mutation.SetDesc(s)
@@ -716,11 +676,6 @@ func (muo *MFileUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (muo *MFileUpdateOne) check() error {
-	if v, ok := muo.mutation.MType(); ok {
-		if err := mfile.MTypeValidator(v); err != nil {
-			return &ValidationError{Name: "MType", err: fmt.Errorf("ent: validator failed for field \"MType\": %w", err)}
-		}
-	}
 	if v, ok := muo.mutation.Status(); ok {
 		if err := mfile.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf("ent: validator failed for field \"status\": %w", err)}
@@ -812,13 +767,6 @@ func (muo *MFileUpdateOne) sqlSave(ctx context.Context) (_node *MFile, err error
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Column: mfile.FieldSize,
-		})
-	}
-	if value, ok := muo.mutation.MType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeEnum,
-			Value:  value,
-			Column: mfile.FieldMType,
 		})
 	}
 	if value, ok := muo.mutation.Desc(); ok {

@@ -11,7 +11,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/file/handler"
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
-	"github.com/HaHadaxigua/melancholy/internal/file/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,18 +20,13 @@ type module struct {
 	FolderService service.IFolderService
 }
 
-func new() *module {
-	folderService := service.NewFolderService()
+func New(client *ent.Client, ctx context.Context) *module {
+	folderService := service.NewFolderService(client, ctx)
 	return &module{
 		FolderService: folderService,
 	}
 }
 
-func (m module) StartService(router gin.IRouter) {
-	Module = new()
+func (m module) InitService(router gin.IRouter) {
 	handler.SetupFileRouters(router)
-}
-
-func (m module) SetupStore(client *ent.Client, ctx context.Context) {
-	store.FolderStore = store.NewFolderStore(client, ctx)
 }

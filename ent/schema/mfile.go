@@ -21,7 +21,6 @@ func (MFile) Fields() []ent.Field {
 		field.Int("author"),
 		field.Int("md5").Unique(),
 		field.Int("size").Optional().Default(0),
-		field.Enum("MType").Values("0", "10", "20").Default("0"),
 		field.String("desc").Optional().Default(""),
 		field.Enum("status").Values("0", "10", "20").Default("0"),
 		field.Time("created_at").Default(time.Now).Immutable(),

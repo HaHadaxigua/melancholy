@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/ent/user"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
@@ -22,9 +23,9 @@ type userService struct {
 	userStore store.IUserStore
 }
 
-func NewUserService() *userService {
+func NewUserService(client *ent.Client, ctx context.Context) *userService {
 	return &userService{
-		userStore: store.UserStore,
+		userStore: store.NewUserStore(client, ctx),
 	}
 }
 

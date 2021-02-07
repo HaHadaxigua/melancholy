@@ -67,7 +67,6 @@ var (
 		{Name: "author", Type: field.TypeInt},
 		{Name: "md5", Type: field.TypeInt, Unique: true},
 		{Name: "size", Type: field.TypeInt, Nullable: true},
-		{Name: "mtype", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
 		{Name: "desc", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"0", "10", "20"}, Default: "0"},
 		{Name: "created_at", Type: field.TypeTime},
@@ -83,7 +82,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "mfiles_folders_mfiles",
-				Columns: []*schema.Column{MfilesColumns[12]},
+				Columns: []*schema.Column{MfilesColumns[11]},
 
 				RefColumns: []*schema.Column{FoldersColumns[0]},
 				OnDelete:   schema.SetNull,

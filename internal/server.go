@@ -52,6 +52,9 @@ func startService(e *gin.Engine) {
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router := e.Group(consts.ApiV1)
 
-	basic.Module.StartService(router)
-	file.Module.StartService(router)
+	basic.Module = basic.New(GetClient(), GetCtx())
+	basic.Module.InitService(router)
+	
+	file.Module = file.New(GetClient(), GetCtx())
+	file.Module.InitService(router)
 }

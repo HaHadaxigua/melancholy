@@ -11,7 +11,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/handler"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
-	"github.com/HaHadaxigua/melancholy/internal/basic/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,22 +21,16 @@ type module struct {
 	UserService service.IUserService
 }
 
-func new() *module {
-	roleService := service.NewRoleService()
-	userService := service.NewUserService()
+func New(client *ent.Client, ctx context.Context) *module {
+	roleService := service.NewRoleService(client, ctx)
+	userService := service.NewUserService(client, ctx)
 	return &module{
 		RoleService: roleService,
 		UserService: userService,
 	}
 }
 
-func (m module) StartService(router gin.IRouter) {
-	Module = new()
+func (m module) InitService(router gin.IRouter) {
 	handler.SetupAuthRouters(router)
 	handler.SetupRoleRouters(router)
-}
-
-func (m module) SetupStore(client *ent.Client, ctx context.Context) {
-	store.RoleStore = store.NewRoleStore(client, ctx)
-	store.UserStore = store.NewUserStore(client, ctx)
 }

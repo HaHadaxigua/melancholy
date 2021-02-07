@@ -22,8 +22,6 @@ const (
 	FieldMd5 = "md5"
 	// FieldSize holds the string denoting the size field in the database.
 	FieldSize = "size"
-	// FieldMType holds the string denoting the mtype field in the database.
-	FieldMType = "mtype"
 	// FieldDesc holds the string denoting the desc field in the database.
 	FieldDesc = "desc"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -57,7 +55,6 @@ var Columns = []string{
 	FieldAuthor,
 	FieldMd5,
 	FieldSize,
-	FieldMType,
 	FieldDesc,
 	FieldStatus,
 	FieldCreatedAt,
@@ -97,33 +94,6 @@ var (
 	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	UpdateDefaultUpdatedAt func() time.Time
 )
-
-// MType defines the type for the MType enum field.
-type MType string
-
-// MType0 is the default MType.
-const DefaultMType = MType0
-
-// MType values.
-const (
-	MType0  MType = "0"
-	MType10 MType = "10"
-	MType20 MType = "20"
-)
-
-func (_mtype MType) String() string {
-	return string(_mtype)
-}
-
-// MTypeValidator is a validator for the "MType" field enum values. It is called by the builders before save.
-func MTypeValidator(_mtype MType) error {
-	switch _mtype {
-	case MType0, MType10, MType20:
-		return nil
-	default:
-		return fmt.Errorf("mfile: invalid enum value for MType field: %q", _mtype)
-	}
-}
 
 // Status defines the type for the status enum field.
 type Status string

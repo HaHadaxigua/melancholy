@@ -27,8 +27,6 @@ type MFile struct {
 	Md5 int `json:"md5,omitempty"`
 	// Size holds the value of the "size" field.
 	Size int `json:"size,omitempty"`
-	// MType holds the value of the "MType" field.
-	MType mfile.MType `json:"MType,omitempty"`
 	// Desc holds the value of the "desc" field.
 	Desc string `json:"desc,omitempty"`
 	// Status holds the value of the "status" field.
@@ -77,7 +75,6 @@ func (*MFile) scanValues() []interface{} {
 		&sql.NullInt64{},  // author
 		&sql.NullInt64{},  // md5
 		&sql.NullInt64{},  // size
-		&sql.NullString{}, // MType
 		&sql.NullString{}, // desc
 		&sql.NullString{}, // status
 		&sql.NullTime{},   // created_at
@@ -131,37 +128,32 @@ func (m *MFile) assignValues(values ...interface{}) error {
 		m.Size = int(value.Int64)
 	}
 	if value, ok := values[5].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field MType", values[5])
-	} else if value.Valid {
-		m.MType = mfile.MType(value.String)
-	}
-	if value, ok := values[6].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field desc", values[6])
+		return fmt.Errorf("unexpected type %T for field desc", values[5])
 	} else if value.Valid {
 		m.Desc = value.String
 	}
-	if value, ok := values[7].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field status", values[7])
+	if value, ok := values[6].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field status", values[6])
 	} else if value.Valid {
 		m.Status = mfile.Status(value.String)
 	}
-	if value, ok := values[8].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field created_at", values[8])
+	if value, ok := values[7].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[7])
 	} else if value.Valid {
 		m.CreatedAt = value.Time
 	}
-	if value, ok := values[9].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field updated_at", values[9])
+	if value, ok := values[8].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[8])
 	} else if value.Valid {
 		m.UpdatedAt = value.Time
 	}
-	if value, ok := values[10].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field deleted_at", values[10])
+	if value, ok := values[9].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field deleted_at", values[9])
 	} else if value.Valid {
 		m.DeletedAt = new(time.Time)
 		*m.DeletedAt = value.Time
 	}
-	values = values[11:]
+	values = values[10:]
 	if len(values) == len(mfile.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field folder_mfiles", value)
@@ -211,8 +203,6 @@ func (m *MFile) String() string {
 	builder.WriteString(fmt.Sprintf("%v", m.Md5))
 	builder.WriteString(", size=")
 	builder.WriteString(fmt.Sprintf("%v", m.Size))
-	builder.WriteString(", MType=")
-	builder.WriteString(fmt.Sprintf("%v", m.MType))
 	builder.WriteString(", desc=")
 	builder.WriteString(m.Desc)
 	builder.WriteString(", status=")

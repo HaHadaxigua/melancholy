@@ -7,8 +7,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 )
 
-var UserStore IUserStore
-
 type IUserStore interface {
 	CreateUser(req *ent.User) (*ent.User, error)
 	GetUserById(id int) (*ent.User, error)

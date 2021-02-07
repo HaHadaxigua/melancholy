@@ -56,7 +56,7 @@ var _ ent.Mutation = (*ExitLogMutation)(nil)
 // exitlogOption allows to manage the mutation configuration using functional options.
 type exitlogOption func(*ExitLogMutation)
 
-// newExitLogMutation creates new mutation for $n.Filename.
+// newExitLogMutation creates new mutation for $n.Name.
 func newExitLogMutation(c config, op Op, opts ...exitlogOption) *ExitLogMutation {
 	m := &ExitLogMutation{
 		config:        c,
@@ -517,7 +517,7 @@ var _ ent.Mutation = (*FolderMutation)(nil)
 // folderOption allows to manage the mutation configuration using functional options.
 type folderOption func(*FolderMutation)
 
-// newFolderMutation creates new mutation for $n.Filename.
+// newFolderMutation creates new mutation for $n.Name.
 func newFolderMutation(c config, op Op, opts ...folderOption) *FolderMutation {
 	m := &FolderMutation{
 		config:        c,
@@ -1558,7 +1558,6 @@ type MFileMutation struct {
 	addmd5        *int
 	size          *int
 	addsize       *int
-	_MType        *mfile.MType
 	desc          *string
 	status        *mfile.Status
 	created_at    *time.Time
@@ -1577,7 +1576,7 @@ var _ ent.Mutation = (*MFileMutation)(nil)
 // mfileOption allows to manage the mutation configuration using functional options.
 type mfileOption func(*MFileMutation)
 
-// newMFileMutation creates new mutation for $n.Filename.
+// newMFileMutation creates new mutation for $n.Name.
 func newMFileMutation(c config, op Op, opts ...mfileOption) *MFileMutation {
 	m := &MFileMutation{
 		config:        c,
@@ -1936,43 +1935,6 @@ func (m *MFileMutation) ResetSize() {
 	delete(m.clearedFields, mfile.FieldSize)
 }
 
-// SetMType sets the MType field.
-func (m *MFileMutation) SetMType(mt mfile.MType) {
-	m._MType = &mt
-}
-
-// MType returns the MType value in the mutation.
-func (m *MFileMutation) MType() (r mfile.MType, exists bool) {
-	v := m._MType
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMType returns the old MType value of the MFile.
-// If the MFile object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *MFileMutation) OldMType(ctx context.Context) (v mfile.MType, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldMType is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldMType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMType: %w", err)
-	}
-	return oldValue.MType, nil
-}
-
-// ResetMType reset all changes of the "MType" field.
-func (m *MFileMutation) ResetMType() {
-	m._MType = nil
-}
-
 // SetDesc sets the desc field.
 func (m *MFileMutation) SetDesc(s string) {
 	m.desc = &s
@@ -2237,7 +2199,7 @@ func (m *MFileMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *MFileMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 10)
 	if m.parent != nil {
 		fields = append(fields, mfile.FieldParent)
 	}
@@ -2252,9 +2214,6 @@ func (m *MFileMutation) Fields() []string {
 	}
 	if m.size != nil {
 		fields = append(fields, mfile.FieldSize)
-	}
-	if m._MType != nil {
-		fields = append(fields, mfile.FieldMType)
 	}
 	if m.desc != nil {
 		fields = append(fields, mfile.FieldDesc)
@@ -2289,8 +2248,6 @@ func (m *MFileMutation) Field(name string) (ent.Value, bool) {
 		return m.Md5()
 	case mfile.FieldSize:
 		return m.Size()
-	case mfile.FieldMType:
-		return m.MType()
 	case mfile.FieldDesc:
 		return m.Desc()
 	case mfile.FieldStatus:
@@ -2320,8 +2277,6 @@ func (m *MFileMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldMd5(ctx)
 	case mfile.FieldSize:
 		return m.OldSize(ctx)
-	case mfile.FieldMType:
-		return m.OldMType(ctx)
 	case mfile.FieldDesc:
 		return m.OldDesc(ctx)
 	case mfile.FieldStatus:
@@ -2375,13 +2330,6 @@ func (m *MFileMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSize(v)
-		return nil
-	case mfile.FieldMType:
-		v, ok := value.(mfile.MType)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMType(v)
 		return nil
 	case mfile.FieldDesc:
 		v, ok := value.(string)
@@ -2555,9 +2503,6 @@ func (m *MFileMutation) ResetField(name string) error {
 	case mfile.FieldSize:
 		m.ResetSize()
 		return nil
-	case mfile.FieldMType:
-		m.ResetMType()
-		return nil
 	case mfile.FieldDesc:
 		m.ResetDesc()
 		return nil
@@ -2683,7 +2628,7 @@ var _ ent.Mutation = (*RoleMutation)(nil)
 // roleOption allows to manage the mutation configuration using functional options.
 type roleOption func(*RoleMutation)
 
-// newRoleMutation creates new mutation for $n.Filename.
+// newRoleMutation creates new mutation for $n.Name.
 func newRoleMutation(c config, op Op, opts ...roleOption) *RoleMutation {
 	m := &RoleMutation{
 		config:        c,
@@ -3325,7 +3270,7 @@ var _ ent.Mutation = (*UserMutation)(nil)
 // userOption allows to manage the mutation configuration using functional options.
 type userOption func(*UserMutation)
 
-// newUserMutation creates new mutation for $n.Filename.
+// newUserMutation creates new mutation for $n.Name.
 func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 	m := &UserMutation{
 		config:        c,

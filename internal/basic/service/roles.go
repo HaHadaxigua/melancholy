@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
@@ -20,9 +21,9 @@ type roleService struct {
 	roleStore store.IRoleStore
 }
 
-func NewRoleService() *roleService {
+func NewRoleService(client *ent.Client, ctx context.Context) *roleService {
 	return &roleService{
-		roleStore: store.RoleStore,
+		roleStore: store.NewRoleStore(client, ctx),
 	}
 }
 

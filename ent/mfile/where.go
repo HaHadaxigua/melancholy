@@ -585,54 +585,6 @@ func SizeNotNil() predicate.MFile {
 	})
 }
 
-// MTypeEQ applies the EQ predicate on the "MType" field.
-func MTypeEQ(v MType) predicate.MFile {
-	return predicate.MFile(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldMType), v))
-	})
-}
-
-// MTypeNEQ applies the NEQ predicate on the "MType" field.
-func MTypeNEQ(v MType) predicate.MFile {
-	return predicate.MFile(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldMType), v))
-	})
-}
-
-// MTypeIn applies the In predicate on the "MType" field.
-func MTypeIn(vs ...MType) predicate.MFile {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.MFile(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldMType), v...))
-	})
-}
-
-// MTypeNotIn applies the NotIn predicate on the "MType" field.
-func MTypeNotIn(vs ...MType) predicate.MFile {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.MFile(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldMType), v...))
-	})
-}
-
 // DescEQ applies the EQ predicate on the "desc" field.
 func DescEQ(v string) predicate.MFile {
 	return predicate.MFile(func(s *sql.Selector) {

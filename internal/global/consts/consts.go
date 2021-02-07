@@ -3,7 +3,7 @@ package consts
 const (
 	// Application
 	UserID = "user_id"
-	ApiV1  = "/handler/v1"
+	ApiV1  = "/api/v1"
 
 	// utils
 	// email regular

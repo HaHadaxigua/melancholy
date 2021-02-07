@@ -6,12 +6,9 @@
 package melancholy
 
 import (
-	"context"
-	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/gin-gonic/gin"
 )
 
 type IModule interface {
-	StartService(router gin.IRouter)
-	SetupStore(client *ent.Client, ctx context.Context)
+	InitService(router gin.IRouter)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
@@ -43,9 +44,9 @@ func NewFileTreeNode(folder *ent.Folder, folders []*ent.Folder) (node *FileTreeN
 	return
 }
 
-func NewFolderService() *folderService {
+func NewFolderService(client *ent.Client, ctx context.Context) *folderService {
 	return &folderService{
-		folderStore: store.FolderStore,
+		folderStore: store.NewFolderStore(client, ctx),
 	}
 }
 

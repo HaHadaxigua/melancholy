@@ -59,20 +59,6 @@ func (mc *MFileCreate) SetNillableSize(i *int) *MFileCreate {
 	return mc
 }
 
-// SetMType sets the MType field.
-func (mc *MFileCreate) SetMType(mt mfile.MType) *MFileCreate {
-	mc.mutation.SetMType(mt)
-	return mc
-}
-
-// SetNillableMType sets the MType field if the given value is not nil.
-func (mc *MFileCreate) SetNillableMType(mt *mfile.MType) *MFileCreate {
-	if mt != nil {
-		mc.SetMType(*mt)
-	}
-	return mc
-}
-
 // SetDesc sets the desc field.
 func (mc *MFileCreate) SetDesc(s string) *MFileCreate {
 	mc.mutation.SetDesc(s)
@@ -224,10 +210,6 @@ func (mc *MFileCreate) defaults() {
 		v := mfile.DefaultSize
 		mc.mutation.SetSize(v)
 	}
-	if _, ok := mc.mutation.MType(); !ok {
-		v := mfile.DefaultMType
-		mc.mutation.SetMType(v)
-	}
 	if _, ok := mc.mutation.Desc(); !ok {
 		v := mfile.DefaultDesc
 		mc.mutation.SetDesc(v)
@@ -259,14 +241,6 @@ func (mc *MFileCreate) check() error {
 	}
 	if _, ok := mc.mutation.Md5(); !ok {
 		return &ValidationError{Name: "md5", err: errors.New("ent: missing required field \"md5\"")}
-	}
-	if _, ok := mc.mutation.MType(); !ok {
-		return &ValidationError{Name: "MType", err: errors.New("ent: missing required field \"MType\"")}
-	}
-	if v, ok := mc.mutation.MType(); ok {
-		if err := mfile.MTypeValidator(v); err != nil {
-			return &ValidationError{Name: "MType", err: fmt.Errorf("ent: validator failed for field \"MType\": %w", err)}
-		}
 	}
 	if _, ok := mc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
@@ -354,14 +328,6 @@ func (mc *MFileCreate) createSpec() (*MFile, *sqlgraph.CreateSpec) {
 			Column: mfile.FieldSize,
 		})
 		_node.Size = value
-	}
-	if value, ok := mc.mutation.MType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeEnum,
-			Value:  value,
-			Column: mfile.FieldMType,
-		})
-		_node.MType = value
 	}
 	if value, ok := mc.mutation.Desc(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
