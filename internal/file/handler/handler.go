@@ -16,7 +16,6 @@ func SetupFileRouters(r gin.IRouter) {
 	// open
 
 	// secured
-	//r.Use(middleware.JWT, middleware.Authorize)
 	secured := r.Group("/file", middleware.JWT)
 	// 文件夹
 	secured.POST("/create", CreateFolder)     // 创建文件夹
@@ -54,5 +53,5 @@ func ListFolders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, response.OkResp(folders))
+	c.JSON(http.StatusOK, response.Ok(folders))
 }

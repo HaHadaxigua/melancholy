@@ -16,7 +16,7 @@ import (
 var db *gorm.DB
 
 // Setup 初始化数据库连接
-func Setup() {
+func SetupGorm() {
 	var err error
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&time_zone=%s",
 		conf.C.Database.Username,
@@ -50,4 +50,3 @@ func Setup() {
 func GetConn() *gorm.DB {
 	return db
 }
-

@@ -9,7 +9,6 @@ require (
 	github.com/casbin/casbin/v2 v2.19.1
 	github.com/casbin/gorm-adapter/v2 v2.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/facebook/ent v0.5.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/google/uuid v1.1.2
 	github.com/razeencheng/demo-go/swaggo-gin v0.0.0-20200816064548-40680422f857

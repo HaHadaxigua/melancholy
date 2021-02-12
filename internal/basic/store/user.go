@@ -1,108 +1,74 @@
 package store
 
 import (
-	"context"
-	"github.com/HaHadaxigua/melancholy/ent"
-	"github.com/HaHadaxigua/melancholy/ent/user"
-	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
+	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
+	"gorm.io/gorm"
 )
 
-type IUserStore interface {
-	CreateUser(req *ent.User) (*ent.User, error)
-	GetUserById(id int) (*ent.User, error)
-	GetUserByName(name string) (*ent.User, error)
-	GetUserByEmail(email string) (*ent.User, error)
-	GetAllUsers() ([]*ent.User, error)
-	CheckUserExist(email, password string) int
+type UserStore interface {
+	Create(req *model.User) error
+	FindUserById(id int, withRole bool) (*model.User, error)
+	FindUserByEmail(email string) (*model.User, error)
+	GetUserByName(name string) ([]*model.User, error)
+	ListUsers(req *msg.ReqUserFilter) ([]*model.User, int, error)
 }
 
 type userStore struct {
-	client *ent.Client
-	ctx    context.Context
+	db *gorm.DB
 }
 
-func NewUserStore(client *ent.Client, ctx context.Context) *userStore {
+func NewUserStore(db *gorm.DB) *userStore {
 	return &userStore{
-		client: client,
-		ctx:    ctx,
+		db: db,
 	}
 }
 
-// CreateUser 创建用户
-func (us *userStore) CreateUser(req *ent.User) (*ent.User, error) {
-	u, err := us.client.User.Create().
-		SetUsername(req.Username).
-		SetPassword(req.Password).
-		SetSalt(req.Salt).
-		SetEmail(req.Email).
-		SetState(req.State).
-		Save(us.ctx)
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
+func (s *userStore) Create(user *model.User) error {
+	return s.db.Create(user).Error
 }
 
 // GetUserById 根据用户id搜索用户
-func (us *userStore) GetUserById(id int) (*ent.User, error) {
-	u, err := us.client.User.Query().Where(user.IDEQ(id)).Only(us.ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
+func (s *userStore) FindUserById(id int, withRole bool) (*model.User, error) {
+	var user = &model.User{}
+	query := s.db.Model(&model.User{ID: id})
+	if withRole {
+		query.Preload("Roles").Preload("Roles.Permissions")
+	}
+	if err := query.Find(user).Error; err != nil {
 		return nil, err
 	}
-	return u, nil
+	return user, nil
 }
 
 // GetUserByName 根据用户名找到用户
-func (us *userStore) GetUserByName(name string) (*ent.User, error) {
-	u, err := us.client.User.Query().Where(user.UsernameEQ(name)).Only(us.ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return u, nil
-}
-
-// GetUserByEmail 根据邮箱找到用户
-func (us *userStore) GetUserByEmail(email string) (*ent.User, error) {
-	u, err := us.client.User.Query().Where(user.EmailEQ(email)).Only(us.ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return u, nil
-}
-
-// GetAllUsers  找到所有的用户
-func (us *userStore) GetAllUsers() ([]*ent.User, error) {
-	users, err := us.client.User.Query().All(us.ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return []*ent.User{}, nil
-		}
+func (s *userStore) GetUserByName(name string) ([]*model.User, error) {
+	var users []*model.User
+	if err := s.db.Model(&model.User{}).Where("username like %?%", name).Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-// CheckUserExist判断用户是否存在, 存在则返回用户id, 不存在则返回-1
-func (us *userStore) CheckUserExist(email, password string) int {
-	u, err := us.client.User.Query().Where(user.EmailEQ(email)).Only(us.ctx)
-	if err != nil {
-		return -1
+// GetUserByEmail 根据邮箱找到用户
+func (s *userStore) FindUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	if err := s.db.Model(&model.User{}).Where("email = ?", email).Find(&user).Error; err != nil {
+		return nil, err
 	}
-	if u != nil {
-		flag := tools.VerifyPassword(u.Password, password+u.Salt)
-		if flag {
-			return u.ID
-		}
-		return -1
+	return &user, nil
+}
+
+func (s *userStore) ListUsers(req *msg.ReqUserFilter) ([]*model.User, int, error) {
+	var users []*model.User
+	query := s.db.Model(&model.User{})
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
-	return -1
+	if err := query.Offset(req.Offset).Limit(req.Limit).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+	return users, int(total), nil
 }

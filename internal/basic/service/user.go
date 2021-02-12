@@ -1,36 +1,35 @@
 package service
 
 import (
-	"context"
-	"github.com/HaHadaxigua/melancholy/ent"
-	"github.com/HaHadaxigua/melancholy/ent/user"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
+	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"gorm.io/gorm"
 )
 
-var UserService IUserService
+var User UserService
 
-type IUserService interface {
-	CreateUser(r *response.UserRequest) (*ent.User, error)
-	FindUserByUsername(r *response.UserRequest) (*ent.User, error)
-	ListAllUser() ([]*ent.User, error)
-	GetStore() store.IUserStore
-	CheckUserExist(email, password string) int
+type UserService interface {
+	CreateUser(r *msg.ReqRegister) (*model.User, error)
+	FindUserByUsername(username string) ([]*model.User, error)
+	GetUserByID(userID int, withRole bool) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
+	ListUsers(req *msg.ReqUserFilter) (*msg.RspUserList, error)
 }
 
 type userService struct {
-	userStore store.IUserStore
+	store store.UserStore
 }
 
-func NewUserService(client *ent.Client, ctx context.Context) *userService {
+func NewUserService(db *gorm.DB) *userService {
 	return &userService{
-		userStore: store.NewUserStore(client, ctx),
+		store: store.NewUserStore(db),
 	}
 }
 
 // NewAccount
-func NewUser(username, password, email string) (*ent.User, error) {
+func newUser(username, password, email string) (*model.User, error) {
 	newSalt, err := tools.GenerateSalt()
 	if err != nil {
 		return nil, err
@@ -41,83 +40,73 @@ func NewUser(username, password, email string) (*ent.User, error) {
 		return nil, err
 	}
 
-	nu := &ent.User{
+	nu := &model.User{
 		Username: username,
 		Password: encodePwd,
 		Email:    email,
-		State:    user.State0,
 		Salt:     newSalt,
 	}
 	return nu, nil
 }
 
 // CreateUser
-func (us *userService) CreateUser(r *response.UserRequest) (*ent.User, error) {
-	valid, err := CheckCreateUserReq(r)
+func (s *userService) CreateUser(r *msg.ReqRegister) (*model.User, error) {
+	valid, err := checkCreateUserReq(r)
 	if !valid && err != nil {
 		return nil, err
 	}
 
-	user, err := us.userStore.GetUserByEmail(r.Email)
-	if err != nil {
-		e := response.UserHasExistedErr
-		e.Data = err.Error()
-		return nil, e
-	} else if user != nil {
-		// fixme
-		e := response.UserHasExistedErr
-		e.Data = "邮箱已被注册"
-		return nil, e
+	newUser, err := newUser(r.Username, r.Password, r.Email)
+	if err = s.store.Create(newUser); err != nil {
+		return nil, err
 	}
-
-	newUser, err := NewUser(r.Username, r.Password, r.Email)
-	u, err := us.userStore.CreateUser(newUser)
-	if err != nil {
-		e := response.UserCreateErr
-		e.Data = err.Error()
-		return nil, e
-	}
-	return u, nil
+	return newUser, nil
 }
 
 // FindUserByUsername
-func (us *userService) FindUserByUsername(r *response.UserRequest) (*ent.User, error) {
-	if !tools.CheckUsername(r.Username) {
-		return nil, response.UserNameIllegalErr
+func (s *userService) FindUserByUsername(username string) ([]*model.User, error) {
+	if !tools.CheckUsername(username) {
+		return nil, msg.ErrUserNameIllegal
 	}
-	tu, err := us.userStore.GetUserByName(r.Username)
-	if err != nil {
-		return nil, err
-	}
-	return tu, nil
-}
-
-// ListAllUser
-func (us *userService) ListAllUser() ([]*ent.User, error) {
-	users, err := us.userStore.GetAllUsers()
+	users, err := s.store.GetUserByName(username)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-func (us *userService) GetStore() store.IUserStore {
-	return us.userStore
+// ListAllUser
+func (s *userService) ListUsers(req *msg.ReqUserFilter) (*msg.RspUserList, error) {
+	rsp := &msg.RspUserList{}
+	users, total, err := s.store.ListUsers(req)
+	if err != nil {
+		return nil, err
+	}
+
+	rsp.Total = total
+	rsp.List = (FunctionalUserMap(users, buildUserRsp)).([]*msg.RspUserListItem)
+
+	return rsp, nil
 }
 
-func (us *userService) CheckUserExist(email, password string) int {
-	return us.userStore.CheckUserExist(email, password)
+// 找出一个用户所拥有的所有角色
+func (s *userService) GetUserByID(userID int, withRole bool) (*model.User, error) {
+	return s.store.FindUserById(userID, withRole)
 }
 
-func CheckCreateUserReq(r *response.UserRequest) (bool, error) {
+func (s *userService) GetUserByEmail(email string) (*model.User, error) {
+	return s.store.FindUserByEmail(email)
+}
+
+func checkCreateUserReq(r *msg.ReqRegister) (bool, error) {
 	if !tools.CheckUsername(r.Username) {
-		return false, response.UserNameOrPwdIncorrectlyErr
+		return false, msg.ErrUserNameIllegal
 	}
 	if !tools.CheckPassword(r.Password) {
-		return false, response.UserPwdIllegalErr
+		return false, msg.ErrUserNameOrPwdIncorrectly
 	}
 	if !tools.CheckEmail(r.Email) {
-		return false, response.UserEmailIllegalErr
+		return false, msg.ErrUserNameIllegal
 	}
 	return true, nil
 }

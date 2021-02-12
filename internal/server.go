@@ -9,7 +9,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
-	"github.com/HaHadaxigua/melancholy/internal/file"
 	"github.com/HaHadaxigua/melancholy/internal/global/consts"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -52,9 +51,10 @@ func startService(e *gin.Engine) {
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router := e.Group(consts.ApiV1)
 
-	basic.Module = basic.New(GetClient(), GetCtx())
+	conn := GetConn()
+	basic.Module = basic.New(conn)
 	basic.Module.InitService(router)
-	
-	file.Module = file.New(GetClient(), GetCtx())
-	file.Module.InitService(router)
+
+	//file.Module = file.New(GetClient(), GetCtx())
+	//file.Module.InitService(router)
 }

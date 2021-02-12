@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal"
-	"github.com/HaHadaxigua/melancholy/internal/basic/store"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
 )
 
@@ -30,6 +29,5 @@ func main() {
 func init() {
 	fmt.Printf(">>>>>>>>>>>>>>>Hello %s<<<<<<<<<<<<<<<<<<<<<\n", conf.C.Application.Name)
 	conf.Setup()
-	store.CasbinSetup()
-	internal.SetupEnt()
+	internal.SetupGorm()
 }

@@ -1,67 +1,52 @@
 package store
 
 import (
-	"context"
-	"github.com/HaHadaxigua/melancholy/ent"
-	"github.com/HaHadaxigua/melancholy/ent/role"
-	"github.com/HaHadaxigua/melancholy/ent/user"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
+	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
+	"gorm.io/gorm"
 )
 
-
-
-type IRoleStore interface {
-	CreateRole(name string) (*ent.Role, error)
-	ListRoles() ([]*ent.Role, error)
-	ListRolesByUserID(uID int) ([]*ent.Role, error)
-	AppendRoleToUser(roleID, userID int) error
+type RoleStore interface {
+	InsertRole(r *model.Role) error
+	ListRoles(filter *msg.ReqRoleListFilter, withPermission bool) ([]*model.Role, int, error)
+	Delete(rid int) error
 }
 
 type roleStore struct {
-	client *ent.Client
-	ctx    context.Context
+	db *gorm.DB
 }
 
-func NewRoleStore(client *ent.Client, ctx context.Context) *roleStore {
+func NewRoleStore(db *gorm.DB) *roleStore {
 	return &roleStore{
-		client: client,
-		ctx:    ctx,
+		db: db,
 	}
 }
 
-func (rs *roleStore) CreateRole(name string) (*ent.Role, error) {
-	r, err := rs.client.Role.Create().SetName(name).SetStatus("0").Save(rs.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, err
+func (s roleStore) InsertRole(r *model.Role) error {
+	return s.db.Model(&model.Role{}).Create(r).Error
 }
 
-func (rs *roleStore) ListRoles() ([]*ent.Role, error) {
-	roles, err := rs.client.Role.Query().Where(role.DeletedAtIsNil()).All(rs.ctx)
-	if err != nil {
-		return nil, err
+func (s roleStore) ListRoles(filter *msg.ReqRoleListFilter, withPermission bool) ([]*model.Role, int, error) {
+	query := s.db.Model(&model.Role{})
+	var ret []*model.Role
+	if withPermission {
+		query = query.Preload("Permissions")
 	}
-	return roles, nil
+
+	if filter.Fuzzy != "" {
+		query = query.Where("name like %?%", filter.Fuzzy)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := query.Find(&ret).Error; err != nil {
+		return nil, 0, err
+	}
+	return ret, int(total), nil
 }
 
-func (rs *roleStore) ListRolesByUserID(uID int) ([]*ent.Role, error) {
-	roles, err := rs.client.User.Query().Where(user.IDEQ(uID)).QueryRoles().All(rs.ctx)
-	if err != nil {
-		return []*ent.Role{}, err
-	}
-	return roles, nil
-}
-
-// append role to user
-func (rs *roleStore) AppendRoleToUser(roleID, userID int) error {
-	_, err := rs.client.Role.Query().Where(role.IDEQ(roleID)).Only(rs.ctx)
-	if err != nil {
-		return err
-	}
-	_, err = rs.client.User.UpdateOneID(userID).AddRoleIDs(roleID).Save(rs.ctx)
-	if err != nil {
-		return err
-	}
-	return nil
+func (s roleStore) Delete(rid int) error {
+	return s.db.Delete(&model.Role{ID: rid}).Error
 }

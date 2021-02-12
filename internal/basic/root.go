@@ -6,31 +6,38 @@
 package basic
 
 import (
-	"context"
 	"github.com/HaHadaxigua/melancholy"
-	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/basic/handler"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var Module melancholy.IModule
 
 type module struct {
-	RoleService service.IRoleService
-	UserService service.IUserService
+	UserService       service.UserService
+	RoleService       service.RoleService
+	PermissionService service.PermissionService
 }
 
-func New(client *ent.Client, ctx context.Context) *module {
-	roleService := service.NewRoleService(client, ctx)
-	userService := service.NewUserService(client, ctx)
+func New(conn *gorm.DB) *module {
+	userService := service.NewUserService(conn)
+	roleService := service.NewRoleService(conn)
+	permissionService := service.NewPermissionService(conn)
+
+	service.User = userService
+	service.Role = roleService
+	service.Permission = permissionService
+
 	return &module{
-		RoleService: roleService,
-		UserService: userService,
+		RoleService:       roleService,
+		UserService:       userService,
+		PermissionService: permissionService,
 	}
 }
 
 func (m module) InitService(router gin.IRouter) {
-	handler.SetupAuthRouters(router)
-	handler.SetupRoleRouters(router)
+	handler.SetupRouters(router)
+	handler.SetupBasicRouters(router)
 }
