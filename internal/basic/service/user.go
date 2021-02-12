@@ -103,7 +103,7 @@ func checkCreateUserReq(r *msg.ReqRegister) (bool, error) {
 		return false, msg.ErrUserNameIllegal
 	}
 	if !tools.CheckPassword(r.Password) {
-		return false, msg.ErrUserNameOrPwdIncorrectly
+		return false, msg.ErrUserNameOrPwdWrong
 	}
 	if !tools.CheckEmail(r.Email) {
 		return false, msg.ErrUserNameIllegal

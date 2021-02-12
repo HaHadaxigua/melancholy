@@ -11,7 +11,7 @@ var Role RoleService
 
 type RoleService interface {
 	NewRole(r *msg.ReqRoleCreate) error
-	ListRoles(r *msg.ReqRoleListFilter, withPermission bool) (*msg.RspRoleList, error)
+	ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.RspRoleList, error)
 	DeleteRole(rid int) error
 }
 
@@ -32,7 +32,7 @@ func (s roleService) NewRole(r *msg.ReqRoleCreate) error {
 	return s.store.InsertRole(role)
 }
 
-func (s roleService) ListRoles(r *msg.ReqRoleListFilter, withPermission bool) (*msg.RspRoleList, error) {
+func (s roleService) ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.RspRoleList, error) {
 	rsp := &msg.RspRoleList{}
 
 	roles, total, err := s.store.ListRoles(r, withPermission)

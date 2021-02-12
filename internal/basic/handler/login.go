@@ -30,7 +30,7 @@ func login(c *gin.Context) {
 		return
 	}
 	if req.Email == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, response.NewErr(msg.ErrUserNameOrPwdIncorrectly))
+		c.JSON(http.StatusBadRequest, response.NewErr(msg.ErrUserNameOrPwdWrong))
 		return
 	}
 	type auth struct {
@@ -47,12 +47,16 @@ func login(c *gin.Context) {
 			return
 		}
 		if _user.ID > 0 && _user.Status != consts.UserStatusBlocked {
+			if !tools.VerifyPassword(_user.Password, req.Password, _user.Salt) {
+				c.JSON(http.StatusBadRequest, msg.ErrUserNameOrPwdWrong)
+				return
+			}
 			token, err := tools.JwtGenerateToken(_user.ID, req.Email, req.Password, 2)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, response.NewErr(err))
 				return
 			}
-			c.Set("user_id", _user.ID)
+			c.Set(consts.UserID, _user.ID)
 			c.JSON(http.StatusOK, response.Ok(token))
 			return
 		} else {

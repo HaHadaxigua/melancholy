@@ -32,10 +32,9 @@ func EncryptPassword(pwd, salt string) (string, error) {
 }
 
 //VerifyPassword 验证密码是否正确
-func VerifyPassword(encodePwd, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(encodePwd), []byte(password)) //验证（对比）
-	if err != nil {
+func VerifyPassword(encodePwd, password, salt string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(encodePwd), []byte(password+salt)); err != nil {
 		return false
-	}
+	} //验证（对比）
 	return true
 }

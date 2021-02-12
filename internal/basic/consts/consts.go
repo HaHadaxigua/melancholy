@@ -34,4 +34,5 @@ const (
 
 const (
 	Admin string = "Admin"
+	UserID string = "user_id"
 )

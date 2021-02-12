@@ -14,6 +14,7 @@ func SetupBasicRouters(r gin.IRouter) {
 	secured := r.Group("/basic", middleware.JWT)
 
 	role := secured.Group("/r")
+	role.GET("/role", listRoles)
 	role.POST("/role", createRole)
 	role.DELETE("role/:id", deleteRole)
 }
@@ -28,7 +29,7 @@ func createRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, response.OK)
+	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
 func deleteRole(c *gin.Context) {
@@ -43,5 +44,20 @@ func deleteRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, response.OK)
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+func listRoles(c *gin.Context) {
+	req := &msg.ReqRoleFilter{}
+	if err := c.BindQuery(req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	if rsp, err := service.Role.ListRoles(req, false); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	} else {
+		c.JSON(http.StatusOK, response.Ok(rsp))
+		return
+	}
 }

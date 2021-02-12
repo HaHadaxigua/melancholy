@@ -29,8 +29,11 @@ func (e *Err) AddCause(err error) *Err {
 }
 
 func Ok(data interface{}) *Err {
-	OK.Data = data
-	return OK
+	return &Err{
+		Code:    6,
+		Message: OKStr,
+		Data:    data,
+	}
 }
 
 // 错误码设计： [1/2] [xx] [xx]

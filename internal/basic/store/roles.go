@@ -8,7 +8,7 @@ import (
 
 type RoleStore interface {
 	InsertRole(r *model.Role) error
-	ListRoles(filter *msg.ReqRoleListFilter, withPermission bool) ([]*model.Role, int, error)
+	ListRoles(filter *msg.ReqRoleFilter, withPermission bool) ([]*model.Role, int, error)
 	Delete(rid int) error
 }
 
@@ -26,7 +26,7 @@ func (s roleStore) InsertRole(r *model.Role) error {
 	return s.db.Model(&model.Role{}).Create(r).Error
 }
 
-func (s roleStore) ListRoles(filter *msg.ReqRoleListFilter, withPermission bool) ([]*model.Role, int, error) {
+func (s roleStore) ListRoles(filter *msg.ReqRoleFilter, withPermission bool) ([]*model.Role, int, error) {
 	query := s.db.Model(&model.Role{})
 	var ret []*model.Role
 	if withPermission {
