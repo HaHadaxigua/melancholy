@@ -5,3 +5,14 @@
 ******/
 package msg
 
+import (
+	"github.com/HaHadaxigua/melancholy/internal/file/consts"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
+)
+
+// File
+var (
+	ErrFileSave       = &response.Err{Code: 10301, Message: consts.FileSaveFailedErrorMsg}
+	ErrFileHasExisted = &response.Err{Code: 10302, Message: consts.FileRepeatedErrorMsg}
+	ErrFileNotFound   = &response.Err{Code: 10303, Message: consts.FileNotFoundErrorMsg}
+)

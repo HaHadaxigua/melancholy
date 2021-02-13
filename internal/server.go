@@ -9,6 +9,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/file"
 	"github.com/HaHadaxigua/melancholy/internal/global/consts"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -55,6 +56,6 @@ func startService(e *gin.Engine) {
 	basic.Module = basic.New(conn)
 	basic.Module.InitService(router)
 
-	//file.Module = file.New(GetClient(), GetCtx())
-	//file.Module.InitService(router)
+	file.Module = file.New(conn)
+	file.Module.InitService(router)
 }

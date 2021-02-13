@@ -6,9 +6,10 @@
 package msg
 
 type ReqFolderCreate struct {
-	Filename string `json:"filename"`
-	ParentID int    `json:"parentID"`
-	UserID   int    `json:"-"`
+	FolderName string `json:"filename"`
+	ParentID   int    `json:"parentID"`
+
+	UserID int
 }
 
 type ReqFileListChildFilter struct {

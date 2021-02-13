@@ -6,24 +6,24 @@
 package file
 
 import (
-	"context"
 	"github.com/HaHadaxigua/melancholy"
-	"github.com/HaHadaxigua/melancholy/ent"
 	"github.com/HaHadaxigua/melancholy/internal/file/handler"
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var Module melancholy.IModule
 
 type module struct {
-	FolderService service.IFolderService
+	FileService service.FileService
 }
 
-func New(client *ent.Client, ctx context.Context) *module {
-	folderService := service.NewFolderService(client, ctx)
+func New(conn *gorm.DB) *module {
+	fileService := service.NewFileService(conn)
+	service.File = fileService
 	return &module{
-		FolderService: folderService,
+		FileService: fileService,
 	}
 }
 

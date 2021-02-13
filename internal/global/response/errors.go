@@ -54,11 +54,6 @@ var (
 	// Tools
 	GenerateSaltErr    = &Err{Code: 10103, Message: GenerateSaltErrorMsg}
 	EncryptPasswordErr = &Err{Code: 10104, Message: EncryptPasswordErrorMsg}
-
-	// File
-	FileSaveErr     = &Err{Code: 10301, Message: FileSaveFailedErrorMsg}
-	FileRepeatErr   = &Err{Code: 10302, Message: FileRepeatedErrorMsg}
-	FileNotFoundErr = &Err{Code: 10303, Message: FileNotFoundErrorMsg}
 )
 
 const (
@@ -82,9 +77,5 @@ const (
 	GenerateSaltErrorMsg    string = "生成盐失败"
 	EncryptPasswordErrorMsg string = "加密密码失败"
 
-	// fi
-	FileCreatedFailedMsg   string = "文件创建失败"
-	FileSaveFailedErrorMsg string = "文件保存失败"
-	FileRepeatedErrorMsg   string = "文件重名"
-	FileNotFoundErrorMsg   string = "文件未找到"
+
 )

@@ -7,6 +7,7 @@ package model
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 type User struct {
@@ -19,7 +20,10 @@ type User struct {
 	Status   int    `json:"status"`
 
 	Roles []*Role `json:"roles" gorm:"many2many:user_role"`
-	gorm.Model
+
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt"`
 }
 
 func (u User) TableName() string {
@@ -32,7 +36,10 @@ type Role struct {
 
 	Users       []*User       `json:"users" gorm:"many2many:user_role"`
 	Permissions []*Permission `json:"permissions" gorm:"many2many:role_permission"`
-	gorm.Model
+
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt"`
 }
 
 func (r Role) TableName() string {
@@ -42,6 +49,10 @@ func (r Role) TableName() string {
 type Permission struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt"`
 }
 
 func (p Permission) TableName() string {
