@@ -118,7 +118,7 @@ func (s *userService) RoleManager(uid, rid, operation int) error {
 	if err != nil {
 		return err
 	}
-	_, err = Role.FindRole(rid)
+	_, err = Role.GetRoleByID(rid, false)
 	if err != nil {
 		return err
 	}

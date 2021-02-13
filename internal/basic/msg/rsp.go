@@ -30,3 +30,13 @@ type RspRoleListItem struct {
 	RoleName    string              `json:"roleName"`
 	Permissions []*model.Permission `json:"permissions"`
 }
+
+type RspPermList struct {
+	List  []*RspPermListItem `json:"list"`
+	Total int                `json:"total"`
+}
+
+type RspPermListItem struct {
+	PermissionID   int    `json:"permissionID"`
+	PermissionName string `json:"permissionName"`
+}

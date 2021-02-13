@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/HaHadaxigua/melancholy/internal/basic/consts"
 	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
@@ -13,7 +14,8 @@ type RoleService interface {
 	NewRole(r *msg.ReqRoleCreate) error
 	ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.RspRoleList, error)
 	DeleteRole(rid int) error
-	FindRole(rid int) (*model.Role, error)
+	GetRoleByID(rid int, withPerms bool) (*model.Role, error)
+	PermissionManager(rid, pid, operation int) error
 }
 
 type roleService struct {
@@ -51,6 +53,36 @@ func (s roleService) DeleteRole(rid int) error {
 	return s.store.Delete(rid)
 }
 
-func (s roleService) FindRole(rid int) (*model.Role, error) {
-	return s.store.FindRole(rid)
+func (s roleService) GetRoleByID(rid int, withPerms bool) (*model.Role, error) {
+	return s.store.GetRoleByID(rid, withPerms)
+}
+
+func (s roleService) PermissionManager(rid, pid, operation int) error {
+	role, err := s.GetRoleByID(rid, true)
+	if err != nil {
+		return err
+	}
+	_, err = Permission.FindPermission(pid)
+	if err != nil {
+		return err
+	}
+
+	perms := FunctionalPermissionFilter(role.Permissions, func(p *model.Permission) bool {
+		if p.ID == pid {
+			return true
+		}
+		return false
+	})
+
+	switch operation {
+	case consts.AppendPermission:
+		if len(perms) > 0 {
+			return nil
+		}
+	case consts.RemovePermission:
+		if len(perms) < 1 {
+			return nil
+		}
+	}
+	return s.store.PermissionManager(rid, pid, operation)
 }

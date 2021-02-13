@@ -33,7 +33,7 @@ func (s *userStore) Create(user *model.User) error {
 // GetUserById 根据用户id搜索用户
 func (s *userStore) FindUserById(id int, withRole bool) (*model.User, error) {
 	var user model.User
-	query := s.db.Model(&model.User{ID: id})
+	query := s.db.Model(&model.User{}).Where("id = ?", id)
 	if withRole {
 		query.Preload("Roles").Preload("Roles.Permissions")
 	}

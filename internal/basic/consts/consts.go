@@ -40,4 +40,7 @@ const (
 const (
 	AppendRole = 1
 	RemoveRole = 2
+
+	AppendPermission = 1
+	RemovePermission = 2
 )

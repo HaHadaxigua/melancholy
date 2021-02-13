@@ -16,6 +16,19 @@ type ReqRegister struct {
 	Email    string `json:"email" binding:"required"`
 }
 
+// User 条件过滤器
+type ReqUserFilter struct {
+	Username string `form:"username"`
+
+	Offset int `form:"offset"`
+	Limit  int `form:"limit"`
+}
+
+type ReqUserRoleAssociation struct {
+	UserID int `json:"userID"`
+	RoleID int `json:"roleID"`
+}
+
 type ReqRoleCreate struct {
 	RoleName string `json:"roleName"`
 }
@@ -31,15 +44,14 @@ type ReqPermissionCreate struct {
 	PermissionName string `json:"permissionName"`
 }
 
-// User 条件过滤器
-type ReqUserFilter struct {
-	Username string `form:"username"`
+type ReqPermissionFilter struct {
+	Fuzzy string `form:"fuzzy"`
 
 	Offset int `form:"offset"`
 	Limit  int `form:"limit"`
 }
 
-type ReqUserRoleAssociation struct {
-	UserID int `json:"userID"`
-	RoleID int `json:"roleID"`
+type ReqRolePermAssociation struct {
+	RoleID       int `json:"roleID"`
+	PermissionID int `json:"permissionID"`
 }

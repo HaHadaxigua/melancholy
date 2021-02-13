@@ -42,8 +42,6 @@ func (r Role) TableName() string {
 type Permission struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
-
-	Roles []*Role `json:"roles" gorm:"many2many:role_permission"`
 }
 
 func (p Permission) TableName() string {

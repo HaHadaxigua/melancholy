@@ -16,6 +16,8 @@ var Permission PermissionService
 
 type PermissionService interface {
 	NewPermission(r *msg.ReqPermissionCreate) error
+	ListPermission(r *msg.ReqPermissionFilter) (*msg.RspPermList, error)
+	FindPermission(pid int) (*model.Permission, error)
 }
 
 type permissionService struct {
@@ -32,4 +34,24 @@ func (s permissionService) NewPermission(r *msg.ReqPermissionCreate) error {
 		Name: r.PermissionName,
 	}
 	return s.store.InsertPermission(p)
+}
+func (s permissionService) ListPermission(r *msg.ReqPermissionFilter) (*msg.RspPermList, error) {
+	var rsp msg.RspPermList
+	perms, count, err := s.store.ListPermission(r)
+	if err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		return &rsp, nil
+	}
+
+	rsp = msg.RspPermList{
+		List:  (FunctionalPermissionMap(perms, buildPermRsp)).([]*msg.RspPermListItem),
+		Total: count,
+	}
+	return &rsp, nil
+}
+
+func (s permissionService) FindPermission(pid int) (*model.Permission, error) {
+	return s.store.FindPermission(pid)
 }
