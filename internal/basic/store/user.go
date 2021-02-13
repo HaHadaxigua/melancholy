@@ -1,6 +1,7 @@
 package store
 
 import (
+	"github.com/HaHadaxigua/melancholy/internal/basic/consts"
 	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"gorm.io/gorm"
@@ -11,7 +12,8 @@ type UserStore interface {
 	FindUserById(id int, withRole bool) (*model.User, error)
 	FindUserByEmail(email string) (*model.User, error)
 	GetUserByName(name string) ([]*model.User, error)
-	ListUsers(req *msg.ReqUserFilter) ([]*model.User, int, error)
+	ListUsers(req *msg.ReqUserFilter, withRoles bool) ([]*model.User, int, error)
+	RoleManager(uid, rid, operation int) error
 }
 
 type userStore struct {
@@ -30,15 +32,15 @@ func (s *userStore) Create(user *model.User) error {
 
 // GetUserById 根据用户id搜索用户
 func (s *userStore) FindUserById(id int, withRole bool) (*model.User, error) {
-	var user = &model.User{}
+	var user model.User
 	query := s.db.Model(&model.User{ID: id})
 	if withRole {
 		query.Preload("Roles").Preload("Roles.Permissions")
 	}
-	if err := query.Find(user).Error; err != nil {
+	if err := query.Take(&user).Error; err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
 
 // GetUserByName 根据用户名找到用户
@@ -59,9 +61,13 @@ func (s *userStore) FindUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-func (s *userStore) ListUsers(req *msg.ReqUserFilter) ([]*model.User, int, error) {
+func (s *userStore) ListUsers(req *msg.ReqUserFilter, withRoles bool) ([]*model.User, int, error) {
 	var users []*model.User
 	query := s.db.Model(&model.User{})
+
+	if withRoles {
+		query = query.Preload("Roles")
+	}
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
@@ -71,4 +77,16 @@ func (s *userStore) ListUsers(req *msg.ReqUserFilter) ([]*model.User, int, error
 		return nil, 0, err
 	}
 	return users, int(total), nil
+}
+
+func (s *userStore) RoleManager(uid, rid, operation int) error {
+	query := s.db.Model(&model.User{ID: uid}).Association("Roles")
+	switch operation {
+	case consts.AppendRole:
+		return query.Append(&model.Role{ID: rid})
+	case consts.RemoveRole:
+		return query.Delete(&model.Role{ID: rid})
+	default:
+		return nil
+	}
 }

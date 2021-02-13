@@ -17,22 +17,26 @@ func JWT(c *gin.Context) {
 
 	if err := c.ShouldBindHeader(&ah); err != nil {
 		c.JSON(http.StatusBadRequest, msg.ErrAuthAccessTokenIllegal)
+		c.Abort()
 		return
 	}
 
 	if ah.AccessToken == "" {
 		c.JSON(http.StatusBadRequest, msg.ErrAuthAccessTokenIllegal)
+		c.Abort()
 		return
 	}
 
 	claims, err := tools.JwtParseToken(ah.AccessToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, msg.ErrAuthAccessTokenIllegal)
+		c.Abort()
 		return
 	}
 
 	if time.Now().Unix() > claims.ExpiresAt {
 		c.JSON(http.StatusBadRequest, msg.ErrAuthCheckTokenTimeout)
+		c.Abort()
 		return
 	}
 

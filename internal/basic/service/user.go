@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/HaHadaxigua/melancholy/internal/basic/consts"
 	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/store"
@@ -15,7 +16,8 @@ type UserService interface {
 	FindUserByUsername(username string) ([]*model.User, error)
 	GetUserByID(userID int, withRole bool) (*model.User, error)
 	GetUserByEmail(email string) (*model.User, error)
-	ListUsers(req *msg.ReqUserFilter) (*msg.RspUserList, error)
+	ListUsers(req *msg.ReqUserFilter, withRoles bool) (*msg.RspUserList, error)
+	RoleManager(uid, rid, operation int) error
 }
 
 type userService struct {
@@ -76,9 +78,9 @@ func (s *userService) FindUserByUsername(username string) ([]*model.User, error)
 }
 
 // ListAllUser
-func (s *userService) ListUsers(req *msg.ReqUserFilter) (*msg.RspUserList, error) {
+func (s *userService) ListUsers(req *msg.ReqUserFilter, withRoles bool) (*msg.RspUserList, error) {
 	rsp := &msg.RspUserList{}
-	users, total, err := s.store.ListUsers(req)
+	users, total, err := s.store.ListUsers(req, withRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -109,4 +111,34 @@ func checkCreateUserReq(r *msg.ReqRegister) (bool, error) {
 		return false, msg.ErrUserNameIllegal
 	}
 	return true, nil
+}
+
+func (s *userService) RoleManager(uid, rid, operation int) error {
+	user, err := s.GetUserByID(uid, true)
+	if err != nil {
+		return err
+	}
+	_, err = Role.FindRole(rid)
+	if err != nil {
+		return err
+	}
+
+	roles := FunctionalRoleFilter(user.Roles, func(r *model.Role) bool {
+		if r.ID == rid {
+			return true
+		}
+		return false
+	})
+
+	switch operation {
+	case consts.AppendRole:
+		if len(roles) > 0 {
+			return nil
+		}
+	case consts.RemoveRole:
+		if len(roles) < 1 {
+			return nil
+		}
+	}
+	return s.store.RoleManager(uid, rid, operation)
 }

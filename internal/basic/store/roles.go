@@ -10,6 +10,7 @@ type RoleStore interface {
 	InsertRole(r *model.Role) error
 	ListRoles(filter *msg.ReqRoleFilter, withPermission bool) ([]*model.Role, int, error)
 	Delete(rid int) error
+	FindRole(rid int) (*model.Role, error)
 }
 
 type roleStore struct {
@@ -49,4 +50,11 @@ func (s roleStore) ListRoles(filter *msg.ReqRoleFilter, withPermission bool) ([]
 
 func (s roleStore) Delete(rid int) error {
 	return s.db.Delete(&model.Role{ID: rid}).Error
+}
+func (s roleStore) FindRole(rid int) (*model.Role, error) {
+	var role model.Role
+	if err := s.db.Model(&model.Role{ID: rid}).Take(&role).Error; err != nil {
+		return nil, err
+	}
+	return &role, nil
 }

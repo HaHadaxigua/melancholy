@@ -33,6 +33,11 @@ const (
 )
 
 const (
-	Admin string = "Admin"
+	Admin  string = "Admin"
 	UserID string = "user_id"
+)
+
+const (
+	AppendRole = 1
+	RemoveRole = 2
 )

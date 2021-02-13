@@ -22,6 +22,7 @@ var (
 
 type FuncRoleBuildRsp func(r *model.Role) *msg.RspRoleListItem
 
+
 func FunctionalRoleMap(roles []*model.Role, fn interface{}) interface{} {
 	var out interface{}
 	switch fn.(type) {

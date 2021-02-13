@@ -11,9 +11,9 @@ type ReqLogin struct {
 }
 
 type ReqRegister struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 }
 
 type ReqRoleCreate struct {
@@ -33,8 +33,13 @@ type ReqPermissionCreate struct {
 
 // User 条件过滤器
 type ReqUserFilter struct {
-	Username string `json:"username"`
+	Username string `form:"username"`
 
-	Offset int `json:"offset, omitempty"`
-	Limit  int `json:"limit, omitempty"`
+	Offset int `form:"offset"`
+	Limit  int `form:"limit"`
+}
+
+type ReqUserRoleAssociation struct {
+	UserID int `json:"userID"`
+	RoleID int `json:"roleID"`
 }

@@ -13,6 +13,7 @@ type RoleService interface {
 	NewRole(r *msg.ReqRoleCreate) error
 	ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.RspRoleList, error)
 	DeleteRole(rid int) error
+	FindRole(rid int) (*model.Role, error)
 }
 
 type roleService struct {
@@ -39,7 +40,7 @@ func (s roleService) ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.
 	if err != nil {
 		return nil, err
 	}
-	
+
 	rsp.Total = total
 	rsp.List = (FunctionalRoleMap(roles, buildRoleRsp)).([]*msg.RspRoleListItem)
 
@@ -48,4 +49,8 @@ func (s roleService) ListRoles(r *msg.ReqRoleFilter, withPermission bool) (*msg.
 
 func (s roleService) DeleteRole(rid int) error {
 	return s.store.Delete(rid)
+}
+
+func (s roleService) FindRole(rid int) (*model.Role, error) {
+	return s.store.FindRole(rid)
 }
