@@ -56,7 +56,6 @@ func login(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, response.NewErr(err))
 				return
 			}
-			c.Set(consts.UserID, _user.ID)
 			c.JSON(http.StatusOK, response.Ok(token))
 			return
 		} else {

@@ -7,7 +7,7 @@ package msg
 
 type ReqFolderCreate struct {
 	FolderName string `json:"filename"`
-	ParentID   int    `json:"parentID"`
+	ParentID   string `json:"parentID, omitempty"`
 
 	UserID int
 }

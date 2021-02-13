@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/store"
@@ -37,22 +39,43 @@ func (s fileService) ListUserFolders(uid int) (*msg.RspFileList, error) {
 }
 
 func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
-	_parentFolder, err := s.store.FindFolder(req.ParentID)
+	fid, err := tools.SnowflakeId()
 	if err != nil {
 		return err
 	}
-	_filteredFolders := FunctionalFolderFilter(_parentFolder.Folders, func(r *model.Folder) bool {
-		if r.Name == req.FolderName {
-			return true
-		}
-		return false
-	})
-	if len(_filteredFolders) > 0 {
-		return msg.ErrFileHasExisted
-	}
 	folder := &model.Folder{
+		ID:      fid,
 		Name:    req.FolderName,
 		OwnerID: req.UserID,
 	}
-	return s.store.CreateFolder(req.ParentID, folder)
+
+	if req.ParentID != "" {
+		_parentFolder, err := s.store.FindFolder(req.ParentID)
+		if err != nil {
+			return err
+		}
+		_filteredFolders := FunctionalFolderFilter(_parentFolder.Subs, func(r *model.Folder) bool {
+			if r.Name == req.FolderName {
+				return true
+			}
+			return false
+		})
+		if len(_filteredFolders) >= 1 {
+			return msg.ErrFileHasExisted
+		}
+
+		return s.store.AppendFolder(req.ParentID, folder)
+	}
+
+	if err := s.store.CreateFolder(&model.Folder{
+		ID:      consts.RootFileID,
+		OwnerID: req.UserID,
+		Name:    consts.RootFileID,
+	}); err != nil {
+		return err
+	}
+	if err := s.store.AppendFolder(consts.RootFileID, folder); err != nil {
+		return err
+	}
+	return nil
 }

@@ -3,8 +3,10 @@ package middleware
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/global/consts"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -40,5 +42,12 @@ func JWT(c *gin.Context) {
 		return
 	}
 
+	uidStr := claims.Id
+	uid, err := strconv.Atoi(uidStr)
+	if err != nil {
+		c.Abort()
+		return
+	}
+	c.Set(consts.UserID, uid)
 	c.Next()
 }

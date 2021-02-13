@@ -12,3 +12,7 @@ const (
 	FileRepeatedErrorMsg   string = "文件重名"
 	FileNotFoundErrorMsg   string = "文件未找到"
 )
+
+const (
+	RootFileID string = "root"
+)

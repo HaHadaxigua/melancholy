@@ -9,8 +9,9 @@ type FileStore interface {
 	GetUserFolders(userID int) ([]*model.Folder, error)
 	ListFolders(folders []int, withSubFolders, withFiles bool) ([]*model.Folder, error)
 
-	FindFolder(folderID int) (*model.Folder, error)
-	CreateFolder(parentID int, folder *model.Folder) error
+	FindFolder(folderID string) (*model.Folder, error)
+	CreateFolder(folder *model.Folder) error
+	AppendFolder(parentID string, folder *model.Folder) error
 	UpdateFolder(folder *model.Folder) error
 	DeleteFolder(folderID int) error
 	DeleteFolders(folderIDs []int) error
@@ -38,17 +39,21 @@ func (s fileStore) GetUserFolders(uid int) ([]*model.Folder, error) {
 func (s fileStore) ListFolders(folders []int, withSubFolders, withFiles bool) ([]*model.Folder, error) {
 	return nil, nil
 }
-func (s fileStore) FindFolder(folderID int) (*model.Folder, error) {
+func (s fileStore) FindFolder(folderID string) (*model.Folder, error) {
 	var folder model.Folder
 	query := s.db.Model(&model.Folder{})
-	if err := query.Where("id = ?", folder).Take(&folder).Error; err != nil {
+	if err := query.Where("id = ?", folderID).Take(&folder).Error; err != nil {
 		return nil, err
 	}
 	return &folder, nil
 }
 
-func (s fileStore) CreateFolder(parentID int, folder *model.Folder) error {
-	query := s.db.Model(&model.Folder{ID: parentID}).Association("Folders")
+func (s fileStore) CreateFolder(folder *model.Folder) error {
+	return s.db.Create(folder).Error
+}
+
+func (s fileStore) AppendFolder(parentID string, folder *model.Folder) error {
+	query := s.db.Model(&model.Folder{ID: parentID}).Association("Subs")
 	if err := query.Append(folder); err != nil {
 		return err
 	}
