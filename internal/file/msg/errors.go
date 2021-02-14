@@ -15,4 +15,5 @@ var (
 	ErrFileSave       = &response.Err{Code: 10301, Message: consts.FileSaveFailedErrorMsg}
 	ErrFileHasExisted = &response.Err{Code: 10302, Message: consts.FileRepeatedErrorMsg}
 	ErrFileNotFound   = &response.Err{Code: 10303, Message: consts.FileNotFoundErrorMsg}
+	ErrBadFilename    = &response.Err{Code: 10304, Message: consts.FileBadNameErrorMsg}
 )

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
@@ -13,8 +12,10 @@ import (
 var File FileService
 
 type FileService interface {
-	ListUserFolders(uid int) (*msg.RspFileList, error)
+	ListFileSpace(uid int) (*msg.RspFolderList, error)
 	CreateFolder(req *msg.ReqFolderCreate) error
+	UpdateFolder(req *msg.ReqFolderUpdate) error
+	DeleteFolder(folderID string, userID int) error
 }
 
 type fileService struct {
@@ -27,14 +28,25 @@ func NewFileService(conn *gorm.DB) *fileService {
 	}
 }
 
-func (s fileService) ListUserFolders(uid int) (*msg.RspFileList, error) {
-	folders, err := s.store.GetUserFolders(uid)
+/**
+list folder's in root.
+*/
+func (s fileService) ListFileSpace(uid int) (*msg.RspFolderList, error) {
+	folders, err := s.store.GetUserFolders(uid, consts.RootFileID)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(folders)
+	rsp := &msg.RspFolderList{}
 
+	list := FunctionalFolderMap(folders, buildFolderRsp)
+	switch list.(type) {
+	case error:
+		return nil, list.(error)
+	case []*msg.RspFolderListItem:
+		rsp.List = list.([]*msg.RspFolderListItem)
+		return rsp, nil
+	}
 	return nil, nil
 }
 
@@ -50,7 +62,7 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 	}
 
 	if req.ParentID != "" {
-		_parentFolder, err := s.store.FindFolder(req.ParentID)
+		_parentFolder, err := s.store.FindFolder(req.ParentID, true)
 		if err != nil {
 			return err
 		}
@@ -78,4 +90,15 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 		return err
 	}
 	return nil
+}
+
+func (s fileService) UpdateFolder(req *msg.ReqFolderUpdate) error {
+	if !tools.VerifyFileName(req.NewName) {
+		return msg.ErrBadFilename
+	}
+	return s.store.UpdateFolder(req)
+}
+
+func (s fileService) DeleteFolder(folderID string, userID int) error {
+	return s.store.DeleteFolder(folderID, userID)
 }

@@ -11,6 +11,7 @@ const (
 	FileSaveFailedErrorMsg string = "文件保存失败"
 	FileRepeatedErrorMsg   string = "文件重名"
 	FileNotFoundErrorMsg   string = "文件未找到"
+	FileBadNameErrorMsg    string = "文件名非法"
 )
 
 const (

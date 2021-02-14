@@ -8,19 +8,13 @@ package msg
 import "time"
 
 type RspFolderListItem struct {
-	FileID   int    `json:"fileID"`
-	Filename string `json:"filename"`
-
-	FolderID   int    `json:"folderID"`
+	FolderID   string `json:"folderID"`
 	FolderName string `json:"folderName"`
 
-	OwnerName string `json:"ownerName"`
-	OwnerID   int    `json:"ownerID"`
-
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt  time.Time `json:"createdAt"`
+	ModifiedAt time.Time `json:"modifiedAt"`
 }
 
-type RspFileList struct {
-	list  []*RspFolderListItem `json:"list"`
-	Total int                `json:"total"`
+type RspFolderList struct {
+	List []*RspFolderListItem `json:"list"`
 }

@@ -12,5 +12,10 @@ type ReqFolderCreate struct {
 	UserID int
 }
 
-type ReqFileListChildFilter struct {
+type ReqFolderUpdate struct {
+	FolderID string `json:"folderID"`
+	NewName  string `json:"newName"`
+
+	UserID int
 }
+

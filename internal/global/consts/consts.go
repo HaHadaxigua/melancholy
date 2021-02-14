@@ -12,5 +12,6 @@ const (
 	PasswordPattern = `^[a-zA-Z0-9]{6,12}$`
 
 	// verify filename is valid
-	FileNamePattern = `^\s\\/:\*\?\"<>\|[^\s\\/:\\?\"<>\|\.]$`
+	//FileNamePattern = `^\s\\/:\*\?\"<>\|[^\s\\/:\\?\"<>\|\.]$`
+	FileNamePattern = `[\\u4e00-\\u9fa5]{0,8}[a-zA-Z0-9]{0,8}$`
 )
