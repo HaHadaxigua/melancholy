@@ -4,18 +4,20 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type FileStore interface {
-	GetUserFolders(userID int, folderID string) ([]*model.Folder, error)
-	FindFolder(folderID string, withSubs bool) (*model.Folder, error)
-	CreateFolder(folder *model.Folder) error
-	AppendFolder(parentID string, folder *model.Folder) error
-	UpdateFolder(req *msg.ReqFolderUpdate) error
+	FoldersList(userID int, folderID string) ([]*model.Folder, error)
+	FolderFind(folderID string, ownerID int) (*model.Folder, error)
+	FolderCreate(folder *model.Folder) error
+	FolderAppend(parentID string, folder *model.Folder) error
+	FolderUpdate(req *msg.ReqFolderUpdate) error
+	FolderDelete(folderID string, ownerID int) error
 
-	ListFolders(folders []int, withSubFolders, withFiles bool) ([]*model.Folder, error)
-	DeleteFolder(folderID string, ownerID int) error
+	FileFind(fileID string) (*model.File, error)
+	FileList(parentID string, ownerID int) ([]*model.File, error)
+	FileCreate(file *model.File) error
+	FileDelete(fileID, parentID string) error
 }
 
 type fileStore struct {
@@ -31,7 +33,7 @@ func NewFolderStore(conn *gorm.DB) *fileStore {
 /**
 列出用户在某个文件夹下的所有文件和文件夹
 */
-func (s fileStore) GetUserFolders(uid int, folderID string) ([]*model.Folder, error) {
+func (s fileStore) FoldersList(uid int, folderID string) ([]*model.Folder, error) {
 	var folders []*model.Folder
 	query := s.db.Model(&model.Folder{ID: folderID}).Preload("Files")
 	if err := query.Select("folders.id, owner_id, name, created_at,updated_at,deleted_at").Where("owner_id = ?", uid).Association("Subs").Find(&folders); err != nil {
@@ -40,27 +42,27 @@ func (s fileStore) GetUserFolders(uid int, folderID string) ([]*model.Folder, er
 	return folders, nil
 }
 
-func (s fileStore) ListFolders(folders []int, withSubFolders, withFiles bool) ([]*model.Folder, error) {
-	return nil, nil
-}
-
-func (s fileStore) FindFolder(folderID string, withSubs bool) (*model.Folder, error) {
+func (s fileStore) FolderFind(folderID string, ownerID int) (*model.Folder, error) {
 	var folder model.Folder
-	query := s.db.Model(&model.Folder{ID: folderID})
-	if withSubs {
-		query = query.Association("Subs").DB
-	}
-	if err := query.Take(&folder).Error; err != nil {
+	query1 := s.db
+	if err := query1.Where("owner_id = ? and id = ?", ownerID, folderID).Find(&folder).Error; err != nil {
 		return nil, err
 	}
+
+	var subFolders []*model.Folder
+	subQuery := s.db.Table("folder_sub").Select("sub_id").Where("folder_id = ?", folderID)
+	if err := s.db.Model(&model.Folder{}).Where("id in (?)", subQuery).Find(&subFolders).Error; err != nil{
+		return nil, err
+	}
+	folder.Subs = subFolders
 	return &folder, nil
 }
 
-func (s fileStore) CreateFolder(folder *model.Folder) error {
+func (s fileStore) FolderCreate(folder *model.Folder) error {
 	return s.db.Create(folder).Error
 }
 
-func (s fileStore) AppendFolder(parentID string, folder *model.Folder) error {
+func (s fileStore) FolderAppend(parentID string, folder *model.Folder) error {
 	query := s.db.Model(&model.Folder{ID: parentID}).Association("Subs")
 	if err := query.Append(folder); err != nil {
 		return err
@@ -68,12 +70,45 @@ func (s fileStore) AppendFolder(parentID string, folder *model.Folder) error {
 	return nil
 }
 
-func (s fileStore) UpdateFolder(req *msg.ReqFolderUpdate) error {
+func (s fileStore) FolderUpdate(req *msg.ReqFolderUpdate) error {
 	query := s.db.Model(&model.Folder{ID: req.FolderID}).Where("owner_id = ?", req.UserID)
 	return query.Update("name", req.NewName).Error
 }
 
-func (s fileStore) DeleteFolder(folderID string, ownerID int) error {
+func (s fileStore) FolderDelete(folderID string, ownerID int) error {
 	query := s.db
-	return query.Select(clause.Associations).Where("owner_id = ?", ownerID).Delete(&model.Folder{ID: folderID}).Error
+	return query.Model(&model.Folder{ID: folderID, OwnerID: ownerID}).Association("subs").Clear()
+}
+
+// 列出一个文件夹中的所有文件
+func (s fileStore) FileList(parentID string, ownerID int) ([]*model.File, error) {
+	var folder model.Folder
+	query := s.db.Model(&model.Folder{ID: parentID, OwnerID: ownerID})
+	if err := query.Preload("Files").Take(&folder).Error; err != nil {
+		return nil, err
+	}
+	return folder.Files, nil
+}
+
+func (s fileStore) FileFind(fileID string) (*model.File, error) {
+	var file model.File
+	if err := s.db.Model(&model.File{ID: fileID}).Take(&file).Error; err != nil {
+		return nil, err
+	}
+	return &file, nil
+}
+
+func (s fileStore) FileCreate(file *model.File) error {
+	return s.db.Create(file).Error
+}
+
+func (s fileStore) FileDelete(fileID, parentID string) error {
+	query := s.db
+	if err := query.Model(&model.Folder{ID: parentID}).Association("Files").Delete(&model.File{ID: fileID}); err != nil {
+		return err
+	}
+	if err := query.Model(&model.File{}).Delete(&model.File{ID: fileID}).Error; err != nil {
+		return err
+	}
+	return nil
 }

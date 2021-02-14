@@ -19,3 +19,10 @@ type ReqFolderUpdate struct {
 	UserID int
 }
 
+type ReqFileCreate struct {
+	FileName string `json:"fileName"`
+	ParentID string `json:"parentID"`
+
+
+	UserID int
+}

@@ -14,12 +14,17 @@ func SetupFileRouters(r gin.IRouter) {
 	// open
 
 	// secured
-	secured := r.Group("/file", middleware.JWT)
+	secured := r.Group("/f", middleware.JWT)
 	// 文件夹
-	secured.POST("/create", createFolder)
-	secured.GET("/space", fileSpace)
-	secured.PATCH("/folder", modifyFolder)
-	secured.DELETE("/folder/:id", deleteFolder)
+	folder := secured.Group("/folder")
+	folder.POST("/create", createFolder)
+	folder.GET("/space", fileSpace)
+	folder.PATCH("/info", modifyFolder)
+	folder.DELETE("/:id", deleteFolder)
+
+	file := secured.Group("/file")
+	file.POST("/create", createFile)
+	file.DELETE("/:id", deleteFile)
 }
 
 func createFolder(c *gin.Context) {
@@ -70,6 +75,31 @@ func deleteFolder(c *gin.Context) {
 		return
 	}
 	if err := service.File.DeleteFolder(folderID, c.GetInt(consts.UserID)); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+func createFile(c *gin.Context) {
+	req := &msg.ReqFileCreate{}
+	if err := c.BindJSON(req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	} else {
+		req.UserID = c.GetInt(consts.UserID)
+	}
+	if err := service.File.CreateFile(req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+func deleteFile(c *gin.Context) {
+	fileID := c.Param("id")
+	uid := c.GetInt(consts.UserID)
+	if err := service.File.DeleteFile(fileID, uid); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}

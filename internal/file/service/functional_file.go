@@ -49,3 +49,13 @@ func FunctionalFolderFilter(folders []*model.Folder, fn func(r *model.Folder) bo
 	}
 	return out
 }
+
+func FunctionalFileFilter(files []*model.File, fn func(f *model.File) bool) []*model.File {
+	var out []*model.File
+	for _, e := range files {
+		if fn(e) {
+			out = append(out, e)
+		}
+	}
+	return out
+}

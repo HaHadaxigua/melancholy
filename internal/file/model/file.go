@@ -28,9 +28,9 @@ func (f Folder) TableName() string {
 }
 
 type File struct {
-	ID       int    `json:"id"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
-	ParentID int    `json:"parentFolderID"`
+	ParentID string `json:"parentFolderID"`
 
 	MD5 string `json:"md5"`
 

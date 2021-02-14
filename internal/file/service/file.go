@@ -6,6 +6,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/store"
+	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,9 @@ type FileService interface {
 	CreateFolder(req *msg.ReqFolderCreate) error
 	UpdateFolder(req *msg.ReqFolderUpdate) error
 	DeleteFolder(folderID string, userID int) error
+
+	CreateFile(req *msg.ReqFileCreate) error
+	DeleteFile(fileID string, userID int) error
 }
 
 type fileService struct {
@@ -32,7 +36,7 @@ func NewFileService(conn *gorm.DB) *fileService {
 list folder's in root.
 */
 func (s fileService) ListFileSpace(uid int) (*msg.RspFolderList, error) {
-	folders, err := s.store.GetUserFolders(uid, consts.RootFileID)
+	folders, err := s.store.FoldersList(uid, consts.RootFileID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,11 +66,11 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 	}
 
 	if req.ParentID != "" {
-		_parentFolder, err := s.store.FindFolder(req.ParentID, true)
+		_folder, err := s.store.FolderFind(req.ParentID, req.UserID)
 		if err != nil {
 			return err
 		}
-		_filteredFolders := FunctionalFolderFilter(_parentFolder.Subs, func(r *model.Folder) bool {
+		_filteredFolders := FunctionalFolderFilter(_folder.Subs, func(r *model.Folder) bool {
 			if r.Name == req.FolderName {
 				return true
 			}
@@ -76,17 +80,17 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 			return msg.ErrFileHasExisted
 		}
 
-		return s.store.AppendFolder(req.ParentID, folder)
+		return s.store.FolderAppend(req.ParentID, folder)
 	}
 
-	if err := s.store.CreateFolder(&model.Folder{
+	if err := s.store.FolderCreate(&model.Folder{
 		ID:      consts.RootFileID,
 		OwnerID: req.UserID,
 		Name:    consts.RootFileID,
 	}); err != nil {
 		return err
 	}
-	if err := s.store.AppendFolder(consts.RootFileID, folder); err != nil {
+	if err := s.store.FolderAppend(consts.RootFileID, folder); err != nil {
 		return err
 	}
 	return nil
@@ -96,9 +100,56 @@ func (s fileService) UpdateFolder(req *msg.ReqFolderUpdate) error {
 	if !tools.VerifyFileName(req.NewName) {
 		return msg.ErrBadFilename
 	}
-	return s.store.UpdateFolder(req)
+	return s.store.FolderUpdate(req)
 }
 
 func (s fileService) DeleteFolder(folderID string, userID int) error {
-	return s.store.DeleteFolder(folderID, userID)
+	return s.store.FolderDelete(folderID, userID)
+}
+
+func (s fileService) CreateFile(req *msg.ReqFileCreate) error {
+	_, err := s.store.FolderFind(req.ParentID, req.UserID)
+	if err != nil {
+		return err
+	}
+	_files, err := s.store.FileList(req.ParentID, req.UserID)
+	if err != nil {
+		return err
+	}
+	files := FunctionalFileFilter(_files, func(f *model.File) bool {
+		if f.Name == req.FileName {
+			return true
+		}
+		return false
+	})
+	if len(files) > 0 {
+		return response.BadRequest
+	}
+
+	fid, err := tools.SnowflakeId()
+	if err != nil {
+		return err
+	}
+	file := &model.File{
+		ID:       fid,
+		Name:     req.FileName,
+		ParentID: req.ParentID,
+		MD5:      "todo:生成md5",
+	}
+	return s.store.FileCreate(file)
+}
+
+func (s fileService) DeleteFile(fileID string, userID int) error {
+	_file, err := s.store.FileFind(fileID)
+	if err != nil {
+		return err
+	}
+	folder, err := s.store.FolderFind(_file.ParentID, userID)
+	if err != nil {
+		return err
+	}
+	if folder.OwnerID != userID {
+		return response.BadRequest
+	}
+	return s.store.FileDelete(fileID, folder.ID)
 }
