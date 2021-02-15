@@ -14,10 +14,4 @@
 - 长度必须在1~1023字节之间。
 - 不能以正斜线（/）或者反斜线（\）开头。
 
-AccessConfig | Desc
---- | ---
-endPoint | oss-cn-shanghai.aliyuncs.com
-loginName | sleep@1146678831896419.onaliyun.com
-loginPwd | d76%tYo1?jFiXDwnFBFPr}OqO4cGk!Le
-AccessKeyID | LTAI4FzapSVjK8JwMLw7rxu5
-AccessKeySecret | 6DElbsdC3CcgOX0uoXeFIDxE6MEBsR
+
