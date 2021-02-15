@@ -5,6 +5,7 @@ type Config struct {
 	Application Application
 	Database    Database
 	Gorm        Gorm
+	Oss         Oss
 }
 
 type Application struct {
@@ -33,4 +34,11 @@ type Gorm struct {
 	LogMode     int64 `json:"logMode"`
 	MaxIdleConn int64 `json:"maxIdleConn"`
 	MaxOpenConn int64 `json:"maxOpenConn"`
+}
+
+type Oss struct {
+	EndPoint        string `json:"endPoint"`
+	AccessKeyID     string `json:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret"`
+	BucketName      string `json:"bucketName"`
 }

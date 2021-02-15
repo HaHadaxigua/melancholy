@@ -21,3 +21,8 @@ Gorm:
   LogMode: 0
   MaxIdleConn: 0
   MaxOpenConn: 20000
+OSS:
+  EndPoint: http://oss-cn-shanghai.aliyuncs.com
+  AccessKeyID: LTAI4FzapSVjK8JwMLw7rxu5
+  AccessKeySecret: 6DElbsdC3CcgOX0uoXeFIDxE6MEBsR
+  BucketName: test

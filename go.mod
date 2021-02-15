@@ -4,10 +4,9 @@ go 1.15
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/aliyun/aliyun-oss-go-sdk v2.1.6+incompatible // indirect
 	github.com/astaxie/beego v1.12.3
 	github.com/bwmarrin/snowflake v0.3.0
-	github.com/casbin/casbin/v2 v2.19.1
-	github.com/casbin/gorm-adapter/v2 v2.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3
 	github.com/google/uuid v1.1.2

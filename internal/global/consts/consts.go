@@ -15,3 +15,7 @@ const (
 	//FileNamePattern = `^\s\\/:\*\?\"<>\|[^\s\\/:\\?\"<>\|\.]$`
 	FileNamePattern = `[\\u4e00-\\u9fa5]{0,8}[a-zA-Z0-9]{0,8}$`
 )
+
+const (
+	OssBucketPattern = `[0-9a-z-]{3,63}`
+)
