@@ -48,7 +48,7 @@ func login(c *gin.Context) {
 		}
 		if _user.ID > 0 && _user.Status != consts.UserStatusBlocked {
 			if !tools.VerifyPassword(_user.Password, req.Password, _user.Salt) {
-				c.JSON(http.StatusBadRequest, msg.ErrUserNameOrPwdWrong)
+				c.JSON(http.StatusOK, msg.ErrUserNameOrPwdWrong)
 				return
 			}
 			token, err := tools.JwtGenerateToken(_user.ID, req.Email, req.Password, 2)
@@ -59,7 +59,7 @@ func login(c *gin.Context) {
 			c.JSON(http.StatusOK, response.Ok(token))
 			return
 		} else {
-			c.JSON(http.StatusBadRequest, msg.ErrUserNotFound)
+			c.JSON(http.StatusOK, msg.ErrUserNotFound)
 			return
 		}
 	}
