@@ -1,6 +1,6 @@
 module github.com/HaHadaxigua/melancholy
 
-go 1.15
+go 1.16
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -10,7 +10,6 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3
 	github.com/google/uuid v1.1.2
-	github.com/razeencheng/demo-go/swaggo-gin v0.0.0-20200816064548-40680422f857
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1

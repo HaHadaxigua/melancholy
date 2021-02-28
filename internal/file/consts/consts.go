@@ -17,3 +17,7 @@ const (
 const (
 	RootFileID string = "root"
 )
+
+const (
+	UPLOAD string = "upload"
+)

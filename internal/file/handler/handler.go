@@ -7,6 +7,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/global/consts"
 	"github.com/HaHadaxigua/melancholy/internal/global/response"
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
 )
 
@@ -25,6 +26,7 @@ func SetupFileRouters(r gin.IRouter) {
 	file := secured.Group("/file")
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)
+	file.POST("/upload", uploadFile)
 }
 
 func createFolder(c *gin.Context) {
@@ -36,7 +38,7 @@ func createFolder(c *gin.Context) {
 		uid := c.GetInt(consts.UserID)
 		req.UserID = uid
 	}
-	if err := service.File.CreateFolder(req); err != nil {
+	if err := service.FileSvc.CreateFolder(req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -45,7 +47,7 @@ func createFolder(c *gin.Context) {
 
 func fileSpace(c *gin.Context) {
 	uid := c.GetInt(consts.UserID)
-	if rsp, err := service.File.ListFileSpace(uid); err != nil {
+	if rsp, err := service.FileSvc.ListFileSpace(uid); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	} else {
@@ -61,7 +63,7 @@ func modifyFolder(c *gin.Context) {
 	} else {
 		req.UserID = c.GetInt(consts.UserID)
 	}
-	if err := service.File.UpdateFolder(req); err != nil {
+	if err := service.FileSvc.UpdateFolder(req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	} else {
@@ -74,7 +76,7 @@ func deleteFolder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewErr(nil))
 		return
 	}
-	if err := service.File.DeleteFolder(folderID, c.GetInt(consts.UserID)); err != nil {
+	if err := service.FileSvc.DeleteFolder(folderID, c.GetInt(consts.UserID)); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -89,7 +91,7 @@ func createFile(c *gin.Context) {
 	} else {
 		req.UserID = c.GetInt(consts.UserID)
 	}
-	if err := service.File.CreateFile(req); err != nil {
+	if err := service.FileSvc.CreateFile(req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -99,7 +101,35 @@ func createFile(c *gin.Context) {
 func deleteFile(c *gin.Context) {
 	fileID := c.Param("id")
 	uid := c.GetInt(consts.UserID)
-	if err := service.File.DeleteFile(fileID, uid); err != nil {
+	if err := service.FileSvc.DeleteFile(fileID, uid); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+func uploadFile(c *gin.Context) {
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	var req msg.ReqFileUpload
+
+	if err := c.Bind(req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	data, err := io.ReadAll(file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.FileHeader = header
+	req.Data = data
+	req.UserID = c.GetInt(consts.UserID)
+
+	if err := service.FileSvc.UploadFile(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}

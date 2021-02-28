@@ -5,6 +5,8 @@
 ******/
 package msg
 
+import "mime/multipart"
+
 type ReqFolderCreate struct {
 	FolderName string `json:"filename"`
 	ParentID   string `json:"parentID, omitempty"`
@@ -23,6 +25,13 @@ type ReqFileCreate struct {
 	FileName string `json:"fileName"`
 	ParentID string `json:"parentID"`
 
+	UserID int
+}
+
+type ReqFileUpload struct {
+	Data       []byte                `json:"data" `
+	FileHeader *multipart.FileHeader `json:"fileHeader"`
+	ParentID   string                `form:"parentID" json:"parentID"`
 
 	UserID int
 }

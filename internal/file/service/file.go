@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -10,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var File FileService
+var FileSvc FileService
 
 type FileService interface {
 	ListFileSpace(uid int) (*msg.RspFolderList, error)
@@ -18,6 +20,9 @@ type FileService interface {
 	UpdateFolder(req *msg.ReqFolderUpdate) error
 	DeleteFolder(folderID string, userID int) error
 
+	UploadFile(req *msg.ReqFileUpload) error
+
+	// test
 	CreateFile(req *msg.ReqFileCreate) error
 	DeleteFile(fileID string, userID int) error
 }
@@ -152,4 +157,12 @@ func (s fileService) DeleteFile(fileID string, userID int) error {
 		return response.BadRequest
 	}
 	return s.store.FileDelete(fileID, folder.ID)
+}
+
+func (s fileService) UploadFile(req *msg.ReqFileUpload) error {
+	fmt.Println(req.FileHeader.Filename)
+
+	oss.UploadFile(req.FileHeader.Filename, nil)
+
+	return nil
 }

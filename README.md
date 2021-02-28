@@ -28,12 +28,23 @@ melancholy /ˈmel.əŋ.kɒl.i/ 忧愁的
         - [ ] 私聊
         - [ ] 群聊
     - [ ] 后台管理
-    - [ ] 短路由
 
 ## FileModule
+
 In this module, we use id to represent a path, we can find a file's parent. Then we can return a tree struct. So when
 cur-path is requested, we need a cur-pid.At first, we set everyone's initial root path is zero, and user can see a full
 struct.
+
+### About upload File
+
+由于我们将文件上传到阿里云的对象存储中，因此我们并不需要亲自去处理文件。
+
+核心思路： 将请求转发到阿里云的公共api
+
+解决办法：
+
+1. 直接在请求中进行转发
+2. 新开一个消费队列去消费，这种复杂度太高了， 不太合适
 
 # Git Commit Rule
 

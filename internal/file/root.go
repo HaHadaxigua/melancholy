@@ -21,7 +21,7 @@ type module struct {
 
 func New(conn *gorm.DB) *module {
 	fileService := service.NewFileService(conn)
-	service.File = fileService
+	service.FileSvc = fileService
 	return &module{
 		FileService: fileService,
 	}

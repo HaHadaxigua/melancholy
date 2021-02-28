@@ -32,9 +32,9 @@ type File struct {
 	Name     string `json:"name"`
 	ParentID string `json:"parentFolderID"`
 
-	MD5      string `json:"md5"`
-	//FileType int    `json:"fileType"` // 文件类型
-	//Address  string `json:"address"`  // oss地址
+	MD5     string `json:"md5"`     // 同时也可以根据这个MD5来直接找文件
+	Suffix  int    `json:"suffix"`  // 文件后缀
+	Address string `json:"address"` // 返回的oss地址
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
