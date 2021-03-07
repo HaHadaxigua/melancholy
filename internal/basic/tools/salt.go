@@ -3,7 +3,7 @@ package tools
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"github.com/HaHadaxigua/melancholy/internal/response"
 	"golang.org/x/crypto/bcrypt"
 )
 

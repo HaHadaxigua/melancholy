@@ -8,7 +8,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/store"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"github.com/HaHadaxigua/melancholy/internal/response"
 	"gorm.io/gorm"
 )
 

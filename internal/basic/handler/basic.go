@@ -6,7 +6,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"github.com/HaHadaxigua/melancholy/internal/response"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"

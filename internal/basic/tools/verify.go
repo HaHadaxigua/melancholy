@@ -6,7 +6,7 @@
 package tools
 
 import (
-	"github.com/HaHadaxigua/melancholy/internal/global/consts"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"regexp"
 	"strings"
 )

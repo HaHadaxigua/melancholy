@@ -4,9 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func Cors(c *gin.Context) {
-	//method := c.Request.Method
 	origin := c.Request.Header.Get("Origin") //请求头部
 	if origin != "" {
 		//接收客户端发送的origin （重要！）
@@ -23,11 +21,5 @@ func Cors(c *gin.Context) {
 		c.Header("Access-Control-Allow-Credentials", "true")
 	}
 
-	//defer func() {
-	//	if err := recover(); err != nil {
-	//		log.Printf("Panic info is: %v", err)
-	//	}
-	//}()
 	c.Next()
 }
-

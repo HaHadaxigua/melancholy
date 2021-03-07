@@ -3,6 +3,7 @@ package consts
 const (
 	// Application
 	UserID = "user_id"
+	User   = "user"
 	ApiV1  = "/api/v1"
 
 	// utils

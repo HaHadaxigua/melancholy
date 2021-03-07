@@ -64,3 +64,15 @@ fix | 修复了错误
 2. git add .
 3. git commit -m "fix: ..."
 4. git push origin <branch name>
+
+# Docker 构建镜像
+
+创建一个Dockerfile文件, 在此文件的目录下输入：
+
+```shell
+docker build -t TagName:version .
+```
+
+# CI/CD 持续集成
+
+使用GithubActions来持续发布与部署

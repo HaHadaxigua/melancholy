@@ -7,7 +7,7 @@ package msg
 
 import (
 	"github.com/HaHadaxigua/melancholy/internal/file/consts"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"github.com/HaHadaxigua/melancholy/internal/response"
 )
 
 // File

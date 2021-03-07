@@ -2,10 +2,10 @@ package handler
 
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
-	"github.com/HaHadaxigua/melancholy/internal/global/consts"
-	"github.com/HaHadaxigua/melancholy/internal/global/response"
+	"github.com/HaHadaxigua/melancholy/internal/response"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"

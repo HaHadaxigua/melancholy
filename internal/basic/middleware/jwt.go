@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
+	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/global/consts"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"time"
@@ -49,5 +51,13 @@ func JWT(c *gin.Context) {
 		return
 	}
 	c.Set(consts.UserID, uid)
+	_user, err := service.User.GetUserByID(uid, true)
+	if err != nil {
+		c.Abort()
+		logrus.Info("get user failed")
+		return
+	}
+	c.Set(consts.User, _user)
+
 	c.Next()
 }
