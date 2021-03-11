@@ -5,21 +5,17 @@
 ******/
 package service
 
-import "github.com/HaHadaxigua/melancholy/ent"
-
 var LogService logService
 
 type ILogService interface {
-	NewExitLog(el *ent.ExitLog) error
 }
 
 type logService struct {
 }
-
 func NewLogService() *logService {
 	return &logService{}
 }
 
-func (s logService) NewExitLog(el *ent.ExitLog) error {
+func (s logService) NewExitLog() error {
 	return nil
 }

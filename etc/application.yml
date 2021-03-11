@@ -1,7 +1,7 @@
 Mode: debug
 Application:
   Domain: localhost:8990
-  Host: 127.0.0.1
+  Host: localhost
   IsHttps: false
   Name: melancholy
   Port: "8002"
@@ -12,7 +12,7 @@ Application:
   AppIss: github.com/HaHadaxigua/melancholy
 Database:
   Dbtype: mysql
-  Host: 127.0.0.1
+  Host: 192.168.0.106
   Port: 3307
   Name: melancholy
   Password: 123456
