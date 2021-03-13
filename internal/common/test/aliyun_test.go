@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	endPoin         = `http://oss-cn-shanghai.aliyuncs.com`
-	accessKeyID     = `LTAI4G9517RcKV7tRakHnHGh`
-	accessKeySecret = `yxj7gbZ07J8lfZtvZw4BjdyldGUwpy`
-	bucketName      = `test-upload-61227`
+	endPoin         = ``
+	accessKeyID     = ``
+	accessKeySecret = ``
+	bucketName      = ``
 )
 
 func TestListBucketNames(t *testing.T){
