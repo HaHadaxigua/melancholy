@@ -1,4 +1,4 @@
-package common
+package persistence
 
 // 处理文件下载
 type Downloader interface {

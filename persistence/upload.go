@@ -1,4 +1,4 @@
-package common
+package persistence
 
 // 处理文件上传
 type Uploader interface {
