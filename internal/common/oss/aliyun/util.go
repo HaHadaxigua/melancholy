@@ -3,7 +3,7 @@
 ** @author : zrx
 ** @description:
 ******/
-package oss
+package aliyun
 
 import (
 	"github.com/HaHadaxigua/melancholy/internal/consts"

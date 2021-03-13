@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
-	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -161,8 +160,5 @@ func (s fileService) DeleteFile(fileID string, userID int) error {
 
 func (s fileService) UploadFile(req *msg.ReqFileUpload) error {
 	fmt.Println(req.FileHeader.Filename)
-
-	oss.UploadFile(req.FileHeader.Filename, nil)
-
 	return nil
 }
