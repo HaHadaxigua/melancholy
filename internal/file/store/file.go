@@ -36,8 +36,7 @@ func (s fileStore) List(folderID string, userID int) ([]*model.Folder, error) {
 	var folders []*model.Folder
 	query := s.db.Model(&model.Folder{ID: folderID}).Preload("Files")
 	if err := query.Where("owner_id = ?", userID).
-		Association("Subs").
-		Find(&folders); err != nil {
+		Association("Subs").Find(&folders); err != nil {
 		return nil, err
 	}
 	return folders, nil

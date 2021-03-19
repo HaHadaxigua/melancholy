@@ -20,7 +20,7 @@ func SetupFileRouters(r gin.IRouter) {
 	folder := secured.Group("/folder")
 	folder.POST("/create", createFolder)
 	folder.GET("/space", userSpace)
-	folder.PATCH("/info", modifyFolder)
+	folder.PATCH("/modify", modifyFolder)
 	folder.DELETE("/:id", deleteFolder)
 
 	// file's api
@@ -46,6 +46,7 @@ func createFolder(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
+// userSpace list user's root path file
 func userSpace(c *gin.Context) {
 	uid := c.GetInt(consts.UserID)
 	rsp, err := service.FileSvc.UserSpace(uid)
@@ -56,6 +57,7 @@ func userSpace(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
+// modifyFolder update folder info
 func modifyFolder(c *gin.Context) {
 	var req msg.ReqFolderUpdate
 	if err := c.BindJSON(&req); err != nil {
