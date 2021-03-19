@@ -17,7 +17,8 @@ type RspFolderListItem struct {
 }
 
 type RspFolderList struct {
-	List []*RspFolderListItem `json:"list"`
+	FolderItems []*RspFolderListItem `json:"subFolders"`
+	FileItems   []*RspFileListItem   `json:"files"`
 }
 
 // RspFileListItem 文件列表返回体

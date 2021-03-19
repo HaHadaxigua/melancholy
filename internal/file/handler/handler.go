@@ -49,7 +49,7 @@ func createFolder(c *gin.Context) {
 // userSpace list user's root path file
 func userSpace(c *gin.Context) {
 	uid := c.GetInt(consts.UserID)
-	rsp, err := service.FileSvc.UserSpace(uid)
+	rsp, err := service.FileSvc.UserRoot(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return

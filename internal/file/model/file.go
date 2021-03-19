@@ -11,12 +11,13 @@ import (
 )
 
 type Folder struct {
-	ID      string `json:"id"`
-	OwnerID int    `json:"ownerID"` // 拥有者id
-	Name    string `json:"name"`
+	ID       string `json:"id"`
+	OwnerID  int    `json:"ownerID"`  // 拥有者id
+	ParentID string `json:"parentID"` // 父文件夹ID
+	Name     string `json:"name"`
 
 	Files []*File   `json:"files" gorm:"foreignKey:ParentID"` // 一个文件夹会拥有多个子文件
-	Subs  []*Folder `json:"subs" gorm:"many2many:folder_sub"` // 一个文件夹会有多个子文件夹
+	Subs  []*Folder `json:"subs" gorm:"foreignKey:ParentID"`  // 一个文件夹会有多个子文件夹
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
@@ -29,6 +30,7 @@ func (f Folder) TableName() string {
 
 type File struct {
 	ID       string `json:"id"`
+	OwnerID  int `json:"ownerID"`  // 创建者ID
 	ParentID string `json:"parentID"` // 父文件夹ID
 	Name     string `json:"name"`     // 文件名
 	Suffix   int    `json:"suffix"`   // 文件后缀
