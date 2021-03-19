@@ -10,7 +10,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 )
 
-
 // FuncFolderBuildRsp 构造文件夹结构的返回体
 type FuncFolderBuildRsp func(folder *model.Folder) *msg.RspFolderListItem
 
@@ -19,9 +18,12 @@ type FuncFileBuildRsp func(file *model.File) *msg.RspFileListItem
 
 var (
 	buildFolderItemRsp FuncFolderBuildRsp = func(folder *model.Folder) *msg.RspFolderListItem {
+		fileItems := FunctionalFile(folder.Files, buildFileItemRsp).([]*msg.RspFileListItem)
+
 		return &msg.RspFolderListItem{
 			FolderID:   folder.ID,
 			FolderName: folder.Name,
+			FileItems:  fileItems,
 			CreatedAt:  folder.CreatedAt,
 			ModifiedAt: folder.UpdatedAt,
 		}

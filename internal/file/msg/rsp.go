@@ -8,8 +8,9 @@ package msg
 import "time"
 
 type RspFolderListItem struct {
-	FolderID   string `json:"folderID"`
-	FolderName string `json:"folderName"`
+	FolderID   string             `json:"folderID"`
+	FolderName string             `json:"folderName"`
+	FileItems  []*RspFileListItem `json:"fileItems"`
 
 	CreatedAt  time.Time `json:"createdAt"`
 	ModifiedAt time.Time `json:"modifiedAt"`

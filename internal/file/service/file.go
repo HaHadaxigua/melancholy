@@ -42,7 +42,6 @@ func (s fileService) UserSpace(uid int) (*msg.RspFolderList, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	var rsp  msg.RspFolderList
 	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
 	rsp.List = list
