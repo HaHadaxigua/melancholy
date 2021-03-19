@@ -21,6 +21,12 @@ type ReqFolderUpdate struct {
 	UserID int
 }
 
+type ReqFolderDelete struct {
+	FolderID string `json:"folderID"`
+
+	UserID int
+}
+
 type ReqFileCreate struct {
 	ParentID string `json:"parentID"`
 	FileName string `json:"fileName"`

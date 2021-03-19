@@ -78,7 +78,10 @@ func deleteFolder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewErr(nil))
 		return
 	}
-	if err := service.FileSvc.FolderDelete(folderID, c.GetInt(consts.UserID)); err != nil {
+	req := &msg.ReqFolderDelete{
+		FolderID: folderID, UserID:   c.GetInt(consts.UserID),
+	}
+	if err := service.FileSvc.FolderDelete(req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}

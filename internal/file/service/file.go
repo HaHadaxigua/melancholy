@@ -18,7 +18,7 @@ type FileService interface {
 	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)
 	FolderCreate(req *msg.ReqFolderCreate) error
 	FolderUpload(req *msg.ReqFolderUpdate) error
-	FolderDelete(folderID string, userID int) error
+	FolderDelete(req *msg.ReqFolderDelete) error
 
 	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)
 	FileUpload(req *msg.ReqFileUpload) error
@@ -122,8 +122,8 @@ func (s fileService) FolderUpload(req *msg.ReqFolderUpdate) error {
 	return s.store.FolderUpdate(req)
 }
 
-func (s fileService) FolderDelete(folderID string, userID int) error {
-	return s.store.FolderDelete(folderID, userID)
+func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
+	return s.store.FolderDelete(req)
 }
 
 func (s fileService) FileCreate(req *msg.ReqFileCreate) error {

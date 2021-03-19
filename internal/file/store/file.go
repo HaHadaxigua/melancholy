@@ -4,6 +4,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FileStore interface {
@@ -14,7 +15,7 @@ type FileStore interface {
 	// FolderAppend 给目标文件夹添加文件夹
 	FolderAppend(folderID string, folder *model.Folder) error
 	FolderUpdate(req *msg.ReqFolderUpdate) error
-	FolderDelete(folderID string, ownerID int) error
+	FolderDelete(req *msg.ReqFolderDelete) error
 
 	FileFind(fileID string, userID int) (*model.File, error)
 	// FileList 列出一个文件夹下的所有文件
@@ -75,10 +76,11 @@ func (s fileStore) FolderUpdate(req *msg.ReqFolderUpdate) error {
 	return query.Update("name", req.NewName).Error
 }
 
-func (s fileStore) FolderDelete(folderID string, ownerID int) error {
+func (s fileStore) FolderDelete(req *msg.ReqFolderDelete) error {
 	query := s.db
-	return query.Model(&model.Folder{ID: folderID, OwnerID: ownerID}).Association("subs").Clear()
+	return query.Select(clause.Associations).Delete(&model.Folder{ID: req.FolderID, OwnerID: req.UserID}).Error
 }
+
 
 // FileList 列出一个文件夹中的所有文件
 func (s fileStore) FileList(folderID string, userID int) ([]*model.File, error) {
