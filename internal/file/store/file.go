@@ -7,15 +7,16 @@ import (
 )
 
 type FileStore interface {
-	FoldersList(userID int, folderID string) ([]*model.Folder, error)
+	List(folderID string, userID int) ([]*model.Folder, error)
 	FolderFind(folderID string, ownerID int) (*model.Folder, error)
+	GetFolder(folderID string, withSub bool)(*model.Folder, error)
 	FolderCreate(folder *model.Folder) error
 	FolderAppend(parentID string, folder *model.Folder) error
 	FolderUpdate(req *msg.ReqFolderUpdate) error
 	FolderDelete(folderID string, ownerID int) error
 
 	FileFind(fileID string) (*model.File, error)
-	FileList(parentID string, ownerID int) ([]*model.File, error)
+	FileList(parentID string) ([]*model.File, error)
 	FileCreate(file *model.File) error
 	FileDelete(fileID, parentID string) error
 }
@@ -30,13 +31,13 @@ func NewFolderStore(conn *gorm.DB) *fileStore {
 	}
 }
 
-/**
-列出用户在某个文件夹下的所有文件和文件夹
-*/
-func (s fileStore) FoldersList(uid int, folderID string) ([]*model.Folder, error) {
+// List 列出用户在文件夹下的所有文件和子文件夹
+func (s fileStore) List(folderID string, userID int) ([]*model.Folder, error) {
 	var folders []*model.Folder
 	query := s.db.Model(&model.Folder{ID: folderID}).Preload("Files")
-	if err := query.Select("folders.id, owner_id, name, created_at,updated_at,deleted_at").Where("owner_id = ?", uid).Association("Subs").Find(&folders); err != nil {
+	if err := query.Where("owner_id = ?", userID).
+		Association("Subs").
+		Find(&folders); err != nil {
 		return nil, err
 	}
 	return folders, nil
@@ -55,6 +56,19 @@ func (s fileStore) FolderFind(folderID string, ownerID int) (*model.Folder, erro
 		return nil, err
 	}
 	folder.Subs = subFolders
+	return &folder, nil
+}
+
+
+func(s fileStore) GetFolder(folderID string, withSub bool)(*model.Folder, error) {
+	var folder model.Folder
+	query := s.db.Model(&model.Folder{ID: folderID})
+	if withSub {
+		query = query.Preload("Subs")
+	}
+	if err := query.Scan(&folder).Error; err != nil {
+		return nil, err
+	}
 	return &folder, nil
 }
 
@@ -81,13 +95,13 @@ func (s fileStore) FolderDelete(folderID string, ownerID int) error {
 }
 
 // 列出一个文件夹中的所有文件
-func (s fileStore) FileList(parentID string, ownerID int) ([]*model.File, error) {
-	var folder model.Folder
-	query := s.db.Model(&model.Folder{ID: parentID, OwnerID: ownerID})
-	if err := query.Preload("Files").Take(&folder).Error; err != nil {
+func (s fileStore) FileList(folderID string) ([]*model.File, error) {
+	var files []*model.File
+	query := s.db.Model(&model.File{})
+	if err := query.Where("parent_id = ?", folderID).Find(&files).Error; err != nil {
 		return nil, err
 	}
-	return folder.Files, nil
+	return files, nil
 }
 
 func (s fileStore) FileFind(fileID string) (*model.File, error) {

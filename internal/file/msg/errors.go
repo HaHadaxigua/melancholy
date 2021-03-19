@@ -16,4 +16,5 @@ var (
 	ErrFileHasExisted = &response.Err{Code: 10302, Message: consts.FileRepeatedErrorMsg}
 	ErrFileNotFound   = &response.Err{Code: 10303, Message: consts.FileNotFoundErrorMsg}
 	ErrBadFilename    = &response.Err{Code: 10304, Message: consts.FileBadNameErrorMsg}
+	ErrTargetFolderNotExist = &response.Err{Code: 10305, Message: consts.FileTargetFolderNotExistMsg}
 )

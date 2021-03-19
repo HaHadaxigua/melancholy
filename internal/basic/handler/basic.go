@@ -14,7 +14,7 @@ import (
 )
 
 func SetupBasicRouters(r gin.IRouter) {
-	secured := r.Group("/basic", middleware.JWT)
+	secured := r.Group("/basic", middleware.Auth)
 
 	role := secured.Group("/r")
 	role.GET("/role", listRoles)
@@ -79,12 +79,12 @@ func listRoles(c *gin.Context) {
 }
 
 func listUsers(c *gin.Context) {
-	req := &msg.ReqUserFilter{}
-	if err := c.BindQuery(req); err != nil {
+	var req msg.ReqUserFilter
+	if err := c.BindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	if rsp, err := service.User.ListUsers(req, true); err != nil {
+	if rsp, err := service.User.ListUsers(&req, true); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	} else {

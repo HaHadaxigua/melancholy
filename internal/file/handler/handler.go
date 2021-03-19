@@ -15,83 +15,98 @@ func SetupFileRouters(r gin.IRouter) {
 	// open
 
 	// secured
-	secured := r.Group("/f", middleware.JWT)
-	// 文件夹
+	secured := r.Group("/f", middleware.Auth)
+	// folder's api
 	folder := secured.Group("/folder")
 	folder.POST("/create", createFolder)
-	folder.GET("/space", fileSpace)
+	folder.GET("/space", userSpace)
 	folder.PATCH("/info", modifyFolder)
 	folder.DELETE("/:id", deleteFolder)
 
+	// file's api
 	file := secured.Group("/file")
+	file.GET("/list", listFile)
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)
 	file.POST("/upload", uploadFile)
 }
 
 func createFolder(c *gin.Context) {
-	req := &msg.ReqFolderCreate{}
-	if err := c.BindJSON(req); err != nil {
+	var req msg.ReqFolderCreate
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
-	} else {
-		uid := c.GetInt(consts.UserID)
-		req.UserID = uid
 	}
-	if err := service.FileSvc.CreateFolder(req); err != nil {
+	req.UserID = c.GetInt(consts.UserID)
+
+	if err := service.FileSvc.FolderCreate(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
-func fileSpace(c *gin.Context) {
+func userSpace(c *gin.Context) {
 	uid := c.GetInt(consts.UserID)
-	if rsp, err := service.FileSvc.ListFileSpace(uid); err != nil {
+	rsp, err := service.FileSvc.UserSpace(uid)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
-	} else {
-		c.JSON(http.StatusOK, response.Ok(rsp))
 	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
 func modifyFolder(c *gin.Context) {
-	req := &msg.ReqFolderUpdate{}
-	if err := c.BindJSON(req); err != nil {
+	var req msg.ReqFolderUpdate
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
-	} else {
-		req.UserID = c.GetInt(consts.UserID)
 	}
-	if err := service.FileSvc.UpdateFolder(req); err != nil {
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FolderUpload(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
-	} else {
-		c.JSON(http.StatusOK, response.Ok(nil))
 	}
+	c.JSON(http.StatusOK, response.Ok(nil))
 }
+
 func deleteFolder(c *gin.Context) {
 	folderID := c.Param("id")
 	if folderID == "" {
 		c.JSON(http.StatusBadRequest, response.NewErr(nil))
 		return
 	}
-	if err := service.FileSvc.DeleteFolder(folderID, c.GetInt(consts.UserID)); err != nil {
+	if err := service.FileSvc.FolderDelete(folderID, c.GetInt(consts.UserID)); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
-func createFile(c *gin.Context) {
-	req := &msg.ReqFileCreate{}
-	if err := c.BindJSON(req); err != nil {
+// listFile 列出文件
+func listFile(c *gin.Context) {
+	var req msg.ReqFileListFilter
+	if err := c.BindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
-	} else {
-		req.UserID = c.GetInt(consts.UserID)
 	}
-	if err := service.FileSvc.CreateFile(req); err != nil {
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FileList(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+func createFile(c *gin.Context) {
+	var req msg.ReqFileCreate
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FileCreate(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -101,7 +116,7 @@ func createFile(c *gin.Context) {
 func deleteFile(c *gin.Context) {
 	fileID := c.Param("id")
 	uid := c.GetInt(consts.UserID)
-	if err := service.FileSvc.DeleteFile(fileID, uid); err != nil {
+	if err := service.FileSvc.FileDelete(fileID, uid); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -116,10 +131,11 @@ func uploadFile(c *gin.Context) {
 	}
 	var req msg.ReqFileUpload
 
-	if err := c.Bind(req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
+	// fixme: 处理文件上传 需要流进行流式上传
 	data, err := io.ReadAll(file)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
@@ -129,7 +145,7 @@ func uploadFile(c *gin.Context) {
 	req.Data = data
 	req.UserID = c.GetInt(consts.UserID)
 
-	if err := service.FileSvc.UploadFile(&req); err != nil {
+	if err := service.FileSvc.FileUpload(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}

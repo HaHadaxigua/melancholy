@@ -22,16 +22,30 @@ type ReqFolderUpdate struct {
 }
 
 type ReqFileCreate struct {
-	FileName string `json:"fileName"`
 	ParentID string `json:"parentID"`
+	FileName string `json:"fileName"`
+	FileType int    `json:"fileType"` // 创建的文件类型
+	UserID   int
+}
+
+type ReqFileUpload struct {
+	Data       []byte                `json:"data"`
+	FileHeader *multipart.FileHeader `json:"fileHeader"`
+	ParentID   string                `form:"parentID" json:"parentID"`
 
 	UserID int
 }
 
-type ReqFileUpload struct {
-	Data       []byte                `json:"data" `
-	FileHeader *multipart.FileHeader `json:"fileHeader"`
-	ParentID   string                `form:"parentID" json:"parentID"`
+// ReqFolderListFilter 列出文件夹
+type ReqFolderListFilter struct {
+	FolderID string `json:"folderID"`
+
+	UserID int
+}
+
+// ReqFileListFilter 列出指定文件夹中的文件
+type ReqFileListFilter struct {
+	FolderID string `form:"folderID" json:"folderID"`
 
 	UserID int
 }

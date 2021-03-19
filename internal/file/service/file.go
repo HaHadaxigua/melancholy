@@ -14,16 +14,16 @@ import (
 var FileSvc FileService
 
 type FileService interface {
-	ListFileSpace(uid int) (*msg.RspFolderList, error)
-	CreateFolder(req *msg.ReqFolderCreate) error
-	UpdateFolder(req *msg.ReqFolderUpdate) error
-	DeleteFolder(folderID string, userID int) error
+	UserSpace(uid int) (*msg.RspFolderList, error)
+	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)
+	FolderCreate(req *msg.ReqFolderCreate) error
+	FolderUpload(req *msg.ReqFolderUpdate) error
+	FolderDelete(folderID string, userID int) error
 
-	UploadFile(req *msg.ReqFileUpload) error
-
-	// test
-	CreateFile(req *msg.ReqFileCreate) error
-	DeleteFile(fileID string, userID int) error
+	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)
+	FileUpload(req *msg.ReqFileUpload) error
+	FileCreate(req *msg.ReqFileCreate) error
+	FileDelete(fileID string, userID int) error
 }
 
 type fileService struct {
@@ -36,29 +36,34 @@ func NewFileService(conn *gorm.DB) *fileService {
 	}
 }
 
-/**
-list folder's in root.
-*/
-func (s fileService) ListFileSpace(uid int) (*msg.RspFolderList, error) {
-	folders, err := s.store.FoldersList(uid, consts.RootFileID)
+// ListFileSpace 列出用户的根文件夹
+func (s fileService) UserSpace(uid int) (*msg.RspFolderList, error) {
+	folders, err := s.store.List(consts.RootFileID, uid)
 	if err != nil {
 		return nil, err
 	}
 
-	rsp := &msg.RspFolderList{}
-
-	list := FunctionalFolderMap(folders, buildFolderRsp)
-	switch list.(type) {
-	case error:
-		return nil, list.(error)
-	case []*msg.RspFolderListItem:
-		rsp.List = list.([]*msg.RspFolderListItem)
-		return rsp, nil
-	}
-	return nil, nil
+	var rsp  msg.RspFolderList
+	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
+	rsp.List = list
+	return &rsp, nil
 }
 
-func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
+//  ListFolders 列出文件夹
+func (s fileService) FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error) {
+	folders, err := s.store.List(req.FolderID, req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	var rsp msg.RspFolderList
+	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
+	rsp.List= list
+	return &rsp, nil
+}
+
+// FolderCreate 创建文件夹
+func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 	fid, err := tools.SnowflakeId()
 	if err != nil {
 		return err
@@ -69,13 +74,18 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 		OwnerID: req.UserID,
 	}
 
+	// if req ParentID is not empty, create folder in this folder
 	if req.ParentID != "" {
-		_folder, err := s.store.FolderFind(req.ParentID, req.UserID)
+		_folder, err := s.store.GetFolder(req.ParentID, true)
 		if err != nil {
 			return err
 		}
+		if _folder.OwnerID != req.UserID {
+			return msg.ErrTargetFolderNotExist
+		}
+		// is exist repeated folder
 		_filteredFolders := FunctionalFolderFilter(_folder.Subs, func(r *model.Folder) bool {
-			if r.Name == req.FolderName {
+			if r.Name == req.FolderName  {
 				return true
 			}
 			return false
@@ -83,7 +93,6 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 		if len(_filteredFolders) >= 1 {
 			return msg.ErrFileHasExisted
 		}
-
 		return s.store.FolderAppend(req.ParentID, folder)
 	}
 
@@ -100,34 +109,38 @@ func (s fileService) CreateFolder(req *msg.ReqFolderCreate) error {
 	return nil
 }
 
-func (s fileService) UpdateFolder(req *msg.ReqFolderUpdate) error {
+func (s fileService) FolderUpload(req *msg.ReqFolderUpdate) error {
 	if !tools.VerifyFileName(req.NewName) {
 		return msg.ErrBadFilename
 	}
 	return s.store.FolderUpdate(req)
 }
 
-func (s fileService) DeleteFolder(folderID string, userID int) error {
+func (s fileService) FolderDelete(folderID string, userID int) error {
 	return s.store.FolderDelete(folderID, userID)
 }
 
-func (s fileService) CreateFile(req *msg.ReqFileCreate) error {
-	_, err := s.store.FolderFind(req.ParentID, req.UserID)
+func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
+	folder, err := s.store.FolderFind(req.ParentID, req.UserID)
 	if err != nil {
 		return err
 	}
-	_files, err := s.store.FileList(req.ParentID, req.UserID)
+	if folder == nil {
+		return gorm.ErrRecordNotFound
+	}
+	_files, err := s.store.FileList(req.ParentID)
 	if err != nil {
 		return err
 	}
+	// if existed repeated name file
 	files := FunctionalFileFilter(_files, func(f *model.File) bool {
-		if f.Name == req.FileName {
+		if f.Name == req.FileName && f.Suffix == req.FileType{
 			return true
 		}
 		return false
 	})
 	if len(files) > 0 {
-		return response.BadRequest
+		return msg.ErrFileHasExisted
 	}
 
 	fid, err := tools.SnowflakeId()
@@ -137,13 +150,12 @@ func (s fileService) CreateFile(req *msg.ReqFileCreate) error {
 	file := &model.File{
 		ID:       fid,
 		Name:     req.FileName,
-		ParentID: req.ParentID,
-		MD5:      "todo:生成md5",
+		ParentID: req.ParentID, // create empty file don't need to generate file
 	}
 	return s.store.FileCreate(file)
 }
 
-func (s fileService) DeleteFile(fileID string, userID int) error {
+func (s fileService) FileDelete(fileID string, userID int) error {
 	_file, err := s.store.FileFind(fileID)
 	if err != nil {
 		return err
@@ -158,7 +170,27 @@ func (s fileService) DeleteFile(fileID string, userID int) error {
 	return s.store.FileDelete(fileID, folder.ID)
 }
 
-func (s fileService) UploadFile(req *msg.ReqFileUpload) error {
+func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 	fmt.Println(req.FileHeader.Filename)
 	return nil
+}
+
+// ListFiles 列出指定文件夹中的文件
+func(s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error){
+	folder, err := s.store.GetFolder(req.FolderID, false)
+	if err != nil {
+		return nil, err
+	}
+	if folder == nil {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	var rsp msg.RspFileList
+	files, err := s.store.FileList(req.FolderID)
+	if err != nil {
+		return nil, err
+	}
+	items := FunctionalFile(files, buildFileItemRsp).([]*msg.RspFileListItem)
+	rsp.List = items
+	return &rsp, nil
 }

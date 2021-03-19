@@ -29,12 +29,13 @@ func (f Folder) TableName() string {
 
 type File struct {
 	ID       string `json:"id"`
-	Name     string `json:"name"`
-	ParentID string `json:"parentFolderID"`
-
-	MD5     string `json:"md5"`     // 同时也可以根据这个MD5来直接找文件
-	Suffix  int    `json:"suffix"`  // 文件后缀
-	Address string `json:"address"` // 返回的oss地址
+	ParentID string `json:"parentID"` // 父文件夹ID
+	Name     string `json:"name"`     // 文件名
+	Suffix   int    `json:"suffix"`   // 文件后缀
+	Hash     string `json:"hash"`     // 文件hash
+	Address  string `json:"address"`  // 返回的oss地址
+	Size     int    `json:"size"`     // 文件大小
+	Mode     int    `json:"mode"`     // 文件模式
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`

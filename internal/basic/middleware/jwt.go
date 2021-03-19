@@ -16,7 +16,7 @@ type authHeader struct {
 	AccessToken string `header:"Access-Token"`
 }
 
-func JWT(c *gin.Context) {
+func Auth(c *gin.Context) {
 	ah := authHeader{}
 
 	if err := c.ShouldBindHeader(&ah); err != nil {
