@@ -39,3 +39,8 @@ type RspFileList struct {
 	List  []*RspFileListItem `json:"list"`
 	Total int                `json:"total"`
 }
+
+type RspFileDownload struct {
+	Content  []byte `json:"content"`
+	FileName string `json:"fileName"`
+}

@@ -26,7 +26,7 @@ type FileService interface {
 	FileCreate(req *msg.ReqFileCreate) error                       // 创建文件
 	FileDelete(fileID string, userID int) error                    // 删除文件
 
-	FileDownload(req *msg.ReqFileDownload) ([]byte, error) // 下载文件,需要流式处理
+	FileDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 下载文件,需要流式处理
 }
 
 type fileService struct {
@@ -130,6 +130,9 @@ func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
 }
 
 func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
+	if !req.Verify() {
+		return msg.ErrFileUnSupport
+	}
 	folder, err := s.store.GetFolder(req.ParentID, false)
 	if err != nil {
 		return err
@@ -137,6 +140,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 	if folder == nil {
 		return gorm.ErrRecordNotFound
 	}
+	// 1. 列出当前文件夹下的文件
 	_files, err := s.store.FileList(req.ParentID, req.UserID)
 	if err != nil {
 		return err
@@ -179,8 +183,23 @@ func (s fileService) FileDelete(fileID string, userID int) error {
 	return s.store.FileDelete(fileID, folder.ID)
 }
 
+// FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
-	fmt.Println(req.FileHeader.Filename)
+	createFileReq := &msg.ReqFileCreate{
+		ParentID: req.ParentID,
+		FileName: req.FileHeader.Filename,
+		FileType: req.FileType,
+		UserID:   req.UserID,
+	}
+
+	if err := s.FileCreate(createFileReq); err != nil {
+		return err
+	}
+
+	if err := oss.AliyunOss.UploadBytes(fmt.Sprint(req.UserID), req.FileHeader.Filename, req.Data); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -205,7 +224,7 @@ func (s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, err
 }
 
 // DownloadFile 处理文件下载 fixme: 完成文件下载的部分
-func (s fileService) FileDownload(req *msg.ReqFileDownload) ([]byte, error) {
+func (s fileService) FileDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) {
 	logicFile, err := s.store.FileFind(req.FileID, req.UserID)
 	if err != nil {
 		return nil, err
@@ -216,5 +235,8 @@ func (s fileService) FileDownload(req *msg.ReqFileDownload) ([]byte, error) {
 	}
 	ret := make([]byte, buf.Len())
 	buf.Read(ret)
-	return ret, nil
+	var rsp msg.RspFileDownload
+	rsp.Content = ret
+	rsp.FileName = logicFile.Name
+	return &rsp, nil
 }

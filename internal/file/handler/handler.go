@@ -132,7 +132,7 @@ func deleteFile(c *gin.Context) {
 }
 
 func uploadFile(c *gin.Context) {
-	file, header, err := c.Request.FormFile("file")
+	file, header, err := c.Request.FormFile(fConst.FileUpload)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
@@ -167,14 +167,14 @@ func downloadFile(c *gin.Context) {
 		return
 	}
 	req.UserID = c.GetInt(consts.UserID)
-	content, err := service.FileSvc.FileDownload(&req)
+	rsp, err := service.FileSvc.FileDownload(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
 	c.Writer.WriteHeader(http.StatusOK)
-	c.Header(fConst.ContentDisposition, "attachment; filename=hello.txt")
+	c.Header(fConst.ContentDisposition, fmt.Sprintf("attachment; filename=%s", rsp.FileName))
 	c.Header(fConst.ContentType, "application/text/plain")
-	c.Header(fConst.AcceptLength, fmt.Sprintf("%d", len(content)))
-	c.Writer.Write(content)
+	c.Header(fConst.AcceptLength, fmt.Sprintf("%d", len(rsp.Content)))
+	c.Writer.Write(rsp.Content)
 }

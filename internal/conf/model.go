@@ -40,5 +40,4 @@ type Oss struct {
 	EndPoint        string `json:"endPoint"`
 	AccessKeyID     string `json:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret"`
-	BucketName      string `json:"bucketName"`
 }

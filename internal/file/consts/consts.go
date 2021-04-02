@@ -6,6 +6,11 @@
 package consts
 
 const (
+	FileUpload = "file"
+)
+
+// 文件下载
+const (
 	ContentType        = "Content-Type"
 	ContentDisposition = "Content-Disposition"
 	AcceptLength       = "Accept-Length"
@@ -19,18 +24,31 @@ const (
 	FileNotFoundErrorMsg        string = "文件未找到"
 	FileBadNameErrorMsg         string = "文件名非法"
 	FileTargetFolderNotExistMsg string = "目标文件不存在"
+	FileFileUnSupport           string = "文件格式不支持"
 )
 
 const (
 	RootFileID string = "root"
 )
 
-const (
-	UPLOAD string = "upload"
-)
-
 // file types which can be created
 const (
-	FileType = iota
-	FileTypeTxt
+	FileTypeTxtID = iota + 1
+	FileTypeShID
+)
+
+const (
+	FileTypeTxtStr = ".txt"
+	FileTypeShell  = ".sh"
+)
+
+var (
+	MapFileTypeToID map[string]int = map[string]int{
+		FileTypeTxtStr: FileTypeTxtID,
+		FileTypeShell:  FileTypeShID,
+	}
+	MapFileTypeToStr map[int]string = map[int]string{
+		FileTypeTxtID: FileTypeTxtStr,
+		FileTypeShID:  FileTypeShell,
+	}
 )
