@@ -55,3 +55,10 @@ type ReqFileListFilter struct {
 
 	UserID int
 }
+
+// ReqFileDownload 下载文件的请求
+type ReqFileDownload struct {
+	FileID string `form:"fileID" json:"fileID"`
+
+	UserID int
+}

@@ -29,15 +29,17 @@ func (f Folder) TableName() string {
 }
 
 type File struct {
-	ID       string `json:"id"`
-	OwnerID  int `json:"ownerID"`  // 创建者ID
-	ParentID string `json:"parentID"` // 父文件夹ID
-	Name     string `json:"name"`     // 文件名
-	Suffix   int    `json:"suffix"`   // 文件后缀
-	Hash     string `json:"hash"`     // 文件hash
-	Address  string `json:"address"`  // 返回的oss地址
-	Size     int    `json:"size"`     // 文件大小
-	Mode     int    `json:"mode"`     // 文件模式
+	ID         string `json:"id"`
+	OwnerID    int    `json:"ownerID"`    // 创建者ID
+	ParentID   string `json:"parentID"`   // 父文件夹ID
+	Name       string `json:"name"`       // 文件名
+	Suffix     int    `json:"suffix"`     // 文件后缀
+	Hash       string `json:"hash"`       // 文件hash
+	Address    string `json:"address"`    // 返回的oss地址
+	BucketName string `json:"bucketName"` // oss中的存储桶名字
+	ObjectName string `json:"objectName"` // oss中的存储对象名字
+	Size       int    `json:"size"`       // 文件大小
+	Mode       int    `json:"mode"`       // 文件模式
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`

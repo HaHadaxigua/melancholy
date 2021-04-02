@@ -8,6 +8,8 @@ package internal
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/common/oss"
+	"github.com/HaHadaxigua/melancholy/internal/common/oss/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file"
@@ -30,6 +32,7 @@ func StartServer() {
 
 	Se.Engine = gin.Default()
 
+	initOssConfig()
 	startService(Se.Engine)
 
 	hs := &http.Server{
@@ -43,6 +46,11 @@ func StartServer() {
 	if err != nil {
 		logrus.Panicf("Start server failed [%v]", err.Error())
 	}
+}
+
+// 初始化对象存储配置
+func initOssConfig() {
+	oss.AliyunOss = aliyun.NewAliyunOss(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
 }
 
 func startService(e *gin.Engine) {

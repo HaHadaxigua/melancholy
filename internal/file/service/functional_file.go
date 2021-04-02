@@ -19,7 +19,6 @@ type FuncFileBuildRsp func(file *model.File) *msg.RspFileListItem
 var (
 	buildFolderItemRsp FuncFolderBuildRsp = func(folder *model.Folder) *msg.RspFolderListItem {
 		fileItems := FunctionalFile(folder.Files, buildFileItemRsp).([]*msg.RspFileListItem)
-
 		return &msg.RspFolderListItem{
 			FolderID:   folder.ID,
 			FolderName: folder.Name,
@@ -66,30 +65,30 @@ func FunctionalFileFilter(files []*model.File, fn func(f *model.File) bool) []*m
 	return out
 }
 
+// FunctionalFolder 用于文件夹的通用方法
 func FunctionalFolder(folders []*model.Folder, fn interface{}) interface{} {
 	var out interface{}
 	switch fn.(type) {
 	case FuncFolderBuildRsp:
-		_temp := make([]*msg.RspFolderListItem, 0)
-		for _, e := range folders {
-			rsp := fn.(FuncFolderBuildRsp)(e)
-			_temp = append(_temp, rsp)
+		items := make([]*msg.RspFolderListItem, len(folders))
+		for i, folder := range folders {
+			items[i] = fn.(FuncFolderBuildRsp)(folder)
 		}
-		out = _temp
+		out = items
 	}
 	return out
 }
 
+// FunctionalFile 用于文件的同用方法
 func FunctionalFile(files []*model.File, fn interface{}) interface{} {
 	var out interface{}
 	switch fn.(type) {
 	case FuncFileBuildRsp:
-		_temp := make([]*msg.RspFileListItem, len(files))
-		for i, e := range files {
-			rsp := fn.(FuncFileBuildRsp)(e)
-			_temp[i] = rsp
+		items := make([]*msg.RspFileListItem, len(files))
+		for i, file := range files {
+			items[i] = fn.(FuncFileBuildRsp)(file)
 		}
-		out = _temp
+		out = items
 	}
 	return out
 }

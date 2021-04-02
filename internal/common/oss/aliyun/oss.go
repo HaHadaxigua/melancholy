@@ -8,6 +8,7 @@ package aliyun
 import (
 	"bytes"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"io"
 	"os"
 )
 
@@ -31,8 +32,7 @@ func (ali AliyunOss) GetClient() *oss.Client {
 	return ali.client
 }
 
-
-func (api AliyunOss) ListBucketNames()([]string,error){
+func (api AliyunOss) ListBucketNames() ([]string, error) {
 	var ret []string
 	marker := ""
 	for {
@@ -45,7 +45,7 @@ func (api AliyunOss) ListBucketNames()([]string,error){
 		}
 		if lsRes.IsTruncated {
 			marker = lsRes.NextMarker
-		}else {
+		} else {
 			break
 		}
 	}
@@ -89,8 +89,8 @@ func (ali AliyunOss) UploadBytes(bucketName, objectName string, data []byte) err
 }
 
 // UploadFileStream 上传文件流
-func (api AliyunOss) UploadFileStream(objectName, bucketName string, fd *os.File) error {
-	client := api.GetClient()
+func (ali AliyunOss) UploadFileStream(objectName, bucketName string, fd *os.File) error {
+	client := ali.GetClient()
 	bucket, err := client.Bucket(bucketName)
 	if err != nil {
 		return err
@@ -98,4 +98,25 @@ func (api AliyunOss) UploadFileStream(objectName, bucketName string, fd *os.File
 	defer fd.Close()
 	err = bucket.PutObject(objectName, fd)
 	return err
+}
+
+// DownloadFileByStream 处理文件的下载，写到缓存中
+func (ali AliyunOss) DownloadFileByStream(bucketName, objectName string) (*bytes.Buffer, error) {
+	client := ali.GetClient()
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		return nil, err
+	}
+	body, err := bucket.GetObject(objectName)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+	// 下载文件到缓存
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, body)
+	if err != nil {
+		return buf, err
+	}
+	return nil, err
 }

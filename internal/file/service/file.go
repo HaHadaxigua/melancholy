@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -14,16 +15,18 @@ import (
 var FileSvc FileService
 
 type FileService interface {
-	UserRoot(uid int) (*msg.RspFolderList, error) // 列出用户的根目录
-	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)
-	FolderCreate(req *msg.ReqFolderCreate) error
-	FolderUpload(req *msg.ReqFolderUpdate) error
-	FolderDelete(req *msg.ReqFolderDelete) error
+	UserRoot(uid int) (*msg.RspFolderList, error)                        // 列出用户的根目录
+	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error) // 列出文件夹
+	FolderCreate(req *msg.ReqFolderCreate) error                         // 创建文件夹
+	FolderUpload(req *msg.ReqFolderUpdate) error                         // 上传文件夹
+	FolderDelete(req *msg.ReqFolderDelete) error                         // 删除文件夹
 
-	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)
-	FileUpload(req *msg.ReqFileUpload) error
-	FileCreate(req *msg.ReqFileCreate) error
-	FileDelete(fileID string, userID int) error
+	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error) // 列出文件
+	FileUpload(req *msg.ReqFileUpload) error                       // 上传文件
+	FileCreate(req *msg.ReqFileCreate) error                       // 创建文件
+	FileDelete(fileID string, userID int) error                    // 删除文件
+
+	FileDownload(req *msg.ReqFileDownload) ([]byte, error) // 下载文件,需要流式处理
 }
 
 type fileService struct {
@@ -44,7 +47,7 @@ func (s fileService) UserRoot(uid int) (*msg.RspFolderList, error) {
 	}
 	files, err := s.store.FileList(consts.RootFileID, uid)
 	fileItems := FunctionalFile(files, buildFileItemRsp).([]*msg.RspFileListItem)
-	var rsp  msg.RspFolderList
+	var rsp msg.RspFolderList
 	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
 	rsp.FolderItems = list
 	rsp.FileItems = fileItems
@@ -90,12 +93,12 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 		// is exist repeated folder
 		// 判断是否有重名的文件夹
 		_filteredFolders := FunctionalFolderFilter(parentFolder.Subs, func(r *model.Folder) bool {
-			if r.Name == req.FolderName  {
+			if r.Name == req.FolderName {
 				return true
 			}
 			return false
 		})
-		if len(_filteredFolders) > 0  { // 存在重名的文件夹
+		if len(_filteredFolders) > 0 { // 存在重名的文件夹
 			return msg.ErrFileHasExisted
 		}
 		return s.store.FolderAppend(req.ParentID, folder) // 添加文件夹
@@ -140,7 +143,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 	}
 	// if existed repeated name file
 	files := FunctionalFileFilter(_files, func(f *model.File) bool {
-		if f.Name == req.FileName && f.Suffix == req.FileType{
+		if f.Name == req.FileName && f.Suffix == req.FileType {
 			return true
 		}
 		return false
@@ -166,7 +169,7 @@ func (s fileService) FileDelete(fileID string, userID int) error {
 	if err != nil {
 		return err
 	}
-	folder, err := s.store.GetFolder(_file.ParentID,false)
+	folder, err := s.store.GetFolder(_file.ParentID, false)
 	if err != nil {
 		return err
 	}
@@ -182,7 +185,7 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 }
 
 // ListFiles 列出指定文件夹中的文件
-func(s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error){
+func (s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error) {
 	folder, err := s.store.GetFolder(req.FolderID, false)
 	if err != nil {
 		return nil, err
@@ -199,4 +202,19 @@ func(s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, erro
 	items := FunctionalFile(files, buildFileItemRsp).([]*msg.RspFileListItem)
 	rsp.List = items
 	return &rsp, nil
+}
+
+// DownloadFile 处理文件下载 fixme: 完成文件下载的部分
+func (s fileService) FileDownload(req *msg.ReqFileDownload) ([]byte, error) {
+	logicFile, err := s.store.FileFind(req.FileID, req.UserID)
+	if err != nil {
+		return nil, err
+	}
+	buf, err := oss.AliyunOss.DownloadFileByStream(logicFile.BucketName, logicFile.ObjectName)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]byte, buf.Len())
+	buf.Read(ret)
+	return ret, nil
 }

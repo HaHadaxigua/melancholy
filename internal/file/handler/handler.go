@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -29,6 +30,7 @@ func SetupFileRouters(r gin.IRouter) {
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)
 	file.POST("/upload", uploadFile)
+	file.GET("/download", downloadFile)
 }
 
 func createFolder(c *gin.Context) {
@@ -79,7 +81,7 @@ func deleteFolder(c *gin.Context) {
 		return
 	}
 	req := &msg.ReqFolderDelete{
-		FolderID: folderID, UserID:   c.GetInt(consts.UserID),
+		FolderID: folderID, UserID: c.GetInt(consts.UserID),
 	}
 	if err := service.FileSvc.FolderDelete(req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
@@ -155,4 +157,23 @@ func uploadFile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+func downloadFile(c *gin.Context) {
+	var req msg.ReqFileDownload
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	content, err := service.FileSvc.FileDownload(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Header("Content-Disposition", "attachment; filename=hello.txt")
+	c.Header("Content-Type", "application/text/plain")
+	c.Header("Accept-Length", fmt.Sprintf("%d", len(content)))
+	c.Writer.Write(content)
 }

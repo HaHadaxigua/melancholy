@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// Persistence 文件持久化
+// Persistence 文件持久化相关，处理用户的本地文件
 type Persistence interface {
 	// 保存小文件：将文件持久化 p: 文件名，文件位置，要保存的数据
 	SaveSimpleFile(filename, location string, data []byte) error
