@@ -11,18 +11,18 @@ Application:
   AppSecret: 43f776358a
   AppIss: github.com/HaHadaxigua/melancholy
 Database:
-  Dbtype: mysql
-  Host: sh-cdb-r9u1s7k2.sql.tencentcdb.com
-  Port: 60246
-  Name: melancholy
-  Password: r-N2_PrMAJzzkeQ
-  Username: root
+  Dbtype:
+  Host:
+  Port:
+  Name:
+  Password:
+  Username:
 Gorm:
   LogMode: 0
   MaxIdleConn: 0
   MaxOpenConn: 20000
 OSS:
-  EndPoint: http://oss-cn-shanghai.aliyuncs.com
-  AccessKeyID: LTAI4G2LaueUq1PHhpL4wzUx
-  AccessKeySecret: d3Hkx1HmhVippntj5fsONwchvKWkHK
-  BucketName: test
+  EndPoint:
+  AccessKeyID:
+  AccessKeySecret:
+  BucketName:
