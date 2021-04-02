@@ -6,6 +6,12 @@
 package consts
 
 const (
+	ContentType        = "Content-Type"
+	ContentDisposition = "Content-Disposition"
+	AcceptLength       = "Accept-Length"
+)
+
+const (
 	// fi
 	FileCreatedFailedMsg        string = "文件创建失败"
 	FileSaveFailedErrorMsg      string = "文件保存失败"
@@ -22,7 +28,6 @@ const (
 const (
 	UPLOAD string = "upload"
 )
-
 
 // file types which can be created
 const (

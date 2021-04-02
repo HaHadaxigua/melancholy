@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
+	fConst "github.com/HaHadaxigua/melancholy/internal/file/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/HaHadaxigua/melancholy/internal/response"
@@ -172,8 +173,8 @@ func downloadFile(c *gin.Context) {
 		return
 	}
 	c.Writer.WriteHeader(http.StatusOK)
-	c.Header("Content-Disposition", "attachment; filename=hello.txt")
-	c.Header("Content-Type", "application/text/plain")
-	c.Header("Accept-Length", fmt.Sprintf("%d", len(content)))
+	c.Header(fConst.ContentDisposition, "attachment; filename=hello.txt")
+	c.Header(fConst.ContentType, "application/text/plain")
+	c.Header(fConst.AcceptLength, fmt.Sprintf("%d", len(content)))
 	c.Writer.Write(content)
 }
