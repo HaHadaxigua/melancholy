@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
-	"net/url"
 	"os"
 	"time"
 )
@@ -18,13 +17,20 @@ var db *gorm.DB
 // Setup 初始化数据库连接
 func SetupGorm() {
 	var err error
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&time_zone=%s",
+	//dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&time_zone=%s",
+	//	conf.C.Database.Username,
+	//	conf.C.Database.Password,
+	//	conf.C.Database.Host,
+	//	conf.C.Database.Port,
+	//	conf.C.Database.Name,
+	//	url.QueryEscape("'Asia/Shanghai'"))
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		conf.C.Database.Username,
 		conf.C.Database.Password,
 		conf.C.Database.Host,
 		conf.C.Database.Port,
-		conf.C.Database.Name,
-		url.QueryEscape("'Asia/Shanghai'"))
+		conf.C.Database.Name)
 
 	// gorm的日志记录器
 	newLogger := logger.New(

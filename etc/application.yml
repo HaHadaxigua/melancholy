@@ -7,22 +7,22 @@ Application:
   Port: "8002"
   ReadTimeout: 1
   WriterTimeout: 2
-  Location: F:\melancholy
+  Location: ~/install/
   AppSecret: 43f776358a
   AppIss: github.com/HaHadaxigua/melancholy
 Database:
   Dbtype: mysql
-  Host: 192.168.0.106
-  Port: 3307
+  Host: sh-cdb-r9u1s7k2.sql.tencentcdb.com
+  Port: 60246
   Name: melancholy
-  Password: 123456
+  Password: r-N2_PrMAJzzkeQ
   Username: root
 Gorm:
   LogMode: 0
   MaxIdleConn: 0
   MaxOpenConn: 20000
 OSS:
-  EndPoint:
-  AccessKeyID:
-  AccessKeySecret:
-  BucketName:
+  EndPoint: http://oss-cn-shanghai.aliyuncs.com
+  AccessKeyID: LTAI4G2LaueUq1PHhpL4wzUx
+  AccessKeySecret: d3Hkx1HmhVippntj5fsONwchvKWkHK
+  BucketName: test

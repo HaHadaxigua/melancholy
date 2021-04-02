@@ -69,13 +69,14 @@ func login(c *gin.Context) {
 
 // register
 func register(c *gin.Context) {
-	r := &msg.ReqRegister{}
-	if err := c.BindJSON(r); err != nil {
+	var r msg.ReqRegister
+
+	if err := c.BindJSON(&r); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
 
-	user, err := service.User.CreateUser(r)
+	user, err := service.User.CreateUser(&r)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
