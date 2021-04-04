@@ -94,16 +94,19 @@ type ReqFileDownload struct {
 
 // ReqFileMultiCheck 检查文件上传情况
 type ReqFileMultiCheck struct {
-	Hash string `form:"hash" json:"hash"`
+	Hash     string `form:"hash" json:"hash"` // 要上传的文件hash
+	Filename string `form:"filename" json:"filename"`
 
 	UserID int
 }
 
 // ReqFileMultiUpload 上传文件分片
 type ReqFileMultiUpload struct {
+	Filename  string `json:"filename"`  // 文件名称
 	Hash      string `json:"hash"`      // 文件hash， 根据文件hash找到文件
 	ChunkID   string `json:"chunkID"`   // 文件的分片id
 	ChunkHash string `json:"ChunkHash"` // 分片的hash
+	Total     int    `json:"total"`     // 总共有多少个分片
 
 	C          *gin.Context          // gin的上下文
 	FileHeader *multipart.FileHeader // describes a file part of a multipart request.

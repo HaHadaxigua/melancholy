@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
@@ -267,7 +268,7 @@ func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMul
 		fileName := f.Name()
 		chunkList = append(chunkList, fileName)
 		fileBaseName := strings.Split(fileName, ".")[0]
-		if fileBaseName == req.Hash { // 如果存在一个文件名和hash值一致的文件，则说明已经上传完成了,也就不需要获取完整的分片列表了
+		if fileBaseName == req.Filename { // 如果存在一个文件名一致的文件，则说明已经上传完成了,也就不需要获取完整的分片列表了
 			state = 1
 			break
 		}
@@ -277,7 +278,7 @@ func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMul
 	return &rsp, nil
 }
 
-// FileMultiUpload 分片文件的上传处理
+// FileMultiUpload 分片文件的上传处理,当全部分片上传完成后，会进行合并
 func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) {
 	hashPath := utils.GetMultiFilePath(req.Hash)
 	// 不存在文件夹则进行创建
@@ -303,5 +304,29 @@ func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileM
 	}
 	var rsp msg.RspFileMultiUpload
 	rsp.ChunkList = chunkList
+	if len(chunkList) != req.Total {
+		return &rsp, nil
+	}
+	// 说明文件全部上传完毕，需要进行合并
+	complateFile, err := os.Create(hashPath + "/" + req.Filename)
+	bufferWriter := bufio.NewWriter(complateFile)
+	if err != nil {
+		return nil, err
+	}
+	defer complateFile.Close()
+	for _, file := range files {
+		filename := file.Name()
+		if _, ok := envir.ExcludeFiles[filename]; ok {
+			continue
+		}
+		fileData, err := ioutil.ReadFile(hashPath + "/" + file.Name())
+		if err != nil {
+			return nil, err
+		}
+		// 写入分片文件
+		bufferWriter.Write(fileData)
+		bufferWriter.Flush()
+	}
 	return &rsp, nil
+
 }

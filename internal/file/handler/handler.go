@@ -200,7 +200,7 @@ func checkChunk(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
-// uploadChunk 上传文件分片
+// uploadChunk 上传文件分片,返回已经完成的文件分片列表
 func uploadChunk(c *gin.Context) {
 	var req msg.ReqFileMultiUpload
 	if err := c.BindQuery(&req); err != nil {
