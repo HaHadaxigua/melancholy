@@ -1,11 +1,11 @@
 package conf
 
 type Config struct {
-	Mode        string `json:"mode"`
-	Application Application
-	Database    Database
-	Gorm        Gorm
-	Oss         Oss
+	Mode         string `json:"mode"`
+	Application  Application
+	Database     Database
+	Gorm         Gorm
+	Oss          Oss
 }
 
 type Application struct {
@@ -17,6 +17,7 @@ type Application struct {
 	ReadTimeout   int    `json:"readTimeout" yml:"Application.ReadTimeout"`
 	WriterTimeout int64  `json:"writeTimeout" yml:"Application.WriteTimeout"`
 	Location      string `json:"melancholy" yml:"Application.Location"`
+	TmpFile       string `json:"tmpFile" yml:"Application.TmpFile"` // 用于存储临时文件的分片
 	AppSecret     string `json:"jwtSecret" yml:"Application.AppSecret"`
 	AppIss        string `json:"appIss" yml:"Application.AppIss"`
 }
@@ -37,7 +38,7 @@ type Gorm struct {
 }
 
 type Oss struct {
-	EndPoint        string `json:"endPoint"`
-	AccessKeyID     string `json:"accessKeyId"`
-	AccessKeySecret string `json:"accessKeySecret"`
+	EndPoint        string `json:"endPoint" yml:"endPoint"`
+	AccessKeyID     string `json:"accessKeyId" yml:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret" yml:"accessKeySecret"`
 }

@@ -7,6 +7,7 @@ package msg
 
 import "time"
 
+// RspFolderListItem 文件列表的item
 type RspFolderListItem struct {
 	FolderID   string             `json:"folderID"`
 	FolderName string             `json:"folderName"`
@@ -16,6 +17,7 @@ type RspFolderListItem struct {
 	ModifiedAt time.Time `json:"modifiedAt"`
 }
 
+// RspFolderList 文件列表返回体
 type RspFolderList struct {
 	FolderItems []*RspFolderListItem `json:"subFolders"`
 	FileItems   []*RspFileListItem   `json:"files"`
@@ -40,7 +42,18 @@ type RspFileList struct {
 	Total int                `json:"total"`
 }
 
+// RspFileDownload 简单文件下载的返回
 type RspFileDownload struct {
 	Content  []byte `json:"content"`
 	FileName string `json:"fileName"`
+}
+
+// RspFileMultiCheck 文件分片列表的完成情况的返回
+type RspFileMultiCheck struct {
+	ChunkList []string `json:"chunkList"` // 文件分片编号列表
+	State     int      `json:"state"`     // 文件完成情况  state为0时 说明文件并不完整，为1 说明文件完整
+}
+
+type RspFileMultiUpload struct {
+	ChunkList []string `json:"chunkList"` // 文件分片编号列表
 }

@@ -6,7 +6,8 @@
 package msg
 
 import (
-	"github.com/HaHadaxigua/melancholy/internal/file/consts"
+	"github.com/HaHadaxigua/melancholy/internal/file/envir"
+	"github.com/gin-gonic/gin"
 	"mime/multipart"
 	"path"
 	"strings"
@@ -40,17 +41,17 @@ type ReqFileCreate struct {
 	UserID int
 }
 
-// 验证请求是否合法
+//  Verify 验证请求是否合法
 func (req ReqFileCreate) Verify() bool {
 	if req.FileType == 0 {
 		// 判断上传的文件id是否支持
-		if ftid, ok := consts.MapFileTypeToID[path.Ext(req.FileName)]; !ok {
+		if ftid, ok := envir.MapFileTypeToID[path.Ext(req.FileName)]; !ok {
 			return false
 		} else {
 			req.FileType = ftid
 		}
 	} else {
-		if ftstr, ok := consts.MapFileTypeToStr[req.FileType]; !ok {
+		if ftstr, ok := envir.MapFileTypeToStr[req.FileType]; !ok {
 			return false
 		} else {
 			if !strings.HasSuffix(req.FileName, ftstr) {
@@ -89,4 +90,22 @@ type ReqFileDownload struct {
 	FileID string `form:"fileID" json:"fileID"`
 
 	UserID int
+}
+
+// ReqFileMultiCheck 检查文件上传情况
+type ReqFileMultiCheck struct {
+	Hash string `form:"hash" json:"hash"`
+
+	UserID int
+}
+
+// ReqFileMultiUpload 上传文件分片
+type ReqFileMultiUpload struct {
+	Hash      string `json:"hash"`      // 文件hash， 根据文件hash找到文件
+	ChunkID   string `json:"chunkID"`   // 文件的分片id
+	ChunkHash string `json:"ChunkHash"` // 分片的hash
+
+	C          *gin.Context          // gin的上下文
+	FileHeader *multipart.FileHeader // describes a file part of a multipart request.
+	UserID     int
 }

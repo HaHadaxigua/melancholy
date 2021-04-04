@@ -29,7 +29,7 @@ func (f Folder) TableName() string {
 }
 
 type File struct {
-	ID         string `json:"id"`
+	ID         string `json:"id"`         // 文件ID
 	OwnerID    int    `json:"ownerID"`    // 创建者ID
 	ParentID   string `json:"parentID"`   // 父文件夹ID
 	Name       string `json:"name"`       // 文件名

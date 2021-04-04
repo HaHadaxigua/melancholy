@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
-	fConst "github.com/HaHadaxigua/melancholy/internal/file/consts"
+	fConst "github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/HaHadaxigua/melancholy/internal/response"
@@ -30,8 +30,11 @@ func SetupFileRouters(r gin.IRouter) {
 	file.GET("/list", listFile)
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)
-	file.POST("/upload", uploadFile)
-	file.GET("/download", downloadFile)
+	file.POST("simple/upload", uploadSimpleFile)    // 处理小文件
+	file.GET("simple/download", downloadSimpleFile) // 处理小文件
+	// 处理分片文件上传
+	file.GET("/multi/checkChunk", checkChunk)    // 检查文件的上传情况
+	file.POST("/multi/uploadChunk", uploadChunk) // 上传文件分片
 }
 
 func createFolder(c *gin.Context) {
@@ -131,7 +134,9 @@ func deleteFile(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
-func uploadFile(c *gin.Context) {
+// uploadSimpleFile 上传简单文件
+func uploadSimpleFile(c *gin.Context) {
+	// 这种方式将文件读入了内存，可能会导致内存爆掉
 	file, header, err := c.Request.FormFile(fConst.FileUpload)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
@@ -143,7 +148,6 @@ func uploadFile(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	// fixme: 处理文件上传 需要流进行流式上传
 	data, err := io.ReadAll(file)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
@@ -160,14 +164,15 @@ func uploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
-func downloadFile(c *gin.Context) {
+// downloadSimpleFile 处理简单文件的下载
+func downloadSimpleFile(c *gin.Context) {
 	var req msg.ReqFileDownload
 	if err := c.BindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
 	req.UserID = c.GetInt(consts.UserID)
-	rsp, err := service.FileSvc.FileDownload(&req)
+	rsp, err := service.FileSvc.FileSimpleDownload(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
@@ -177,4 +182,42 @@ func downloadFile(c *gin.Context) {
 	c.Header(fConst.ContentType, "application/text/plain")
 	c.Header(fConst.AcceptLength, fmt.Sprintf("%d", len(rsp.Content)))
 	c.Writer.Write(rsp.Content)
+}
+
+// checkChunk 检查文件的分片情况
+func checkChunk(c *gin.Context) {
+	var req msg.ReqFileMultiCheck
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FileMultiCheck(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// uploadChunk 上传文件分片
+func uploadChunk(c *gin.Context) {
+	var req msg.ReqFileMultiUpload
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	fileHeader, err := c.FormFile(fConst.FileUpload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	req.FileHeader = fileHeader
+	rsp, err := service.FileSvc.FileMultiUpload(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
 }

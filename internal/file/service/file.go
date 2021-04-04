@@ -4,12 +4,17 @@ import (
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
-	"github.com/HaHadaxigua/melancholy/internal/file/consts"
+	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"github.com/HaHadaxigua/melancholy/internal/file/store"
+	"github.com/HaHadaxigua/melancholy/internal/file/utils"
 	"github.com/HaHadaxigua/melancholy/internal/response"
 	"gorm.io/gorm"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 var FileSvc FileService
@@ -26,7 +31,10 @@ type FileService interface {
 	FileCreate(req *msg.ReqFileCreate) error                       // 创建文件
 	FileDelete(fileID string, userID int) error                    // 删除文件
 
-	FileDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 下载文件,需要流式处理
+	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件上传
+	// 处理文件分片上传
+	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)    // 检查文件上传情况
+	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) // 文件分片的上传
 }
 
 type fileService struct {
@@ -41,11 +49,11 @@ func NewFileService(conn *gorm.DB) *fileService {
 
 // ListFileSpace 列出用户的根文件夹
 func (s fileService) UserRoot(uid int) (*msg.RspFolderList, error) {
-	folders, err := s.store.ListSubFolders(consts.RootFileID, uid)
+	folders, err := s.store.ListSubFolders(envir.RootFileID, uid)
 	if err != nil {
 		return nil, err
 	}
-	files, err := s.store.FileList(consts.RootFileID, uid)
+	files, err := s.store.FileList(envir.RootFileID, uid)
 	fileItems := FunctionalFile(files, buildFileItemRsp).([]*msg.RspFileListItem)
 	var rsp msg.RspFolderList
 	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
@@ -106,13 +114,13 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 
 	// 3. 否则在用户根目录创建文件夹
 	if err := s.store.FolderCreate(&model.Folder{
-		ID:      consts.RootFileID,
+		ID:      envir.RootFileID,
 		OwnerID: req.UserID,
-		Name:    consts.RootFileID,
+		Name:    envir.RootFileID,
 	}); err != nil {
 		return err
 	}
-	if err := s.store.FolderAppend(consts.RootFileID, folder); err != nil {
+	if err := s.store.FolderAppend(envir.RootFileID, folder); err != nil {
 		return err
 	}
 	return nil
@@ -223,8 +231,8 @@ func (s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, err
 	return &rsp, nil
 }
 
-// DownloadFile 处理文件下载 fixme: 完成文件下载的部分
-func (s fileService) FileDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) {
+// FileSimpleDownload 处理简单文件下载
+func (s fileService) FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) {
 	logicFile, err := s.store.FileFind(req.FileID, req.UserID)
 	if err != nil {
 		return nil, err
@@ -238,5 +246,62 @@ func (s fileService) FileDownload(req *msg.ReqFileDownload) (*msg.RspFileDownloa
 	var rsp msg.RspFileDownload
 	rsp.Content = ret
 	rsp.FileName = logicFile.Name
+	return &rsp, nil
+}
+
+// FileMultiCheck 检查文件分分片的上传情况，返回一个分片列表
+func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error) {
+	var rsp msg.RspFileMultiCheck
+	hashPath := fmt.Sprintf("%s%s", conf.C.Application.TmpFile, req.Hash) // 以hash为文件名的文件夹
+	if !utils.PathExists(hashPath) {                                      // 如果不存在该文件夹
+		rsp.ChunkList = make([]string, 0)
+		return &rsp, nil
+	}
+	var chunkList []string
+	var state int
+	files, err := ioutil.ReadDir(hashPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range files {
+		fileName := f.Name()
+		chunkList = append(chunkList, fileName)
+		fileBaseName := strings.Split(fileName, ".")[0]
+		if fileBaseName == req.Hash { // 如果存在一个文件名和hash值一致的文件，则说明已经上传完成了,也就不需要获取完整的分片列表了
+			state = 1
+			break
+		}
+	}
+	rsp.ChunkList = chunkList
+	rsp.State = state
+	return &rsp, nil
+}
+
+// FileMultiUpload 分片文件的上传处理
+func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) {
+	hashPath := utils.GetMultiFilePath(req.Hash)
+	// 不存在文件夹则进行创建
+	if !utils.PathExists(hashPath) {
+		os.Mkdir(hashPath, os.ModePerm)
+	}
+	// 将文件保存到对应路径
+	if err := req.C.SaveUploadedFile(req.FileHeader, utils.GetMultiFileName(hashPath, req.ChunkID)); err != nil {
+		return nil, err
+	}
+	// 读取文件夹下的文件分片，告诉前端已经当前文件的上传情况
+	var chunkList []string
+	files, err := ioutil.ReadDir(hashPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		filename := file.Name()
+		if _, ok := envir.ExcludeFiles[filename]; ok {
+			continue
+		}
+		chunkList = append(chunkList, filename)
+	}
+	var rsp msg.RspFileMultiUpload
+	rsp.ChunkList = chunkList
 	return &rsp, nil
 }

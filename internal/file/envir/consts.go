@@ -3,7 +3,7 @@
 ** @author : zrx
 ** @description:
 ******/
-package consts
+package envir
 
 const (
 	FileUpload = "file"
@@ -42,13 +42,9 @@ const (
 	FileTypeShell  = ".sh"
 )
 
-var (
-	MapFileTypeToID map[string]int = map[string]int{
-		FileTypeTxtStr: FileTypeTxtID,
-		FileTypeShell:  FileTypeShID,
-	}
-	MapFileTypeToStr map[int]string = map[int]string{
-		FileTypeTxtID: FileTypeTxtStr,
-		FileTypeShID:  FileTypeShell,
-	}
+// 需要在本地排除的文件
+const (
+	ExcludeFile1 = ".DS_Store"
 )
+
+
