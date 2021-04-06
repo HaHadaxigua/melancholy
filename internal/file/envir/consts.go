@@ -25,6 +25,8 @@ const (
 	FileBadNameErrorMsg         string = "文件名非法"
 	FileTargetFolderNotExistMsg string = "目标文件不存在"
 	FileFileUnSupport           string = "文件格式不支持"
+	FileMergeFileFailedMsg      string = "合并文件错误"
+	FileMergeFileHasExistedMsg  string = "合并文件已存在"
 )
 
 const (
@@ -46,5 +48,3 @@ const (
 const (
 	ExcludeFile1 = ".DS_Store"
 )
-
-

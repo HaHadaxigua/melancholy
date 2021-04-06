@@ -76,6 +76,4 @@ const (
 	// Tools
 	GenerateSaltErrorMsg    string = "生成盐失败"
 	EncryptPasswordErrorMsg string = "加密密码失败"
-
-
 )

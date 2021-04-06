@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
@@ -36,6 +35,7 @@ type FileService interface {
 	// 处理文件分片上传
 	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)    // 检查文件上传情况
 	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) // 文件分片的上传
+	FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error)    // 请求将文件分片进行合并
 }
 
 type fileService struct {
@@ -304,29 +304,24 @@ func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileM
 	}
 	var rsp msg.RspFileMultiUpload
 	rsp.ChunkList = chunkList
-	if len(chunkList) != req.Total {
-		return &rsp, nil
-	}
-	// 说明文件全部上传完毕，需要进行合并
-	complateFile, err := os.Create(hashPath + "/" + req.Filename)
-	bufferWriter := bufio.NewWriter(complateFile)
-	if err != nil {
-		return nil, err
-	}
-	defer complateFile.Close()
-	for _, file := range files {
-		filename := file.Name()
-		if _, ok := envir.ExcludeFiles[filename]; ok {
-			continue
-		}
-		fileData, err := ioutil.ReadFile(hashPath + "/" + file.Name())
-		if err != nil {
-			return nil, err
-		}
-		// 写入分片文件
-		bufferWriter.Write(fileData)
-		bufferWriter.Flush()
-	}
 	return &rsp, nil
+}
 
+func (s fileService) FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error) {
+	hashPath := utils.GetMultiFilePath(req.Hash)
+	// 不存在文件夹说明请求错误
+	if !utils.PathExists(hashPath) {
+		return nil, msg.ErrMergeFileFailed
+	}
+	var err error
+	var rsp msg.RspFileMultiMerge
+	rsp.Done = make(chan struct{}, 0)
+	// 这里开启的协程是与此函数平级的，并不会因为函数的退出而退出
+	go func() {
+		// 进行文件合并
+		err = utils.MergeFiles(hashPath, req.Filename)
+		rsp.Result = err
+		rsp.Done <- struct{}{}
+	}()
+	return &rsp, nil
 }

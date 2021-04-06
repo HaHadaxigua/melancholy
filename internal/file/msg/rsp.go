@@ -58,3 +58,8 @@ type RspFileMultiUpload struct {
 	ChunkList []string `json:"chunkList"` // 文件分片编号列表
 	State     int      `json:"state"`     // 当前文件的上传完成情况 1:说明文件全部上传完成
 }
+
+type RspFileMultiMerge struct {
+	Result error `json:"result"`
+	Done   chan struct{}
+}

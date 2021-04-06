@@ -35,6 +35,7 @@ func SetupFileRouters(r gin.IRouter) {
 	// 处理分片文件上传
 	file.GET("/multi/checkChunk", checkChunk)    // 检查文件的上传情况
 	file.POST("/multi/uploadChunk", uploadChunk) // 上传文件分片
+	file.POST("/multi/mergeChunk", mergeChunk)   // 合并分片文件
 }
 
 func createFolder(c *gin.Context) {
@@ -203,7 +204,7 @@ func checkChunk(c *gin.Context) {
 // uploadChunk 上传文件分片,返回已经完成的文件分片列表
 func uploadChunk(c *gin.Context) {
 	var req msg.ReqFileMultiUpload
-	if err := c.BindQuery(&req); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
@@ -216,8 +217,30 @@ func uploadChunk(c *gin.Context) {
 	req.FileHeader = fileHeader
 	rsp, err := service.FileSvc.FileMultiUpload(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// mergeChunk 合并文件分片
+func mergeChunk(c *gin.Context) {
+	var req msg.ReqFileMultiMerge
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FileMultiMerge(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	// 用来判断子协程是否处理完成
+	<-rsp.Done
+	if rsp.Result != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(rsp.Result))
+		return
+	}
+	c.JSON(http.StatusOK, response.OK)
 }

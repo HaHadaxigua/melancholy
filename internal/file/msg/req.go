@@ -112,3 +112,11 @@ type ReqFileMultiUpload struct {
 	FileHeader *multipart.FileHeader // describes a file part of a multipart request.
 	UserID     int
 }
+
+// ReqFileMultiMerge 请求将分片文件合并
+type ReqFileMultiMerge struct {
+	Filename string `json:"filename"`
+	Hash     string `json:"hash"`
+
+	UserID int
+}
