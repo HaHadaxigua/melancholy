@@ -223,7 +223,7 @@ func uploadChunk(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
-// mergeChunk 合并文件分片
+// mergeChunk 合并文件分片，意味着文件上传完成，需要将文件上传到oss中
 func mergeChunk(c *gin.Context) {
 	var req msg.ReqFileMultiMerge
 	if err := c.BindJSON(&req); err != nil {

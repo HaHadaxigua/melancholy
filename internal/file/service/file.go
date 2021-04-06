@@ -317,6 +317,7 @@ func (s fileService) FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMul
 	var rsp msg.RspFileMultiMerge
 	rsp.Done = make(chan struct{}, 0)
 	// 这里开启的协程是与此函数平级的，并不会因为函数的退出而退出
+	// todo： 这里需要进行多线程操作
 	go func() {
 		// 进行文件合并
 		err = utils.MergeFiles(hashPath, req.Filename)
