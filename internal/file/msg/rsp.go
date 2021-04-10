@@ -63,3 +63,6 @@ type RspFileMultiMerge struct {
 	Result error `json:"result"`
 	Done   chan struct{}
 }
+
+type RspFIleMultiDownload struct {
+}

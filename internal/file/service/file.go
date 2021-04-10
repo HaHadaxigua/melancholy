@@ -26,16 +26,17 @@ type FileService interface {
 	FolderUpload(req *msg.ReqFolderUpdate) error                         // 上传文件夹
 	FolderDelete(req *msg.ReqFolderDelete) error                         // 删除文件夹
 
-	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error) // 列出文件
-	FileUpload(req *msg.ReqFileUpload) error                       // 上传文件
-	FileCreate(req *msg.ReqFileCreate) error                       // 创建文件
-	FileDelete(fileID string, userID int) error                    // 删除文件
+	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)             // 列出文件
+	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件
+	FileCreate(req *msg.ReqFileCreate) error                                   // 创建文件
+	FileDelete(fileID string, userID int) error                                // 删除文件
+	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
 
-	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件上传
 	// 处理文件分片上传
-	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)    // 检查文件上传情况
-	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) // 文件分片的上传
-	FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error)    // 请求将文件分片进行合并
+	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)          // 检查文件上传情况
+	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error)       // 文件分片的上传
+	FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error)          // 请求将文件分片进行合并
+	FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspFIleMultiDownload, error) // 文件的分片下载
 }
 
 type fileService struct {
@@ -278,9 +279,9 @@ func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMul
 	return &rsp, nil
 }
 
-// FileMultiUpload 分片文件的上传处理,当全部分片上传完成后，会进行合并
+// FileMultiUpload 分片文件的上传处理,当全部分片上传完成后，会进行合并,这里上传之后只是上传到了本地服务器中，还需要上传到对象存储中
 func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) {
-	hashPath := utils.GetMultiFilePath(req.Hash)
+	hashPath := fmt.Sprintf("%s%s", conf.C.Application.TmpFile, req.Hash) // 以hash为文件名的文件夹
 	// 不存在文件夹则进行创建
 	if !utils.PathExists(hashPath) {
 		os.Mkdir(hashPath, os.ModePerm)
@@ -307,17 +308,19 @@ func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileM
 	return &rsp, nil
 }
 
+// FileMultiMerge 文件合并操作
 func (s fileService) FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error) {
 	hashPath := utils.GetMultiFilePath(req.Hash)
 	// 不存在文件夹说明请求错误
 	if !utils.PathExists(hashPath) {
 		return nil, msg.ErrMergeFileFailed
 	}
-	var err error
-	var rsp msg.RspFileMultiMerge
+	var (
+		err error
+		rsp msg.RspFileMultiMerge
+	)
 	rsp.Done = make(chan struct{}, 0)
 	// 这里开启的协程是与此函数平级的，并不会因为函数的退出而退出
-	// todo： 这里需要进行多线程操作
 	go func() {
 		// 进行文件合并
 		err = utils.MergeFiles(hashPath, req.Filename)
@@ -325,4 +328,11 @@ func (s fileService) FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMul
 		rsp.Done <- struct{}{}
 	}()
 	return &rsp, nil
+}
+
+// FileMultiDownload 处理文件的分片下载
+func (s fileService) FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspFIleMultiDownload, error) {
+	// 1。 判断本地有无下载好的文件
+	// 2。 将文件进行分片的传输
+	return nil, nil
 }

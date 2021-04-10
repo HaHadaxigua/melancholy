@@ -120,3 +120,10 @@ type ReqFileMultiMerge struct {
 
 	UserID int
 }
+
+// ReqFileMultiDownload 文件的分片下载
+type ReqFileMultiDownload struct {
+	Hash string `json:"hash"`
+
+	UserID int
+}

@@ -9,10 +9,12 @@ import (
 	"os"
 )
 
+// GetMultiFileName 获取分片文件的文件名
 func GetMultiFileName(path, filename string) string {
 	return fmt.Sprintf("%s%s", path, filename)
 }
 
+// GetMultiFilePath 获取分片文件的存储位置
 func GetMultiFilePath(hash string) string {
 	return fmt.Sprintf("%s%s", conf.C.Application.TmpFile, hash)
 }
@@ -29,6 +31,7 @@ func PathExists(path string) bool {
 	return false
 }
 
+// 合并文件的方法
 func MergeFiles(dir, filename string) error {
 	megedFile := fmt.Sprintf("%s/%s", dir, filename)
 	if PathExists(megedFile) {
