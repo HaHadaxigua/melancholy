@@ -13,10 +13,10 @@ Application:
   AppIss: github.com/HaHadaxigua/melancholy
 Database:
   Dbtype: mysql
-  Host: sh-cdb-r9u1s7k2.sql.tencentcdb.com
-  Port: 60246
+  Host: 127.0.0.1
+  Port: 3307
   Name: melancholy
-  Password: r-N2_PrMAJzzkeQ
+  Password: 123456
   Username: root
 Gorm:
   LogMode: 0

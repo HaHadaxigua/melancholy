@@ -5,7 +5,10 @@
 ******/
 package msg
 
-import "github.com/HaHadaxigua/melancholy/internal/basic/model"
+import (
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
+	"time"
+)
 
 type RspUserList struct {
 	List  []*RspUserListItem `json:"list"`
@@ -39,4 +42,22 @@ type RspPermList struct {
 type RspPermListItem struct {
 	PermissionID   int    `json:"permissionID"`
 	PermissionName string `json:"permissionName"`
+}
+
+type UserInfo struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Mobile   string `json:"mobile"`
+	Email    string `json:"email"`
+	Status   int    `json:"status"`
+	Avatar   string `json:"avatar"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// RspLogin 登陆后的返回体
+type RspLogin struct {
+	Token string    `json:"token"`
+	User  *UserInfo `json:"user"`
 }

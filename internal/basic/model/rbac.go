@@ -17,6 +17,7 @@ type User struct {
 	Salt     string `json:"-"`
 	Mobile   string `json:"mobile"`
 	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
 	Status   int    `json:"status"`
 
 	Roles []*Role `json:"roles" gorm:"many2many:user_role"`

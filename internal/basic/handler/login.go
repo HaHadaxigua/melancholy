@@ -56,7 +56,21 @@ func login(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, response.NewErr(err))
 				return
 			}
-			c.JSON(http.StatusOK, response.Ok(token))
+			// 构造登陆的返回体
+			rsp := &msg.RspLogin{
+				User: &msg.UserInfo{
+					ID:        _user.ID,
+					Username:  _user.Username,
+					Mobile:    _user.Mobile,
+					Email:     _user.Email,
+					Status:    _user.Status,
+					Avatar:    _user.Avatar,
+					CreatedAt: _user.CreatedAt,
+					UpdatedAt: _user.UpdatedAt,
+				},
+				Token: token,
+			}
+			c.JSON(http.StatusOK, response.Ok(rsp))
 			return
 		} else {
 			c.JSON(http.StatusOK, msg.ErrUserNotFound)
