@@ -27,6 +27,7 @@ func SetupFileRouters(r gin.IRouter) {
 
 	// file's api
 	file := secured.Group("/file")
+	file.GET("/search", searchFile)
 	file.GET("/list", listFile)
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)
@@ -93,6 +94,22 @@ func deleteFolder(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+// searchFile 搜索文件
+func searchFile(c *gin.Context) {
+	var req msg.ReqFileSearch
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FileSearch(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
 // listFile 列出文件

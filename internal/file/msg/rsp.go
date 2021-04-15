@@ -42,6 +42,23 @@ type RspFileList struct {
 	Total int                `json:"total"`
 }
 
+// RspFileSearchResult 文件搜索的返回
+type RspFileSearchResult struct {
+	List  []*RspFileSearchItem `json:"list"`
+	Total int
+}
+
+// RspFileSearchItem 文件搜索的返回item
+type RspFileSearchItem struct {
+	ID       string `json:"ID"`       // 文件id
+	Filename string `json:"filename"` // 文件名
+	IsDir    bool   `json:"isDir"`    // 是否是文件夹
+	Size     int    `json:"size"`     // 文件大小
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 // RspFileDownload 简单文件下载的返回
 type RspFileDownload struct {
 	Content  []byte `json:"content"`

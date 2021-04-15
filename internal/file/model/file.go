@@ -6,6 +6,7 @@
 package model
 
 import (
+	"github.com/HaHadaxigua/melancholy/internal/file/msg"
 	"gorm.io/gorm"
 	"time"
 )
@@ -14,7 +15,7 @@ type Folder struct {
 	ID       string `json:"id"`
 	OwnerID  int    `json:"ownerID"`  // 拥有者id
 	ParentID string `json:"parentID"` // 父文件夹ID
-	Name     string `json:"name"`
+	Name     string `json:"name"`     // 文件夹名
 
 	Files []*File   `json:"files" gorm:"foreignKey:ParentID"` // 一个文件夹会拥有多个子文件
 	Subs  []*Folder `json:"subs" gorm:"foreignKey:ParentID"`  // 一个文件夹会有多个子文件夹
@@ -26,6 +27,18 @@ type Folder struct {
 
 func (f Folder) TableName() string {
 	return "folders"
+}
+
+func (f Folder) ToFileSearchItem() *msg.RspFileSearchItem {
+	return &msg.RspFileSearchItem{
+		ID:       f.ID,
+		Filename: f.Name,
+		IsDir:    true,
+		// todo, 这里是否需要去找一下id
+		Size:      0,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
+	}
 }
 
 type File struct {
@@ -48,4 +61,16 @@ type File struct {
 
 func (f File) TableName() string {
 	return "files"
+}
+
+// ToFileSearchItem 转换结构体
+func (f File) ToFileSearchItem() *msg.RspFileSearchItem {
+	return &msg.RspFileSearchItem{
+		ID:        f.ID,
+		Filename:  f.Name,
+		IsDir:     false,
+		Size:      f.Size,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
+	}
 }

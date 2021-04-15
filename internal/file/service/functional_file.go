@@ -17,6 +17,7 @@ type FuncFolderBuildRsp func(folder *model.Folder) *msg.RspFolderListItem
 type FuncFileBuildRsp func(file *model.File) *msg.RspFileListItem
 
 var (
+	// 构造文件夹列表的返回体
 	buildFolderItemRsp FuncFolderBuildRsp = func(folder *model.Folder) *msg.RspFolderListItem {
 		fileItems := FunctionalFile(folder.Files, buildFileItemRsp).([]*msg.RspFileListItem)
 		return &msg.RspFolderListItem{
@@ -28,6 +29,7 @@ var (
 		}
 	}
 
+	// 构建文件列表的返回体
 	buildFileItemRsp FuncFileBuildRsp = func(file *model.File) *msg.RspFileListItem {
 		return &msg.RspFileListItem{
 			ID:       file.ID,

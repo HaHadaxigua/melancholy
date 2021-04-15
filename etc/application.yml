@@ -23,6 +23,6 @@ Gorm:
   MaxIdleConn: 0
   MaxOpenConn: 20000
 OSS:
-  EndPoint:
-  AccessKeyID:
-  AccessKeySecret:
+  EndPoint: http://oss-cn-shanghai.aliyuncs.com
+  AccessKeyID: LTAI4G2LaueUq1PHhpL4wzUx
+  AccessKeySecret: d3Hkx1HmhVippntj5fsONwchvKWkHK

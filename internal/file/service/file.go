@@ -26,6 +26,7 @@ type FileService interface {
 	FolderUpload(req *msg.ReqFolderUpdate) error                         // 上传文件夹
 	FolderDelete(req *msg.ReqFolderDelete) error                         // 删除文件夹
 
+	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
 	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)             // 列出文件
 	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件
 	FileCreate(req *msg.ReqFileCreate) error                                   // 创建文件
@@ -211,6 +212,16 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 	}
 
 	return nil
+}
+
+// FileSearch 文件的模糊搜索
+func (s fileService) FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error) {
+	folders, files, err := s.store.FileSearch(req)
+	if err != nil {
+		return nil, err
+	}
+	res := buildFileSearchResult(folders, files)
+	return res, nil
 }
 
 // ListFiles 列出指定文件夹中的文件

@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"path"
 	"strings"
+	"time"
 )
 
 type ReqFolderCreate struct {
@@ -68,6 +69,17 @@ type ReqFileUpload struct {
 	ParentID   string                `form:"parentID" json:"parentID"`
 	FileType   int                   `json:"fileType"`
 
+	UserID int
+}
+
+// ReqFileSearch 文件搜索
+type ReqFileSearch struct {
+	Fuzzy  string     `json:"fuzzy"`                          // 通过name来搜索文件或者是文件夹
+	Start  *time.Time `json:"start" time_format:"2006-01-02"` // 文件的最早更新时间
+	End    *time.Time `json:"end" time_format:"2006-01-02"`   // 文件的最后更新时间
+	
+	Offset int `json:"offset"`
+	Limit int `json:"limit"`
 	UserID int
 }
 
