@@ -38,7 +38,7 @@ func (s roleStore) ListRoles(filter *msg.ReqRoleFilter, withPermission bool) ([]
 	}
 
 	if filter.Fuzzy != "" {
-		query = query.Where("name like %?%", filter.Fuzzy)
+		query = query.Where("name like ?", "%"+filter.Fuzzy+"%")
 	}
 
 	var total int64

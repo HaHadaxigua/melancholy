@@ -27,7 +27,7 @@ func SetupFileRouters(r gin.IRouter) {
 
 	// file's api
 	file := secured.Group("/file")
-	file.GET("/search", searchFile)
+	file.POST("/search", searchFile)
 	file.GET("/list", listFile)
 	file.POST("/create", createFile)
 	file.DELETE("/:id", deleteFile)

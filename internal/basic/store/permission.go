@@ -35,7 +35,7 @@ func (s permissionStore) ListPermission(r *msg.ReqPermissionFilter) ([]*model.Pe
 	var perms []*model.Permission
 	query := s.db.Model(&model.Permission{})
 	if r.Fuzzy != "" {
-		query = query.Where("name like %?%", r.Fuzzy)
+		query = query.Where("name like ?", "%"+r.Fuzzy+"%")
 	}
 	if r.Limit < 1 {
 		r.Limit = 10

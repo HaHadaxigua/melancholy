@@ -71,7 +71,7 @@ func (s fileStore) FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, er
 	var files []*model.Folder
 	query := s.db.Model(&model.Folder{})
 	query = buildBaseQuery(query, req)
-	if err := query.Where("name like %?%", req.Fuzzy).Find(&files).Error; err != nil {
+	if err := query.Where("name like ?", "%"+req.Fuzzy+"%").Find(&files).Error; err != nil {
 		return nil, err
 	}
 	return files, nil
@@ -104,7 +104,10 @@ func (s fileStore) FileFindByName(req *msg.ReqFileSearch) ([]*model.File, error)
 	var files []*model.File
 	query := s.db.Model(&model.File{})
 	query = buildBaseQuery(query, req)
-	if err := query.Where("name like %?%", req.Fuzzy).Find(&files).Error; err != nil {
+	if req.Fuzzy != "" {
+		query = query.Where("name like ?", "%"+req.Fuzzy+"%")
+	}
+	if err := query.Find(&files).Error; err != nil {
 		return nil, err
 	}
 	return files, nil

@@ -46,7 +46,7 @@ func (s *userStore) FindUserById(id int, withRole bool) (*model.User, error) {
 // GetUserByName 根据用户名找到用户
 func (s *userStore) GetUserByName(name string) ([]*model.User, error) {
 	var users []*model.User
-	if err := s.db.Model(&model.User{}).Where("username like %?%", name).Find(&users).Error; err != nil {
+	if err := s.db.Model(&model.User{}).Where("username like ?", "%"+name+"%").Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
