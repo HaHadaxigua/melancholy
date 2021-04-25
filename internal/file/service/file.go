@@ -94,7 +94,7 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 	// 2. 如果请求创建的父文件夹ID存在
 	if req.ParentID != "" {
 		// 获取父文件夹
-		parentFolder, err := s.store.GetFolder(req.ParentID, true)
+		parentFolder, err := s.store.GetFolder(req.ParentID, req.UserID, true)
 		if err != nil {
 			return err
 		}
@@ -144,7 +144,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 	if !req.Verify() {
 		return msg.ErrFileUnSupport
 	}
-	folder, err := s.store.GetFolder(req.ParentID, false)
+	folder, err := s.store.GetFolder(req.ParentID, req.UserID, false)
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (s fileService) FileDelete(fileID string, userID int) error {
 	if err != nil {
 		return err
 	}
-	folder, err := s.store.GetFolder(_file.ParentID, false)
+	folder, err := s.store.GetFolder(_file.ParentID, userID, false)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (s fileService) FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResul
 
 // ListFiles 列出指定文件夹中的文件
 func (s fileService) FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error) {
-	folder, err := s.store.GetFolder(req.FolderID, false)
+	folder, err := s.store.GetFolder(req.FolderID, req.UserID, false)
 	if err != nil {
 		return nil, err
 	}

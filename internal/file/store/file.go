@@ -10,7 +10,7 @@ import (
 type FileStore interface {
 	// ListSubFolders 列出当前文件夹下的所有子文件夹
 	ListSubFolders(folderID string, userID int) ([]*model.Folder, error)
-	GetFolder(folderID string, withSub bool) (*model.Folder, error)
+	GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error)
 	// FolderFindByName 根据名称找出文件夹
 	FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, error)
 	FolderCreate(folder *model.Folder) error
@@ -54,9 +54,10 @@ func (s fileStore) ListSubFolders(folderID string, userID int) ([]*model.Folder,
 	return folders, nil
 }
 
-func (s fileStore) GetFolder(folderID string, withSub bool) (*model.Folder, error) {
+// GetFolder 获取指定文件夹
+func (s fileStore) GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error) {
 	var folder model.Folder
-	query := s.db.Model(&model.Folder{ID: folderID})
+	query := s.db.Model(&model.Folder{ID: folderID}).Where("owner_id = ?", userID)
 	if withSub {
 		query = query.Preload("Subs")
 	}
