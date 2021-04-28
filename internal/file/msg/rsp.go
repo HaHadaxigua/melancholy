@@ -20,7 +20,10 @@ type RspFolderListItem struct {
 // RspFolderList 文件列表返回体
 type RspFolderList struct {
 	FolderItems []*RspFolderListItem `json:"subFolders"`
+	FolderTotal int                  `json:"folderTotal"`
 	FileItems   []*RspFileListItem   `json:"files"`
+	FileTotal   int                  `json:"fileTotal"`
+	Total       int                  `json:"total"`
 }
 
 // RspFileListItem 文件列表返回体

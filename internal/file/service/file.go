@@ -62,6 +62,9 @@ func (s fileService) UserRoot(uid int) (*msg.RspFolderList, error) {
 	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
 	rsp.FolderItems = list
 	rsp.FileItems = fileItems
+	rsp.FolderTotal = len(list)
+	rsp.FileTotal = len(fileItems)
+	rsp.Total = rsp.FolderTotal + rsp.FileTotal
 	return &rsp, nil
 }
 
