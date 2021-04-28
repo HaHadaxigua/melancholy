@@ -34,6 +34,13 @@ type ReqFolderDelete struct {
 	UserID int
 }
 
+// ReqFolderInclude 当前文件夹下包含的内容 todo: 整理请求题
+type ReqFolderInclude struct {
+	FolderID string `json:"folderID"`
+
+	UserID int
+}
+
 type ReqFileCreate struct {
 	ParentID string `json:"parentID"`
 	FileName string `json:"fileName"`
@@ -74,7 +81,7 @@ type ReqFileUpload struct {
 
 // ReqFileSearch 文件搜索
 type ReqFileSearch struct {
-	Fuzzy string     `json:"fuzzy"`                         // 通过name来搜索文件或者是文件夹
+	Fuzzy string     `json:"fuzzy"`                          // 通过name来搜索文件或者是文件夹
 	Start *time.Time `json:"start" time_format:"2006-01-02"` // 文件的最早更新时间
 	End   *time.Time `json:"end" time_format:"2006-01-02"`   // 文件的最后更新时间
 

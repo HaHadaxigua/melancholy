@@ -24,6 +24,7 @@ func SetupFileRouters(r gin.IRouter) {
 	folder.GET("/space", userSpace)
 	folder.PATCH("/modify", modifyFolder)
 	folder.DELETE("/:id", deleteFolder)
+	folder.POST("/include", folderInclude) // 获取给定文件夹下的文件夹和文件
 
 	// file's api
 	file := secured.Group("/file")
@@ -94,6 +95,22 @@ func deleteFolder(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+// folderInclude 获取指定文件夹中包含的内容
+func folderInclude(c *gin.Context) {
+	var req msg.ReqFolderInclude
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if rsp, err := service.FileSvc.FolderInclude(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	} else {
+		c.JSON(http.StatusOK, response.Ok(rsp))
+	}
 }
 
 // searchFile 搜索文件
