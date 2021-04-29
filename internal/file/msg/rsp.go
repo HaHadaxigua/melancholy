@@ -9,12 +9,12 @@ import "time"
 
 // RspFolderListItem 文件列表的item
 type RspFolderListItem struct {
-	FolderID   string             `json:"folderID"`
-	FolderName string             `json:"folderName"`
+	FolderID   string             `json:"ID"`
+	FolderName string             `json:"name"`
 	FileItems  []*RspFileListItem `json:"fileItems"`
 
-	CreatedAt  time.Time `json:"createdAt"`
-	ModifiedAt time.Time `json:"modifiedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // RspFolderList 文件列表返回体
@@ -28,15 +28,15 @@ type RspFolderList struct {
 
 // RspFileListItem 文件列表返回体
 type RspFileListItem struct {
-	ID       string    `json:"id"`       // 文件ID
-	ParentID string    `json:"parentID"` // 父文件ID
-	Name     string    `json:"name"`     // 文件名
-	Suffix   int       `json:"suffix"`   // 文件后缀
-	Hash     string    `json:"hash"`     // 文件hash
-	Address  string    `json:"address"`  // 云存储地址
-	Size     int       `json:"size"`     // 文件大小
-	Mode     int       `json:"mode"`     // 是否只读
-	Modified time.Time `json:"modified"` // 上次修改时间
+	ID        string    `json:"ID"`       // 文件ID
+	ParentID  string    `json:"parentID"` // 父文件ID
+	Name      string    `json:"name"`     // 文件名
+	Suffix    int       `json:"suffix"`   // 文件后缀
+	Hash      string    `json:"hash"`     // 文件hash
+	Address   string    `json:"address"`  // 云存储地址
+	Size      int       `json:"size"`     // 文件大小
+	Mode      int       `json:"mode"`     // 是否只读
+	UpdatedAt time.Time `json:"updated"`  // 上次修改时间
 }
 
 // RspFileList 文件列表的返回
@@ -47,16 +47,17 @@ type RspFileList struct {
 
 // RspFileSearchResult 文件搜索的返回
 type RspFileSearchResult struct {
-	List  []*RspFileSearchItem `json:"list"`
-	Total int
+	List     []*RspFileSearchItem `json:"list"`
+	ParentID string               `json:"parentID"`
+	Total    int                  `json:"total"`
 }
 
 // RspFileSearchItem 文件搜索的返回item
 type RspFileSearchItem struct {
-	ID       string `json:"ID"`       // 文件id
-	Filename string `json:"filename"` // 文件名
-	IsDir    bool   `json:"isDir"`    // 是否是文件夹
-	Size     int    `json:"size"`     // 文件大小
+	ID       string `json:"ID"`    // 文件id
+	Filename string `json:"name"`  // 文件名
+	IsDir    bool   `json:"isDir"` // 是否是文件夹
+	Size     int    `json:"size"`  // 文件大小
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -65,7 +66,7 @@ type RspFileSearchItem struct {
 // RspFileDownload 简单文件下载的返回
 type RspFileDownload struct {
 	Content  []byte `json:"content"`
-	FileName string `json:"fileName"`
+	FileName string `json:"name"`
 }
 
 // RspFileMultiCheck 文件分片列表的完成情况的返回

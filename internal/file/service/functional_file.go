@@ -25,7 +25,7 @@ var (
 			FolderName: folder.Name,
 			FileItems:  fileItems,
 			CreatedAt:  folder.CreatedAt,
-			ModifiedAt: folder.UpdatedAt,
+			UpdatedAt: folder.UpdatedAt,
 		}
 	}
 
@@ -40,7 +40,7 @@ var (
 			Address:  file.Address,
 			Size:     file.Size,
 			Mode:     file.Mode,
-			Modified: file.UpdatedAt,
+			UpdatedAt: file.UpdatedAt,
 		}
 	}
 )

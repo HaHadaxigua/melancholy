@@ -20,11 +20,11 @@ import (
 var FileSvc FileService
 
 type FileService interface {
-	UserRoot(uid int) (*msg.RspFolderList, error)                               // 列出用户的根目录
-	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)        // 列出文件夹
-	FolderCreate(req *msg.ReqFolderCreate) error                                // 创建文件夹
-	FolderUpload(req *msg.ReqFolderUpdate) error                                // 上传文件夹
-	FolderDelete(req *msg.ReqFolderDelete) error                                // 删除文件夹
+	UserRoot(uid int) (*msg.RspFolderList, error)                              // 列出用户的根目录
+	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)       // 列出文件夹
+	FolderCreate(req *msg.ReqFolderCreate) error                               // 创建文件夹
+	FolderUpload(req *msg.ReqFolderUpdate) error                               // 上传文件夹
+	FolderDelete(req *msg.ReqFolderDelete) error                               // 删除文件夹
 	FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) // 列出给定文件夹下包含的内容
 
 	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
@@ -146,6 +146,10 @@ func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
 
 //  FolderInclude 列出给定文件夹下包含的内容, 包括文件和文件夹 todo: 整合UserRoot方法
 func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) {
+	curFolder, err := s.store.GetFolder(req.FolderID, req.UserID, false)
+	if err != nil {
+		return nil, err
+	}
 	folders, err := s.store.ListSubFolders(req.FolderID, req.UserID)
 	if err != nil {
 		return nil, err
@@ -155,6 +159,7 @@ func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearc
 		return nil, err
 	}
 	rsp := buildFileSearchResult(folders, files)
+	rsp.ParentID = curFolder.ParentID
 	return rsp, nil
 }
 
