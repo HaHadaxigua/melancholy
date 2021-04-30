@@ -9,7 +9,7 @@ import "time"
 
 // RspFolderListItem 文件列表的item
 type RspFolderListItem struct {
-	FolderID   string             `json:"ID"`
+	FolderID   string             `json:"id"`
 	FolderName string             `json:"name"`
 	FileItems  []*RspFileListItem `json:"fileItems"`
 
@@ -28,7 +28,7 @@ type RspFolderList struct {
 
 // RspFileListItem 文件列表返回体
 type RspFileListItem struct {
-	ID        string    `json:"ID"`       // 文件ID
+	ID        string    `json:"id"`       // 文件ID
 	ParentID  string    `json:"parentID"` // 父文件ID
 	Name      string    `json:"name"`     // 文件名
 	Suffix    int       `json:"suffix"`   // 文件后缀
@@ -54,7 +54,7 @@ type RspFileSearchResult struct {
 
 // RspFileSearchItem 文件搜索的返回item
 type RspFileSearchItem struct {
-	ID       string `json:"ID"`    // 文件id
+	ID       string `json:"id"`    // 文件id
 	Filename string `json:"name"`  // 文件名
 	IsDir    bool   `json:"isDir"` // 是否是文件夹
 	Size     int    `json:"size"`  // 文件大小

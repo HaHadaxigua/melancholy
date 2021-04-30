@@ -17,9 +17,12 @@ func buildFileSearchResult(folders []*model.Folder, files []*model.File) *msg.Rs
 	for i := 0; i < lenFiles; i++ {
 		list[i] = files[i].ToFileSearchItem()
 	}
-	for j := lenFiles; j < len(list); j++ {
-		list[j] = folders[j].ToFileSearchItem()
+	cur := lenFiles
+	for i := 0; i < lenFolders; i++ {
+		list[cur] = folders[i].ToFileSearchItem()
+		cur++
 	}
 	res.List = list
+	res.Total = len(list)
 	return &res
 }

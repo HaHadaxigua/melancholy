@@ -5,6 +5,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -14,6 +15,7 @@ import (
 	"gorm.io/gorm"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -29,7 +31,7 @@ type FileService interface {
 
 	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
 	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)             // 列出文件
-	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件
+	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件，小文件上传
 	FileCreate(req *msg.ReqFileCreate) error                                   // 创建文件
 	FileDelete(fileID string, userID int) error                                // 删除文件
 	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
@@ -146,6 +148,9 @@ func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
 
 //  FolderInclude 列出给定文件夹下包含的内容, 包括文件和文件夹 todo: 整合UserRoot方法
 func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) {
+	if req.FolderID == "" || req.FolderID == " " {
+		req.FolderID = envir.RootFileID
+	}
 	curFolder, err := s.store.GetFolder(req.FolderID, req.UserID, false)
 	if err != nil {
 		return nil, err
@@ -159,7 +164,7 @@ func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearc
 		return nil, err
 	}
 	rsp := buildFileSearchResult(folders, files)
-	rsp.ParentID = curFolder.ParentID
+	rsp.ParentID = curFolder.ParentID // 当前文件夹的父文件夹
 	return rsp, nil
 }
 
@@ -194,10 +199,20 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 	if err != nil {
 		return err
 	}
+	var suffix int
+	if v, ok := envir.MapFileTypeToID[path.Ext(req.FileName)]; !ok {
+		return msg.ErrFileUnSupport
+	} else {
+		suffix = v
+	}
+
 	file := &model.File{
 		ID:       fid,
-		Name:     req.FileName,
+		OwnerID:  req.UserID,
 		ParentID: req.ParentID, // create empty file don't need to generate file
+		Name:     req.FileName,
+		Suffix:   suffix,
+		Size:     req.Size,
 	}
 	return s.store.FileCreate(file)
 }
@@ -224,13 +239,14 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 		FileName: req.FileHeader.Filename,
 		FileType: req.FileType,
 		UserID:   req.UserID,
+		Size:     int(req.FileHeader.Size),
 	}
 
 	if err := s.FileCreate(createFileReq); err != nil {
 		return err
 	}
 
-	if err := oss.AliyunOss.UploadBytes(fmt.Sprint(req.UserID), req.FileHeader.Filename, req.Data); err != nil {
+	if err := oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data); err != nil {
 		return err
 	}
 

@@ -17,7 +17,7 @@ var (
 	ErrFileNotFound         = &response.Err{Code: 10303, Message: envir.FileNotFoundErrorMsg}
 	ErrBadFilename          = &response.Err{Code: 10304, Message: envir.FileBadNameErrorMsg}
 	ErrTargetFolderNotExist = &response.Err{Code: 10305, Message: envir.FileTargetFolderNotExistMsg}
-	ErrFileUnSupport        = &response.Err{Code: 10306, Message: envir.FileTargetFolderNotExistMsg}
+	ErrFileUnSupport        = &response.Err{Code: 10306, Message: envir.FileFileUnSupport}
 	ErrMergeFileFailed      = &response.Err{Code: 10307, Message: envir.FileMergeFileFailedMsg}
 	ErrMergeFileHasExist    = &response.Err{Code: 10308, Message: envir.FileMergeFileHasExistedMsg}
 )

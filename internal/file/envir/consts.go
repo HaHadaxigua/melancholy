@@ -37,11 +37,13 @@ const (
 const (
 	FileTypeTxtID = iota + 1
 	FileTypeShID
+	FileTypePngID
 )
 
 const (
 	FileTypeTxtStr = ".txt"
 	FileTypeShell  = ".sh"
+	FileTypePng = ".png"
 )
 
 // 需要在本地排除的文件

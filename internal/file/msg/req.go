@@ -45,6 +45,7 @@ type ReqFileCreate struct {
 	ParentID string `json:"parentID"`
 	FileName string `json:"fileName"`
 	FileType int    `json:"fileType"` // 创建的文件类型
+	Size     int    `json:"size"`     // 文件大小
 
 	UserID int
 }

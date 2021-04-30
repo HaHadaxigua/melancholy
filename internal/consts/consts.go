@@ -19,4 +19,5 @@ const (
 
 const (
 	OssBucketPattern = `[0-9a-z-]{3,63}`
+	OssBucketGeneratePrefix =  `melancholy-userid-`
 )

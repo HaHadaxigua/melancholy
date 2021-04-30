@@ -11,7 +11,7 @@ var AliyunOss MelancholyOSS
 type MelancholyOSS interface {
 	GetClient() *oss.Client
 	ListBucketNames() ([]string, error)
-	CreateBucket(bucketName string) *oss.Bucket
+	CreateBucket(bucketName string) (*oss.Bucket, error)
 	DeleteBucket(bucketName string) error
 	UploadBytes(bucketName, objectName string, data []byte) error
 	UploadFileStream(objectName, bucketName string, fd *os.File) error

@@ -6,6 +6,7 @@
 package internal
 
 import (
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
@@ -50,7 +51,11 @@ func StartServer() {
 
 // 初始化对象存储配置
 func initOssConfig() {
-	oss.AliyunOss = aliyun.NewAliyunOss(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
+	fmt.Println(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
+	oss.AliyunOss, _ = aliyun.NewAliyunOss(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
+	if oss.AliyunOss == nil {
+		panic("init oss failed")
+	}
 }
 
 func startService(e *gin.Engine) {

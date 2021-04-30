@@ -16,16 +16,16 @@ type AliyunOss struct {
 	client *oss.Client `json:"client"`
 }
 
-func NewAliyunOss(endPoint, accessKey, accessSecret string) *AliyunOss {
+func NewAliyunOss(endPoint, accessKey, accessSecret string) (*AliyunOss, error) {
 	cli, err := oss.New(endPoint, accessKey, accessSecret,
 		oss.Timeout(10, 120), oss.EnableCRC(true))
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &AliyunOss{
 		client: cli,
-	}
+	}, nil
 }
 
 func (ali AliyunOss) GetClient() *oss.Client {
@@ -53,15 +53,15 @@ func (api AliyunOss) ListBucketNames() ([]string, error) {
 }
 
 // CreateBucket 创建存储桶
-func (ali AliyunOss) CreateBucket(bucketName string) *oss.Bucket {
+func (ali AliyunOss) CreateBucket(bucketName string) (*oss.Bucket, error) {
 	if err := ali.client.CreateBucket(bucketName, oss.ACL(oss.ACLPublicReadWrite)); err != nil {
-		return nil
+		return nil, err
 	}
 	bucket, err := ali.client.Bucket(bucketName)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return bucket
+	return bucket, nil
 }
 
 // DeleteBucket 删除存储桶
@@ -72,10 +72,27 @@ func (ali AliyunOss) DeleteBucket(bucketName string) error {
 // UploadBytes 上传byte数组
 func (ali AliyunOss) UploadBytes(bucketName, objectName string, data []byte) error {
 	client := ali.GetClient()
-	// 获取存储空间
-	bucket, err := client.Bucket(bucketName)
+
+	// 判断存储桶是否存在
+	isExist, err := client.IsBucketExist(bucketName)
 	if err != nil {
 		return err
+	}
+
+	var bucket *oss.Bucket
+
+	// 不存在
+	if !isExist {
+		bucket, err = ali.CreateBucket(bucketName)
+		if err != nil {
+			return err
+		}
+	} else {
+		bucket, err = client.Bucket(bucketName)
+		// 获取存储空间
+		if err != nil {
+			return err
+		}
 	}
 	storageType := oss.ObjectStorageClass(oss.StorageStandard)
 	objectAcl := oss.ObjectACL(oss.ACLPublicReadWrite)
