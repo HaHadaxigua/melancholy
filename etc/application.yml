@@ -7,7 +7,8 @@ Application:
   Port: "8002"
   ReadTimeout: 1
   WriterTimeout: 2
-  Location: ~/melancholy/
+  LocationUnix: ~/melancholy/
+  LocationWin: ../melancholyStorage/saveFiles/
   TmpFile: ~/melancholy/tmp/
   AppSecret: 43f776358a
   AppIss: github.com/HaHadaxigua/melancholy

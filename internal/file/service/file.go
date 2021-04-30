@@ -12,10 +12,12 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/store"
 	"github.com/HaHadaxigua/melancholy/internal/file/utils"
 	"github.com/HaHadaxigua/melancholy/internal/response"
+	"github.com/HaHadaxigua/melancholy/persistence"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 )
 
@@ -246,10 +248,36 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 		return err
 	}
 
-	if err := oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data); err != nil {
-		return err
+	pm := persistence.NewResourceManager()
+	var location string
+
+	switch runtime.GOOS {
+	case "linux":
+		location = conf.C.Application.LocationUnix
+	case "windows":
+		location = conf.C.Application.LocationWin
 	}
 
+	//if err := pm.SaveSimpleFile(createFileReq.FileName, location, req.Data); err != nil {
+	//	return err
+	//}
+	//if err := oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data); err != nil {
+	//	return err
+	//}
+
+	var err error
+
+	go func() {
+		err = pm.SaveSimpleFile(createFileReq.FileName, location, req.Data)
+	}()
+
+	go func() {
+		err = oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data)
+	}()
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

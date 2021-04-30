@@ -196,7 +196,7 @@ func uploadSimpleFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, response.Ok(nil))
+	c.JSON(http.StatusOK, response.OK)
 }
 
 // downloadSimpleFile 处理简单文件的下载

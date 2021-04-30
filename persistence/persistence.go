@@ -16,9 +16,13 @@ type Persistence interface {
 type ResourceManager struct {
 }
 
+func NewResourceManager() *ResourceManager {
+	return &ResourceManager{}
+}
+
 // SaveFile 保存文件，需要给出文件名、文件位置、以及数据
 func (r ResourceManager) SaveSimpleFile(filename, location string, data []byte) error {
-	file, err := os.OpenFile(location+filename, os.O_WRONLY, 06666)
+	file, err := os.Create(location+filename)
 	if err != nil {
 		return err
 	}
