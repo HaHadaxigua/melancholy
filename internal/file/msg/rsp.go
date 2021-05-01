@@ -54,10 +54,11 @@ type RspFileSearchResult struct {
 
 // RspFileSearchItem 文件搜索的返回item
 type RspFileSearchItem struct {
-	ID       string `json:"id"`    // 文件id
-	Filename string `json:"name"`  // 文件名
-	IsDir    bool   `json:"isDir"` // 是否是文件夹
-	Size     int    `json:"size"`  // 文件大小
+	ID       string `json:"id"`      // 文件id
+	Filename string `json:"name"`    // 文件名
+	IsDir    bool   `json:"isDir"`   // 是否是文件夹
+	Size     int    `json:"size"`    // 文件大小
+	Address  string `json:"address"` // oss地址
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

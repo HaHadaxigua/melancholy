@@ -70,6 +70,7 @@ func (f File) ToFileSearchItem() *msg.RspFileSearchItem {
 		Filename:  f.Name,
 		IsDir:     false,
 		Size:      f.Size,
+		Address:   f.Address,
 		CreatedAt: f.CreatedAt,
 		UpdatedAt: f.UpdatedAt,
 	}

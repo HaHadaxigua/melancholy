@@ -9,7 +9,7 @@ import (
 这个文件夹中存放一些不是那么重要的方法。一些逻辑无关的方法
 */
 
-// buildFileSearchItem 构建文件搜索的返回体
+// buildFileSearchItem 构建文件搜索的返回体,需要将文件夹和文件作为统一的格式返回
 func buildFileSearchResult(folders []*model.Folder, files []*model.File) *msg.RspFileSearchResult {
 	lenFiles, lenFolders := len(files), len(folders)
 	var res msg.RspFileSearchResult

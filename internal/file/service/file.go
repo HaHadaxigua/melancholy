@@ -215,6 +215,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 		Name:     req.FileName,
 		Suffix:   suffix,
 		Size:     req.Size,
+		Address:  req.Address,
 	}
 	return s.store.FileCreate(file)
 }
@@ -236,19 +237,6 @@ func (s fileService) FileDelete(fileID string, userID int) error {
 
 // FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
-	createFileReq := &msg.ReqFileCreate{
-		ParentID: req.ParentID,
-		FileName: req.FileHeader.Filename,
-		FileType: req.FileType,
-		UserID:   req.UserID,
-		Size:     int(req.FileHeader.Size),
-	}
-
-	if err := s.FileCreate(createFileReq); err != nil {
-		return err
-	}
-
-	pm := persistence.NewResourceManager()
 	var location string
 
 	switch runtime.GOOS {
@@ -258,12 +246,23 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 		location = conf.C.Application.LocationWin
 	}
 
-	//if err := pm.SaveSimpleFile(createFileReq.FileName, location, req.Data); err != nil {
-	//	return err
-	//}
-	//if err := oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data); err != nil {
-	//	return err
-	//}
+	bucketName := fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID)
+	ossAddress := fmt.Sprintf("https://%s.%s/%s", bucketName, conf.C.Oss.EndPoint, req.FileHeader.Filename)
+
+	createFileReq := &msg.ReqFileCreate{
+		ParentID: req.ParentID,
+		FileName: req.FileHeader.Filename,
+		FileType: req.FileType,
+		UserID:   req.UserID,
+		Size:     int(req.FileHeader.Size),
+		Address:  ossAddress,
+	}
+
+	if err := s.FileCreate(createFileReq); err != nil {
+		return err
+	}
+
+	pm := persistence.NewResourceManager()
 
 	var err error
 
@@ -272,7 +271,7 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 	}()
 
 	go func() {
-		err = oss.AliyunOss.UploadBytes(fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID), req.FileHeader.Filename, req.Data)
+		err = oss.AliyunOss.UploadBytes(bucketName, req.FileHeader.Filename, req.Data)
 	}()
 
 	if err != nil {
