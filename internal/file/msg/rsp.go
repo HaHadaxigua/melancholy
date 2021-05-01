@@ -52,6 +52,18 @@ type RspFileSearchResult struct {
 	Total    int                  `json:"total"`
 }
 
+func (r RspFileSearchResult) Len() int {
+	return len(r.List)
+}
+
+func (r RspFileSearchResult) Less(i, j int) bool {
+	return RspFileSearchResultSort(&r, i, j)
+}
+
+func (r RspFileSearchResult) Swap(i, j int) {
+	r.List[i], r.List[j] = r.List[j], r.List[i]
+}
+
 // RspFileSearchItem 文件搜索的返回item
 type RspFileSearchItem struct {
 	ID       string `json:"id"`      // 文件id

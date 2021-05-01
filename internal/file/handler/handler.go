@@ -23,7 +23,8 @@ func SetupFileRouters(r gin.IRouter) {
 	folder.POST("/create", createFolder)
 	folder.GET("/space", userSpace)
 	folder.PATCH("/modify", modifyFolder)
-	folder.DELETE("/:id", deleteFolder)
+	folder.DELETE("/single", deleteFolder) // 删除单个文件
+	folder.DELETE("/patch", patchDeleteFolder)
 	folder.POST("/include", folderInclude) // 获取给定文件夹下的文件夹和文件
 
 	// file's api
@@ -31,13 +32,17 @@ func SetupFileRouters(r gin.IRouter) {
 	file.POST("/search", searchFile)
 	file.GET("/list", listFile)
 	file.POST("/create", createFile)
-	file.DELETE("/:id", deleteFile)
+	file.DELETE("/single", deleteFile)              // 删除单个文件
+	file.DELETE("/patch", patchDeleteFile)          // 批量删除文件
 	file.POST("simple/upload", uploadSimpleFile)    // 处理小文件
 	file.GET("simple/download", downloadSimpleFile) // 处理小文件
 	// 处理分片文件上传
 	file.GET("/multi/checkChunk", checkChunk)    // 检查文件的上传情况
 	file.POST("/multi/uploadChunk", uploadChunk) // 上传文件分片
 	file.POST("/multi/mergeChunk", mergeChunk)   // 合并分片文件
+
+	// 统一处理文件夹和文件的方法
+	file.DELETE("/integration", deleteInIntegration) // 通过一个方法来删除文件夹和文件
 }
 
 func createFolder(c *gin.Context) {
@@ -82,15 +87,27 @@ func modifyFolder(c *gin.Context) {
 }
 
 func deleteFolder(c *gin.Context) {
-	folderID := c.Param("id")
-	if folderID == "" {
-		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+	var req msg.ReqFolderDelete
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	req := &msg.ReqFolderDelete{
-		FolderID: folderID, UserID: c.GetInt(consts.UserID),
+	if err := service.FileSvc.FolderDelete(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
 	}
-	if err := service.FileSvc.FolderDelete(req); err != nil {
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+// patchDeleteFolder 批量删除文件夹
+func patchDeleteFolder(c *gin.Context) {
+	var req msg.ReqFolderPatchDelete
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FolderPatchDelete(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -160,9 +177,28 @@ func createFile(c *gin.Context) {
 }
 
 func deleteFile(c *gin.Context) {
-	fileID := c.Param("id")
-	uid := c.GetInt(consts.UserID)
-	if err := service.FileSvc.FileDelete(fileID, uid); err != nil {
+	var req msg.ReqFileDelete
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FileDelete(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(nil))
+}
+
+// patchDeleteFile 批量删除文件
+func patchDeleteFile(c *gin.Context) {
+	var req msg.ReqFilePatchDelete
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FilePatchDelete(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -274,6 +310,21 @@ func mergeChunk(c *gin.Context) {
 	<-rsp.Done
 	if rsp.Result != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(rsp.Result))
+		return
+	}
+	c.JSON(http.StatusOK, response.OK)
+}
+
+// deleteInIntegration 通过一个方法来同时删除文件夹和文件
+func deleteInIntegration(c *gin.Context) {
+	var req msg.ReqDeleteInIntegration
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.DeleteInIntegration(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
 	c.JSON(http.StatusOK, response.OK)

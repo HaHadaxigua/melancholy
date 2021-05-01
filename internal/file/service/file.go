@@ -18,6 +18,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sort"
 	"strings"
 )
 
@@ -29,14 +30,19 @@ type FileService interface {
 	FolderCreate(req *msg.ReqFolderCreate) error                               // 创建文件夹
 	FolderUpload(req *msg.ReqFolderUpdate) error                               // 上传文件夹
 	FolderDelete(req *msg.ReqFolderDelete) error                               // 删除文件夹
+	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                     // 文件夹批量删除
 	FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) // 列出给定文件夹下包含的内容
 
 	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
 	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)             // 列出文件
 	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件，小文件上传
 	FileCreate(req *msg.ReqFileCreate) error                                   // 创建文件
-	FileDelete(fileID string, userID int) error                                // 删除文件
+	FileDelete(req *msg.ReqFileDelete) error                                   // 删除文件
+	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 文件的批量删除
 	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
+
+	// 文件夹和文件的整合方法
+	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error // 一个方法来处理文件夹和文件的删除方法
 
 	// 处理文件分片上传
 	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)          // 检查文件上传情况
@@ -148,6 +154,11 @@ func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
 	return s.store.FolderDelete(req)
 }
 
+// FolderPatchDelete 文件夹批量删除
+func (s fileService) FolderPatchDelete(req *msg.ReqFolderPatchDelete) error {
+	return s.store.FolderPatchDelete(req)
+}
+
 //  FolderInclude 列出给定文件夹下包含的内容, 包括文件和文件夹 todo: 整合UserRoot方法
 func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) {
 	if req.FolderID == "" || req.FolderID == " " {
@@ -167,6 +178,10 @@ func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearc
 	}
 	rsp := buildFileSearchResult(folders, files)
 	rsp.ParentID = curFolder.ParentID // 当前文件夹的父文件夹
+
+	msg.BuildRspFileSearchResultSort(req.SortedBy, req.Descending) // 处理排序
+	sort.Sort(rsp)
+
 	return rsp, nil
 }
 
@@ -220,19 +235,23 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 	return s.store.FileCreate(file)
 }
 
-func (s fileService) FileDelete(fileID string, userID int) error {
-	_file, err := s.store.FileFind(fileID, userID)
+func (s fileService) FileDelete(req *msg.ReqFileDelete) error {
+	_file, err := s.store.FileFind(req.FileID, req.UserID)
 	if err != nil {
 		return err
 	}
-	folder, err := s.store.GetFolder(_file.ParentID, userID, false)
+	folder, err := s.store.GetFolder(_file.ParentID, req.UserID, false)
 	if err != nil {
 		return err
 	}
-	if folder.OwnerID != userID {
+	if folder.OwnerID != req.UserID {
 		return response.BadRequest
 	}
-	return s.store.FileDelete(fileID, folder.ID)
+	return s.store.FileDelete(req.FileID, folder.ID)
+}
+
+func (s fileService) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
+	return s.store.FilePatchDelete(req)
 }
 
 // FileUpload todo 上传文件的处理
@@ -326,6 +345,10 @@ func (s fileService) FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileD
 	rsp.Content = ret
 	rsp.FileName = logicFile.Name
 	return &rsp, nil
+}
+
+func (s fileService) DeleteInIntegration(req *msg.ReqDeleteInIntegration) error {
+	return nil
 }
 
 // FileMultiCheck 检查文件分分片的上传情况，返回一个分片列表

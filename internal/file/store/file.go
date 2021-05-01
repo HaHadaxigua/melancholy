@@ -8,27 +8,22 @@ import (
 )
 
 type FileStore interface {
-	// ListSubFolders 列出当前文件夹下的所有子文件夹
-	ListSubFolders(folderID string, userID int) ([]*model.Folder, error)
-	GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error)
-	// FolderFindByName 根据名称找出文件夹
-	FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, error)
-	FolderCreate(folder *model.Folder) error
-	// FolderAppend 给目标文件夹添加文件夹
-	FolderAppend(folderID string, folder *model.Folder) error
-	FolderUpdate(req *msg.ReqFolderUpdate) error
-	FolderDelete(req *msg.ReqFolderDelete) error
+	GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error) // 根据文件id找出文件夹
+	ListSubFolders(folderID string, userID int) ([]*model.Folder, error)        // 列出当前文件夹下的所有子文件夹
+	FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, error)           // 根据名称找出文件夹
+	FolderCreate(folder *model.Folder) error                                    // 创建文件夹
+	FolderAppend(folderID string, folder *model.Folder) error                   // 给目标文件夹添加文件夹
+	FolderUpdate(req *msg.ReqFolderUpdate) error                                // 更新文件夹
+	FolderDelete(req *msg.ReqFolderDelete) error                                // 删除文件夹
+	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                      // 批量删除文件夹
 
-	// FileSearch 根据给出的名字找出相应的文件夹或者是文件
-	FileSearch(req *msg.ReqFileSearch) ([]*model.Folder, []*model.File, error)
-	// FileFind 根据id查找文件
-	FileFind(fileID string, userID int) (*model.File, error)
-	// FileFindByName 根据名称找出文件
-	FileFindByName(req *msg.ReqFileSearch) ([]*model.File, error)
-	// FileList 列出一个文件夹下的所有文件
-	FileList(parentID string, userID int) ([]*model.File, error)
-	FileCreate(file *model.File) error
-	FileDelete(fileID, parentID string) error
+	FileSearch(req *msg.ReqFileSearch) ([]*model.Folder, []*model.File, error) //根据给出的名字找出相应的文件夹或者是文件
+	FileFind(fileID string, userID int) (*model.File, error)                   // 根据id查找文件
+	FileFindByName(req *msg.ReqFileSearch) ([]*model.File, error)              // 根据名称找出文件
+	FileList(parentID string, userID int) ([]*model.File, error)               // 列出一个文件夹下的所有文件
+	FileCreate(file *model.File) error                                         // 创建文件
+	FileDelete(fileID, parentID string) error                                  // 删除文件
+	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 批量删除文件
 }
 
 type fileStore struct {
@@ -97,7 +92,16 @@ func (s fileStore) FolderUpdate(req *msg.ReqFolderUpdate) error {
 
 func (s fileStore) FolderDelete(req *msg.ReqFolderDelete) error {
 	query := s.db
-	return query.Select(clause.Associations).Delete(&model.Folder{ID: req.FolderID, OwnerID: req.UserID}).Error
+	return query.
+		Select(clause.Associations).
+		Delete(&model.Folder{ID: req.FolderID, OwnerID: req.UserID}).
+		Error
+}
+
+// FolderPatchDelete 批量删除文件夹
+func (s fileStore) FolderPatchDelete(req *msg.ReqFolderPatchDelete) error {
+	query := s.db
+	return query.Model(&model.Folder{}).Where("id in ? and owner_id = ?", req.FolderIDs, req.UserID).Select(clause.Associations).Delete(&model.Folder{}).Error
 }
 
 // FileFindByName 模糊搜索文件
@@ -158,4 +162,12 @@ func (s fileStore) FileDelete(fileID, parentID string) error {
 		return err
 	}
 	return nil
+}
+
+func (s fileStore) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
+	return s.db.Model(&model.File{}).
+		Where("id in ? and owner_id = ?", req.FileIDs, req.UserID).
+		Select(clause.Associations).
+		Delete(&model.File{}).
+		Error
 }

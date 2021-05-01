@@ -34,9 +34,17 @@ type ReqFolderDelete struct {
 	UserID int
 }
 
-// ReqFolderInclude 当前文件夹下包含的内容 todo: 整理请求题
+type ReqFolderPatchDelete struct {
+	FolderIDs []string `json:"folderIDs"`
+
+	UserID int
+}
+
+// ReqFolderInclude 当前文件夹下包含的内容 todo: 整理请求体
 type ReqFolderInclude struct {
-	FolderID string `json:"folderID"`
+	FolderID   string `json:"folderID"`
+	SortedBy   string `json:"sortedBy"`
+	Descending bool   `json:"descending"` // 是否是降序
 
 	UserID int
 }
@@ -72,6 +80,18 @@ func (req ReqFileCreate) Verify() bool {
 	return true
 }
 
+type ReqFileDelete struct {
+	FileID string `json:"fileID" binding:"required"`
+	UserID int
+}
+
+type ReqFilePatchDelete struct {
+	FileIDs []string `json:"fileIDs"`
+
+	UserID int
+}
+
+// ReqFileUpload 简单文件的上传请求
 type ReqFileUpload struct {
 	Data       []byte                `json:"data"`
 	FileHeader *multipart.FileHeader `json:"fileHeader"`
@@ -112,6 +132,16 @@ type ReqFileDownload struct {
 
 	UserID int
 }
+
+// ReqDeleteInIntegration 文件夹和文件的整合删除方法
+type ReqDeleteInIntegration struct {
+	FolderIDs []string `json:"folderIDs"`
+	FileIDs   []string `json:"fileIDs"`
+
+	UserID int
+}
+
+//=====================分片上传方法====================================
 
 // ReqFileMultiCheck 检查文件上传情况
 type ReqFileMultiCheck struct {
