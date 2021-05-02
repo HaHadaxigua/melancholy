@@ -25,21 +25,21 @@ var (
 			FolderName: folder.Name,
 			FileItems:  fileItems,
 			CreatedAt:  folder.CreatedAt,
-			UpdatedAt: folder.UpdatedAt,
+			UpdatedAt:  folder.UpdatedAt,
 		}
 	}
 
 	// 构建文件列表的返回体
 	buildFileItemRsp FuncFileBuildRsp = func(file *model.File) *msg.RspFileListItem {
 		return &msg.RspFileListItem{
-			ID:       file.ID,
-			ParentID: file.ParentID,
-			Name:     file.Name,
-			Suffix:   file.Suffix,
-			Hash:     file.Hash,
-			Address:  file.Address,
-			Size:     file.Size,
-			Mode:     file.Mode,
+			ID:        file.ID,
+			ParentID:  file.ParentID,
+			Name:      file.Name,
+			Suffix:    file.Suffix,
+			Hash:      file.Hash,
+			Address:   file.Address,
+			Size:      file.Size,
+			Mode:      file.Mode,
 			UpdatedAt: file.UpdatedAt,
 		}
 	}
@@ -94,3 +94,5 @@ func FunctionalFile(files []*model.File, fn interface{}) interface{} {
 	}
 	return out
 }
+
+// ======================自定义结构的方法======================

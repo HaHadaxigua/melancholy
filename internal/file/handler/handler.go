@@ -86,13 +86,15 @@ func modifyFolder(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
+// deleteFolder 递归的删除文件夹
 func deleteFolder(c *gin.Context) {
 	var req msg.ReqFolderDelete
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	if err := service.FileSvc.FolderDelete(&req); err != nil {
+	req.UserID = c.GetInt(consts.UserID)
+	if err := service.FileSvc.FolderRDelete(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -107,7 +109,7 @@ func patchDeleteFolder(c *gin.Context) {
 		return
 	}
 	req.UserID = c.GetInt(consts.UserID)
-	if err := service.FileSvc.FolderPatchDelete(&req); err != nil {
+	if err := service.FileSvc.FolderRPatchDelete(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}

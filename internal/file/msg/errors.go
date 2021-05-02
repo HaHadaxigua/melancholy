@@ -20,4 +20,6 @@ var (
 	ErrFileUnSupport        = &response.Err{Code: 10306, Message: envir.FileFileUnSupport}
 	ErrMergeFileFailed      = &response.Err{Code: 10307, Message: envir.FileMergeFileFailedMsg}
 	ErrMergeFileHasExist    = &response.Err{Code: 10308, Message: envir.FileMergeFileHasExistedMsg}
+
+	ErrPatchDeleteFailed = &response.Err{Code: 10309, Message: envir.FilePatchDeleteFailedMsg}
 )

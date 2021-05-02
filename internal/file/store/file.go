@@ -8,14 +8,15 @@ import (
 )
 
 type FileStore interface {
-	GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error) // 根据文件id找出文件夹
-	ListSubFolders(folderID string, userID int) ([]*model.Folder, error)        // 列出当前文件夹下的所有子文件夹
-	FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, error)           // 根据名称找出文件夹
-	FolderCreate(folder *model.Folder) error                                    // 创建文件夹
-	FolderAppend(folderID string, folder *model.Folder) error                   // 给目标文件夹添加文件夹
-	FolderUpdate(req *msg.ReqFolderUpdate) error                                // 更新文件夹
-	FolderDelete(req *msg.ReqFolderDelete) error                                // 删除文件夹
-	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                      // 批量删除文件夹
+	GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error)    // 根据文件id找出文件夹
+	ListSubFolders(folderID string, userID int) ([]*model.Folder, error)           // 列出当前文件夹下的所有子文件夹
+	FolderInclude(folderID string, userID int) (model.Folders, model.Files, error) // 当前文件夹中包含的内容
+	FolderFindByName(req *msg.ReqFileSearch) ([]*model.Folder, error)              // 根据名称找出文件夹
+	FolderCreate(folder *model.Folder) error                                       // 创建文件夹
+	FolderAppend(folderID string, folder *model.Folder) error                      // 给目标文件夹添加文件夹
+	FolderUpdate(req *msg.ReqFolderUpdate) error                                   // 更新文件夹
+	FolderDelete(req *msg.ReqFolderDelete) error                                   // 删除文件夹
+	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                         // 批量删除文件夹
 
 	FileSearch(req *msg.ReqFileSearch) ([]*model.Folder, []*model.File, error) //根据给出的名字找出相应的文件夹或者是文件
 	FileFind(fileID string, userID int) (*model.File, error)                   // 根据id查找文件
@@ -60,6 +61,19 @@ func (s fileStore) GetFolder(folderID string, userID int, withSub bool) (*model.
 		return nil, err
 	}
 	return &folder, nil
+}
+
+// FolderInclude 当前文件夹中包含的文件和文件夹
+func (s fileStore) FolderInclude(folderID string, userID int) (model.Folders, model.Files, error) {
+	folders, err := s.ListSubFolders(folderID, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	files, err := s.FileList(folderID, userID) // 当前文件夹中包含的文件
+	if err != nil {
+		return nil, nil, err
+	}
+	return folders, files, nil
 }
 
 // FolderFindByName 模糊搜索文件夹

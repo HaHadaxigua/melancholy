@@ -27,6 +27,8 @@ const (
 	FileFileUnSupport           string = "文件格式不支持"
 	FileMergeFileFailedMsg      string = "合并文件错误"
 	FileMergeFileHasExistedMsg  string = "合并文件已存在"
+
+	FilePatchDeleteFailedMsg string = "文件并发删除失败"
 )
 
 const (
@@ -43,7 +45,7 @@ const (
 const (
 	FileTypeTxtStr = ".txt"
 	FileTypeShell  = ".sh"
-	FileTypePng = ".png"
+	FileTypePng    = ".png"
 )
 
 // 需要在本地排除的文件

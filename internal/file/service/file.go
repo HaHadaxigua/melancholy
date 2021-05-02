@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 )
 
 var FileSvc FileService
@@ -31,6 +32,8 @@ type FileService interface {
 	FolderUpload(req *msg.ReqFolderUpdate) error                               // 上传文件夹
 	FolderDelete(req *msg.ReqFolderDelete) error                               // 删除文件夹
 	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                     // 文件夹批量删除
+	FolderRDelete(req *msg.ReqFolderDelete) error                              // 递归删除文件夹
+	FolderRPatchDelete(req *msg.ReqFolderPatchDelete) error                    // 递归的批量删除文件夹
 	FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearchResult, error) // 列出给定文件夹下包含的内容
 
 	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
@@ -150,13 +153,109 @@ func (s fileService) FolderUpload(req *msg.ReqFolderUpdate) error {
 	return s.store.FolderUpdate(req)
 }
 
+// FolderDelete 删除文件夹 需要删除子文件夹
 func (s fileService) FolderDelete(req *msg.ReqFolderDelete) error {
+	// todo: 递归的找出当前文件夹的子文件夹
+	if req.FolderID == envir.RootFileID {
+		// 禁止删除根目录
+		return nil
+	}
+	var (
+		needToDeleteFolderID []string
+		needToDeleteFileID   []string
+		recursive            func(folderID string) error // 找出当前文件夹中的所有文件和文件夹
+	)
+	recursive = func(folderID string) error {
+		folders, files, err := s.store.FolderInclude(req.FolderID, req.UserID)
+		if err != nil {
+			return err
+		}
+		folderIDs := folders.GetIDs()
+		needToDeleteFolderID = append(needToDeleteFolderID, folderIDs...)
+		needToDeleteFileID = append(needToDeleteFileID, files.GetIDs()...)
+		for _, e := range folderIDs {
+			recursive(e)
+		}
+		return nil
+	}
+
+	recursive(req.FolderID)
+
 	return s.store.FolderDelete(req)
+}
+
+// FolderRDelete 递归删除文件夹
+func (s fileService) FolderRDelete(req *msg.ReqFolderDelete) error {
+	// todo: 递归的找出当前文件夹的子文件夹
+	if req.FolderID == envir.RootFileID {
+		// 禁止删除根目录
+		return nil
+	}
+	var (
+		needToDeleteFolderID []string
+		needToDeleteFileID   []string
+		recursive            func(folderID string) error // 找出当前文件夹中的所有文件和文件夹
+	)
+	needToDeleteFolderID = append(needToDeleteFolderID, req.FolderID)
+	recursive = func(folderID string) error {
+		folders, files, err := s.store.FolderInclude(folderID, req.UserID)
+		if err != nil {
+			return err
+		}
+		folderIDs := folders.GetIDs()
+		needToDeleteFolderID = append(needToDeleteFolderID, folderIDs...)
+		needToDeleteFileID = append(needToDeleteFileID, files.GetIDs()...)
+		for _, e := range folderIDs {
+			recursive(e)
+		}
+		return nil
+	}
+
+	err := recursive(req.FolderID)
+	if err != nil {
+		return err
+	}
+
+	if len(needToDeleteFolderID) != 0 {
+		r := &msg.ReqFolderPatchDelete{
+			FolderIDs: needToDeleteFolderID,
+			UserID:    req.UserID,
+		}
+		if err := s.store.FolderPatchDelete(r); err != nil {
+			return err
+		}
+	}
+
+	if len(needToDeleteFileID) != 0 {
+		r := &msg.ReqFilePatchDelete{
+			FileIDs: needToDeleteFileID,
+			UserID:  req.UserID,
+		}
+		if err := s.store.FilePatchDelete(r); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // FolderPatchDelete 文件夹批量删除
 func (s fileService) FolderPatchDelete(req *msg.ReqFolderPatchDelete) error {
 	return s.store.FolderPatchDelete(req)
+}
+
+// FolderRPatchDelete 批量删除文件夹包括其子内容
+func (s fileService) FolderRPatchDelete(req *msg.ReqFolderPatchDelete) error {
+	// todo 优化协程的并发处理
+	for _, e := range req.FolderIDs {
+		req := &msg.ReqFolderDelete{
+			FolderID: e,
+			UserID:   req.UserID,
+		}
+		if err := s.FolderRDelete(req); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 //  FolderInclude 列出给定文件夹下包含的内容, 包括文件和文件夹 todo: 整合UserRoot方法
@@ -347,8 +446,37 @@ func (s fileService) FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileD
 	return &rsp, nil
 }
 
+// DeleteInIntegration 同时有文件和文件夹需要去删除
 func (s fileService) DeleteInIntegration(req *msg.ReqDeleteInIntegration) error {
-	return nil
+	var err error
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		if len(req.FileIDs) != 0 {
+			r := &msg.ReqFilePatchDelete{
+				FileIDs: req.FileIDs,
+				UserID:  req.UserID,
+			}
+			err = s.FilePatchDelete(r)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		if len(req.FolderIDs) != 0 {
+			r := &msg.ReqFolderPatchDelete{
+				FolderIDs: req.FolderIDs,
+				UserID:    req.UserID,
+			}
+			err = s.FolderPatchDelete(r)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	return err
 }
 
 // FileMultiCheck 检查文件分分片的上传情况，返回一个分片列表

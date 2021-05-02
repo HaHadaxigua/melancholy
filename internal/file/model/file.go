@@ -41,6 +41,16 @@ func (f Folder) ToFileSearchItem() *msg.RspFileSearchItem {
 	}
 }
 
+type Folders []*Folder
+
+func (folders Folders) GetIDs() []string {
+	var ids []string
+	for i := 0; i < len(folders); i++ {
+		ids = append(ids, folders[i].ID)
+	}
+	return ids
+}
+
 type File struct {
 	ID         string `json:"id"`         // 文件ID
 	OwnerID    int    `json:"ownerID"`    // 创建者ID
@@ -74,4 +84,14 @@ func (f File) ToFileSearchItem() *msg.RspFileSearchItem {
 		CreatedAt: f.CreatedAt,
 		UpdatedAt: f.UpdatedAt,
 	}
+}
+
+type Files []*File
+
+func (files Files) GetIDs() []string {
+	var ids []string
+	for i := 0; i < len(files); i++ {
+		ids = append(ids, files[i].ID)
+	}
+	return ids
 }

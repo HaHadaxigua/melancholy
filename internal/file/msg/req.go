@@ -22,27 +22,27 @@ type ReqFolderCreate struct {
 }
 
 type ReqFolderUpdate struct {
-	FolderID string `json:"folderID"`
+	FolderID string `json:"folderID" binding:"required"`
 	NewName  string `json:"newName"`
 
 	UserID int
 }
 
 type ReqFolderDelete struct {
-	FolderID string `json:"folderID"`
+	FolderID string `json:"folderID" binding:"required"`
 
 	UserID int
 }
 
 type ReqFolderPatchDelete struct {
-	FolderIDs []string `json:"folderIDs"`
+	FolderIDs []string `json:"folderIDs" binding:"required"`
 
 	UserID int
 }
 
 // ReqFolderInclude 当前文件夹下包含的内容 todo: 整理请求体
 type ReqFolderInclude struct {
-	FolderID   string `json:"folderID"`
+	FolderID   string `json:"folderID" binding:"required"`
 	SortedBy   string `json:"sortedBy"`
 	Descending bool   `json:"descending"` // 是否是降序
 
@@ -86,7 +86,7 @@ type ReqFileDelete struct {
 }
 
 type ReqFilePatchDelete struct {
-	FileIDs []string `json:"fileIDs"`
+	FileIDs []string `json:"fileIDs" binding:"required"`
 
 	UserID int
 }
