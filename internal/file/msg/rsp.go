@@ -100,3 +100,18 @@ type RspFileMultiMerge struct {
 
 type RspFIleMultiDownload struct {
 }
+
+// RspFindFileByType 根据文件类型查找文件
+type RspFindFileByType struct {
+	List  []*RspFindFileByTypeItem `json:"list"`
+	Total int                      `json:"total"`
+}
+
+type RspFindFileByTypeItem struct {
+	Name      string    `json:"name"`
+	Address   string    `json:"address"`
+	Size      int       `json:"size"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Hash      string    `json:"hash"`
+}

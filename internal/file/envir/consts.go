@@ -40,12 +40,28 @@ const (
 	FileTypeTxtID = iota + 1
 	FileTypeShID
 	FileTypePngID
+	FileTypeJpgID
+	FileTypeMp3ID
+
 )
 
 const (
 	FileTypeTxtStr = ".txt"
 	FileTypeShell  = ".sh"
 	FileTypePng    = ".png"
+	FileTypeJpg    = ".jpg"
+	FileTypeMP4    = ".mp4"
+	FileTypeRMVB   = ".rmvb"
+	FileTypeKMV    = ".kmv"
+)
+
+// 什么类型的文件
+const (
+	TypeOther    = iota // 其他类型
+	TypePictures        // 图片类型
+	TypeTxt             // 文本类型
+	TypeMusic           // 音乐类型
+	TypeVideo           // 视频类型
 )
 
 // 需要在本地排除的文件

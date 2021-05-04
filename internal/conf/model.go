@@ -6,6 +6,7 @@ type Config struct {
 	Database    Database
 	Gorm        Gorm
 	Oss         Oss
+	FileSupport FileSupport
 }
 
 type Application struct {
@@ -42,4 +43,8 @@ type Oss struct {
 	EndPoint        string `json:"endPoint" yml:"endPoint"`
 	AccessKeyID     string `json:"accessKeyId" yml:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret" yml:"accessKeySecret"`
+}
+
+type FileSupport struct {
+	List []string `json:"list" yml:"list"`
 }

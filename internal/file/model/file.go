@@ -63,6 +63,7 @@ type File struct {
 	ObjectName string `json:"objectName"` // oss中的存储对象名字
 	Size       int    `json:"size"`       // 文件大小
 	Mode       int    `json:"mode"`       // 文件模式
+	Ftype      int    `json:"ftype"`      // 文件类型
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
@@ -86,12 +87,38 @@ func (f File) ToFileSearchItem() *msg.RspFileSearchItem {
 	}
 }
 
+// ToFindFileByTypeItem 转换结构体
+func (f File) ToFindFileByTypeItem() *msg.RspFindFileByTypeItem {
+	return &msg.RspFindFileByTypeItem{
+		Name:      f.Name,
+		Address:   f.Address,
+		Size:      f.Size,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
+		Hash:      f.Hash,
+	}
+}
+
 type Files []*File
 
+func (files Files) GetLen() int {
+	return len(files)
+}
+
+// GetIDs 获取文件list的idList
 func (files Files) GetIDs() []string {
 	var ids []string
 	for i := 0; i < len(files); i++ {
 		ids = append(ids, files[i].ID)
 	}
 	return ids
+}
+
+// ToRspFindFileItemByType 用于构造（根据文件类型查找时的返回值）
+func (files Files) ToRspFindFileItemByType() []*msg.RspFindFileByTypeItem {
+	var items []*msg.RspFindFileByTypeItem
+	for i := 0; i < files.GetLen(); i++ {
+		items = append(items, files[i].ToFindFileByTypeItem())
+	}
+	return items
 }

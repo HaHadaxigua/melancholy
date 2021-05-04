@@ -44,14 +44,15 @@ type FileService interface {
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 文件的批量删除
 	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
 
-	// 文件夹和文件的整合方法
-	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error // 一个方法来处理文件夹和文件的删除方法
-
 	// 处理文件分片上传
 	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)          // 检查文件上传情况
 	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error)       // 文件分片的上传
 	FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error)          // 请求将文件分片进行合并
 	FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspFIleMultiDownload, error) // 文件的分片下载
+
+	// 文件夹和文件的整合方法
+	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error                 // 一个方法来处理文件夹和文件的删除方法
+	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 寻找当前用户的图片文件
 }
 
 type fileService struct {
@@ -330,6 +331,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 		Suffix:   suffix,
 		Size:     req.Size,
 		Address:  req.Address,
+		Ftype:    envir.GetFileType(suffix),
 	}
 	return s.store.FileCreate(file)
 }
@@ -563,4 +565,16 @@ func (s fileService) FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspF
 	// 1。 判断本地有无下载好的文件
 	// 2。 将文件进行分片的传输
 	return nil, nil
+}
+
+// FindFileByType 根据文件类型查找文件
+func (s fileService) FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) {
+	files, total, err := s.store.FindFileByType(req)
+	if err != nil {
+		return nil, err
+	}
+	var rsp msg.RspFindFileByType
+	rsp.List = files.ToRspFindFileItemByType()
+	rsp.Total = total
+	return &rsp, nil
 }

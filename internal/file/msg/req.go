@@ -178,3 +178,11 @@ type ReqFileMultiDownload struct {
 
 	UserID int
 }
+
+// ReqFindFileByType 找出图片
+type ReqFindFileByType struct {
+	FileType int `form:"fileType" json:"fileType" binding:"required"`
+	Offset   int `form:"offset" json:"offset"`
+	Limit    int `form:"limit" json:"limit"`
+	UserID   int
+}

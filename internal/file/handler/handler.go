@@ -43,6 +43,7 @@ func SetupFileRouters(r gin.IRouter) {
 
 	// 统一处理文件夹和文件的方法
 	file.DELETE("/integration", deleteInIntegration) // 通过一个方法来删除文件夹和文件
+	file.GET("/findByType", findFileByType)            // 获取当前用户的所有图片
 }
 
 func createFolder(c *gin.Context) {
@@ -330,4 +331,24 @@ func deleteInIntegration(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.OK)
+}
+
+// findFileByType 根据文件类型查找文件
+func findFileByType(c *gin.Context) {
+	var req msg.ReqFindFileByType
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	if req.FileType < 0 || req.Offset < -1 || req.Limit < -1 {
+		c.JSON(http.StatusBadRequest, response.UnKnown)
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FindFileByType(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
 }

@@ -18,13 +18,14 @@ type FileStore interface {
 	FolderDelete(req *msg.ReqFolderDelete) error                                   // 删除文件夹
 	FolderPatchDelete(req *msg.ReqFolderPatchDelete) error                         // 批量删除文件夹
 
-	FileSearch(req *msg.ReqFileSearch) ([]*model.Folder, []*model.File, error) //根据给出的名字找出相应的文件夹或者是文件
+	FileSearch(req *msg.ReqFileSearch) ([]*model.Folder, []*model.File, error) // 根据给出的名字找出相应的文件夹或者是文件
 	FileFind(fileID string, userID int) (*model.File, error)                   // 根据id查找文件
 	FileFindByName(req *msg.ReqFileSearch) ([]*model.File, error)              // 根据名称找出文件
 	FileList(parentID string, userID int) ([]*model.File, error)               // 列出一个文件夹下的所有文件
 	FileCreate(file *model.File) error                                         // 创建文件
 	FileDelete(fileID, parentID string) error                                  // 删除文件
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 批量删除文件
+	FindFileByType(req *msg.ReqFindFileByType) (model.Files, int, error)       // 根据文件类型寻找文件
 }
 
 type fileStore struct {
@@ -184,4 +185,20 @@ func (s fileStore) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
 		Select(clause.Associations).
 		Delete(&model.File{}).
 		Error
+}
+
+// FindFileByType 根据文件类型寻找文件
+func (s fileStore) FindFileByType(req *msg.ReqFindFileByType) (model.Files, int, error) {
+	query := s.db.Model(&model.File{})
+	query = buildBaseQuery(query, req)
+	var files []*model.File
+	query = query.Where("owner_id = ? and ftype = ?", req.UserID, req.FileType)
+	if err := query.Find(&files).Error; err != nil {
+		return nil, 0, err
+	}
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	return files, int(total), nil
 }

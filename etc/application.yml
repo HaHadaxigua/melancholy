@@ -27,3 +27,8 @@ OSS:
   EndPoint:
   AccessKeyID:
   AccessKeySecret:
+FileSupport:
+  List:
+    - ".txt"
+    - ".sh"
+    - ".png"
