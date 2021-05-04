@@ -7,6 +7,8 @@ package aliyun
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"io"
 	"os"
@@ -17,6 +19,7 @@ type AliyunOss struct {
 }
 
 func NewAliyunOss(endPoint, accessKey, accessSecret string) (*AliyunOss, error) {
+	endPoint = fmt.Sprintf("%s%s", consts.Https, endPoint)
 	cli, err := oss.New(endPoint, accessKey, accessSecret,
 		oss.Timeout(10, 120), oss.EnableCRC(true))
 	if err != nil {
