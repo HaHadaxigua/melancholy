@@ -109,6 +109,7 @@ type RspFindFileByType struct {
 }
 
 type RspFindFileByTypeItem struct {
+	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Address   string    `json:"address"`
 	Size      int       `json:"size"`

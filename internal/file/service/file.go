@@ -56,6 +56,7 @@ type FileService interface {
 	// 针对特定类型的方法
 	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 寻找当前用户的图片文件
 	CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, error)              // 创建文本文件
+	GetDocContent(req *msg.ReqDocFile) (string, error)                         // 获取文稿文件内容
 
 	IsHashExisted(hash string) (bool, *model.File, error) // 文件hash是否已经存在
 }
@@ -702,6 +703,19 @@ func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, erro
 		UpdateAt: createRsp.UpdatedAt,
 	}
 	return rsp, nil
+}
+
+// GetDocContent 根据文件id 找出文件内容
+func (s fileService) GetDocContent(req *msg.ReqDocFile) (string, error) {
+	_, err := s.store.FileFind(req.ID, req.UserID)
+	if err != nil {
+		return "", err
+	}
+	docFile, err := s.store.GetDocFile(req.ID)
+	if err != nil {
+		return "", err
+	}
+	return docFile.Content, nil
 }
 
 // IsHashExisted 文件hash是否存在

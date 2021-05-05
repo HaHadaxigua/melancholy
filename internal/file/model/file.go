@@ -103,6 +103,7 @@ func (f File) ToFileSearchItem() *msg.RspFileSearchItem {
 // ToFindFileByTypeItem 转换结构体
 func (f File) ToFindFileByTypeItem() *msg.RspFindFileByTypeItem {
 	return &msg.RspFindFileByTypeItem{
+		ID:        f.ID,
 		Name:      f.Name,
 		Address:   f.Address,
 		Size:      f.Size,

@@ -28,7 +28,8 @@ type FileStore interface {
 	FindFileByType(req *msg.ReqFindFileByType) (model.Files, int, error)       // 根据文件类型寻找文件
 	FindFileByHash(hash string) (*model.File, error)                           // 通过文件hash来查找文件
 
-	CreateDocFile(docFile *model.DocFile) error // 创建文本类型的文件
+	CreateDocFile(docFile *model.DocFile) error       // 创建文本类型的文件
+	GetDocFile(fileID string) (*model.DocFile, error) // 通过文件id来找出文稿结构
 }
 
 type fileStore struct {
@@ -219,4 +220,14 @@ func (s fileStore) FindFileByHash(hash string) (*model.File, error) {
 // CreateDocFile 创建文本类型文件
 func (s fileStore) CreateDocFile(docFile *model.DocFile) error {
 	return s.db.Create(docFile).Error
+}
+
+//  GetDocContent 根据文稿id找出文稿内容
+func (s fileStore) GetDocFile(fileID string) (*model.DocFile, error) {
+	var docFile model.DocFile
+	query := s.db.Model(&model.DocFile{})
+	if err := query.Where("id = ?", fileID).Take(&docFile).Error; err != nil {
+		return nil, err
+	}
+	return &docFile, nil
 }

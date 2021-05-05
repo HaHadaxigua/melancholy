@@ -50,6 +50,7 @@ func SetupFileRouters(r gin.IRouter) {
 	// 处理文档型文件相关方法
 	file.GET("/findByType", findFileByType) // 获取当前用户的所有图片
 	file.POST("/create/doc", createDoc)     // 创建文档类型文件
+	file.GET("/get/doc", getDocContent)     // 创建文档类型文件
 
 }
 
@@ -390,6 +391,22 @@ func createDoc(c *gin.Context) {
 	}
 	req.UserID = c.GetInt(consts.UserID)
 	rsp, err := service.FileSvc.CreateDoc(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// getDocContent 获取文稿内容
+func getDocContent(c *gin.Context) {
+	var req msg.ReqDocFile
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.GetDocContent(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return

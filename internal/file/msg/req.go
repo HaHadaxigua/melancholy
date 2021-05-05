@@ -198,9 +198,9 @@ type ReqFindFileByType struct {
 
 // ReqDocFile 创建文本文件的请求
 type ReqDocFile struct {
-	Name    string `json:"name"`    // 文件名，需要后缀
-	Content string `json:"content"` // 文本内容
-	ID      string `json:"id"`      // 用于更新时的id
+	Name    string `json:"name"`         // 文件名，需要后缀
+	Content string `json:"content"`      // 文本内容
+	ID      string `form:"id" json:"id"` // 用于更新时的id
 
 	UserID int
 }
