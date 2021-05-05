@@ -14,10 +14,16 @@ import (
 	"time"
 )
 
+type ReqFolderGetInfo struct {
+	FolderID string `form:"folderID" json:"folderID" binding:"required"`
+	UserID   int
+}
+
 type ReqFolderCreate struct {
 	FolderName string `json:"filename"`
 	ParentID   string `json:"parentID, omitempty"`
-
+	
+	ID string `json:"id"`
 	UserID int
 }
 
@@ -184,5 +190,14 @@ type ReqFindFileByType struct {
 	FileType int `form:"fileType" json:"fileType" binding:"required"`
 	Offset   int `form:"offset" json:"offset"`
 	Limit    int `form:"limit" json:"limit"`
-	UserID   int
+
+	UserID int
+}
+
+// ReqDocCreate 创建文本文件的请求
+type ReqDocCreate struct {
+	Name    string `json:"name"`    // 文件名，需要后缀
+	Content string `json:"content"` // 文本内容
+
+	UserID int
 }

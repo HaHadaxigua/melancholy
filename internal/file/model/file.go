@@ -41,6 +41,19 @@ func (f Folder) ToFileSearchItem() *msg.RspFileSearchItem {
 	}
 }
 
+func (f Folder) ToFolderListItem() *msg.RspFolderListItem {
+	var files Files
+	files = f.Files
+	fileItems := files.ToRspFileList()
+	return &msg.RspFolderListItem{
+		FolderID:   f.ID,
+		FolderName: f.Name,
+		FileItems:  fileItems,
+		CreatedAt:  f.CreatedAt,
+		UpdatedAt:  f.UpdatedAt,
+	}
+}
+
 type Folders []*Folder
 
 func (folders Folders) GetIDs() []string {
@@ -99,6 +112,21 @@ func (f File) ToFindFileByTypeItem() *msg.RspFindFileByTypeItem {
 	}
 }
 
+func (f File) ToFileListItem() *msg.RspFileListItem {
+	return &msg.RspFileListItem{
+		ID:        f.ID,
+		ParentID:  f.ParentID,
+		Name:      f.Name,
+		Suffix:    f.Suffix,
+		Hash:      f.Hash,
+		Address:   f.Address,
+		Size:      f.Size,
+		Mode:      f.Mode,
+		CreatedAt: f.CreatedAt,
+		UpdatedAt: f.UpdatedAt,
+	}
+}
+
 type Files []*File
 
 func (files Files) GetLen() int {
@@ -121,4 +149,23 @@ func (files Files) ToRspFindFileItemByType() []*msg.RspFindFileByTypeItem {
 		items = append(items, files[i].ToFindFileByTypeItem())
 	}
 	return items
+}
+
+// ToRspFileList 构造（查询文件信息时候的返回体）
+func (files Files) ToRspFileList() []*msg.RspFileListItem {
+	var items []*msg.RspFileListItem
+	for i := 0; i < files.GetLen(); i++ {
+		items = append(items, files[i].ToFileListItem())
+	}
+	return items
+}
+
+// DocFile 文本类型文件
+type DocFile struct {
+	ID      string `json:"id"`      // 文件ID
+	Content string `json:"Content"` // 内容
+}
+
+func (DocFile) TableName() string {
+	return "txt_files"
 }

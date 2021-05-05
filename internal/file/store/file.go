@@ -26,6 +26,8 @@ type FileStore interface {
 	FileDelete(fileID, parentID string) error                                  // 删除文件
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 批量删除文件
 	FindFileByType(req *msg.ReqFindFileByType) (model.Files, int, error)       // 根据文件类型寻找文件
+
+	CreateDocFile(docFile *model.DocFile) error // 创建文本类型的文件
 }
 
 type fileStore struct {
@@ -54,11 +56,11 @@ func (s fileStore) ListSubFolders(folderID string, userID int) ([]*model.Folder,
 // GetFolder 获取指定文件夹
 func (s fileStore) GetFolder(folderID string, userID int, withSub bool) (*model.Folder, error) {
 	var folder model.Folder
-	query := s.db.Model(&model.Folder{ID: folderID}).Where("owner_id = ?", userID)
+	query := s.db.Model(&model.Folder{}).Where(" id = ? and owner_id = ?", folderID, userID)
 	if withSub {
 		query = query.Preload("Subs")
 	}
-	if err := query.Scan(&folder).Error; err != nil {
+	if err := query.Take(&folder).Error; err != nil {
 		return nil, err
 	}
 	return &folder, nil
@@ -201,4 +203,9 @@ func (s fileStore) FindFileByType(req *msg.ReqFindFileByType) (model.Files, int,
 		return nil, 0, err
 	}
 	return files, int(total), nil
+}
+
+// CreateDocFile 创建文本类型文件
+func (s fileStore) CreateDocFile(docFile *model.DocFile) error {
+	return s.db.Create(docFile).Error
 }

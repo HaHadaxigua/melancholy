@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
@@ -9,6 +10,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/HaHadaxigua/melancholy/internal/response"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"io"
 	"net/http"
 )
@@ -22,6 +24,7 @@ func SetupFileRouters(r gin.IRouter) {
 	folder := secured.Group("/folder")
 	folder.POST("/create", createFolder)
 	folder.GET("/space", userSpace)
+	folder.GET("/info", getFolderInfo)
 	folder.PATCH("/modify", modifyFolder)
 	folder.DELETE("/single", deleteFolder) // 删除单个文件
 	folder.DELETE("/patch", patchDeleteFolder)
@@ -43,7 +46,9 @@ func SetupFileRouters(r gin.IRouter) {
 
 	// 统一处理文件夹和文件的方法
 	file.DELETE("/integration", deleteInIntegration) // 通过一个方法来删除文件夹和文件
-	file.GET("/findByType", findFileByType)            // 获取当前用户的所有图片
+	file.GET("/findByType", findFileByType)          // 获取当前用户的所有图片
+	file.POST("/create/doc", createDoc)              // 创建文档类型文件
+
 }
 
 func createFolder(c *gin.Context) {
@@ -67,6 +72,26 @@ func userSpace(c *gin.Context) {
 	rsp, err := service.FileSvc.UserRoot(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// getFolderInfo 获取文件夹信息
+func getFolderInfo(c *gin.Context) {
+	var req msg.ReqFolderGetInfo
+	if err := c.BindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.FolderGetInfo(&req)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, response.NewErr(err))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, response.NewErr)
 		return
 	}
 	c.JSON(http.StatusOK, response.Ok(rsp))
@@ -172,11 +197,12 @@ func createFile(c *gin.Context) {
 		return
 	}
 	req.UserID = c.GetInt(consts.UserID)
-	if err := service.FileSvc.FileCreate(&req); err != nil {
+	rsp, err := service.FileSvc.FileCreate(&req)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
-	c.JSON(http.StatusOK, response.Ok(nil))
+	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
 func deleteFile(c *gin.Context) {
@@ -346,6 +372,22 @@ func findFileByType(c *gin.Context) {
 	}
 	req.UserID = c.GetInt(consts.UserID)
 	rsp, err := service.FileSvc.FindFileByType(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// createDoc 创建文档类型文件
+func createDoc(c *gin.Context) {
+	var req msg.ReqDocCreate
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.CreateDoc(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return

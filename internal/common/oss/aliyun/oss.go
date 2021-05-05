@@ -12,6 +12,7 @@ import (
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"io"
 	"os"
+	"strings"
 )
 
 type AliyunOss struct {
@@ -102,6 +103,41 @@ func (ali AliyunOss) UploadBytes(bucketName, objectName string, data []byte) err
 
 	// 上传byte数组
 	err = bucket.PutObject(objectName, bytes.NewReader(data), storageType, objectAcl)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UploadString 上传字符串
+func (ali AliyunOss) UploadString(bucketName, objectName string, content string) error{
+	client := ali.GetClient()
+
+	// 判断存储桶是否存在
+	isExist, err := client.IsBucketExist(bucketName)
+	if err != nil {
+		return err
+	}
+
+	var bucket *oss.Bucket
+
+	// 不存在
+	if !isExist {
+		bucket, err = ali.CreateBucket(bucketName)
+		if err != nil {
+			return err
+		}
+	} else {
+		bucket, err = client.Bucket(bucketName)
+		// 获取存储空间
+		if err != nil {
+			return err
+		}
+	}
+	storageType := oss.ObjectStorageClass(oss.StorageStandard)
+	objectAcl := oss.ObjectACL(oss.ACLPublicReadWrite)
+
+	err = bucket.PutObject(objectName, strings.NewReader(content), storageType, objectAcl)
 	if err != nil {
 		return err
 	}

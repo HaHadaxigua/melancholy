@@ -32,7 +32,8 @@ const (
 )
 
 const (
-	RootFileID string = "root"
+	RootFileID  string = "root" // 根目录文件夹id
+	DocFolderID string = "doc"  // 文档文件夹id
 )
 
 // file types which can be created
@@ -42,7 +43,6 @@ const (
 	FileTypePngID
 	FileTypeJpgID
 	FileTypeMp3ID
-
 )
 
 const (

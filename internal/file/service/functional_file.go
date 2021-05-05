@@ -40,6 +40,7 @@ var (
 			Address:   file.Address,
 			Size:      file.Size,
 			Mode:      file.Mode,
+			CreatedAt: file.CreatedAt,
 			UpdatedAt: file.UpdatedAt,
 		}
 	}

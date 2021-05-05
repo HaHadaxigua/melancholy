@@ -28,15 +28,16 @@ type RspFolderList struct {
 
 // RspFileListItem 文件列表返回体
 type RspFileListItem struct {
-	ID        string    `json:"id"`       // 文件ID
-	ParentID  string    `json:"parentID"` // 父文件ID
-	Name      string    `json:"name"`     // 文件名
-	Suffix    int       `json:"suffix"`   // 文件后缀
-	Hash      string    `json:"hash"`     // 文件hash
-	Address   string    `json:"address"`  // 云存储地址
-	Size      int       `json:"size"`     // 文件大小
-	Mode      int       `json:"mode"`     // 是否只读
-	UpdatedAt time.Time `json:"updated"`  // 上次修改时间
+	ID        string    `json:"id"`        // 文件ID
+	ParentID  string    `json:"parentID"`  // 父文件ID
+	Name      string    `json:"name"`      // 文件名
+	Suffix    int       `json:"suffix"`    // 文件后缀
+	Hash      string    `json:"hash"`      // 文件hash
+	Address   string    `json:"address"`   // 云存储地址
+	Size      int       `json:"size"`      // 文件大小
+	Mode      int       `json:"mode"`      // 是否只读
+	CreatedAt time.Time `json:"createdAt"` // 创建时间
+	UpdatedAt time.Time `json:"updatedAt"` // 上次修改时间
 }
 
 // RspFileList 文件列表的返回
@@ -114,4 +115,15 @@ type RspFindFileByTypeItem struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Hash      string    `json:"hash"`
+}
+
+// RspCreateDocFie 创建文档文件的返回体
+type RspCreateDocFile struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Size     int       `json:"size"`
+	Address  string    `json:"address"`
+	Content  string    `json:"content"`
+	CreateAt time.Time `json:"createAt"`
+	UpdateAt time.Time `json:"updateAt"`
 }

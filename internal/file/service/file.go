@@ -1,11 +1,11 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
-	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -17,7 +17,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -28,6 +27,7 @@ var FileSvc FileService
 type FileService interface {
 	UserRoot(uid int) (*msg.RspFolderList, error)                              // 列出用户的根目录
 	FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderList, error)       // 列出文件夹
+	FolderGetInfo(req *msg.ReqFolderGetInfo) (*msg.RspFolderListItem, error)   // 列出单个文件夹
 	FolderCreate(req *msg.ReqFolderCreate) error                               // 创建文件夹
 	FolderUpload(req *msg.ReqFolderUpdate) error                               // 上传文件夹
 	FolderDelete(req *msg.ReqFolderDelete) error                               // 删除文件夹
@@ -39,7 +39,7 @@ type FileService interface {
 	FileSearch(req *msg.ReqFileSearch) (*msg.RspFileSearchResult, error)       // 文件搜索
 	FileList(req *msg.ReqFileListFilter) (*msg.RspFileList, error)             // 列出文件
 	FileUpload(req *msg.ReqFileUpload) error                                   // 上传文件，小文件上传
-	FileCreate(req *msg.ReqFileCreate) error                                   // 创建文件
+	FileCreate(req *msg.ReqFileCreate) (*msg.RspFileListItem, error)           // 创建文件
 	FileDelete(req *msg.ReqFileDelete) error                                   // 删除文件
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 文件的批量删除
 	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
@@ -53,6 +53,7 @@ type FileService interface {
 	// 文件夹和文件的整合方法
 	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error                 // 一个方法来处理文件夹和文件的删除方法
 	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 寻找当前用户的图片文件
+	CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, error)            // 创建文本文件
 }
 
 type fileService struct {
@@ -94,6 +95,15 @@ func (s fileService) FolderList(req *msg.ReqFolderListFilter) (*msg.RspFolderLis
 	list := FunctionalFolder(folders, buildFolderItemRsp).([]*msg.RspFolderListItem)
 	rsp.FolderItems = list
 	return &rsp, nil
+}
+
+// FolderGetInfo 获取文件夹信息
+func (s fileService) FolderGetInfo(req *msg.ReqFolderGetInfo) (*msg.RspFolderListItem, error) {
+	folder, err := s.store.GetFolder(req.FolderID, req.UserID, false)
+	if err != nil {
+		return nil, err
+	}
+	return folder.ToFolderListItem(), nil
 }
 
 // FolderCreate 创建文件夹
@@ -145,6 +155,17 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 		return err
 	}
 	return nil
+}
+
+// folderCreate 用于内部的创建文件夹 没有错误判断, 用于创建特殊的文件夹
+func (s fileService) folderCreate(req *msg.ReqFolderCreate) error {
+	folder := &model.Folder{
+		ID:       envir.DocFolderID,
+		Name:     req.FolderName,
+		ParentID: req.ParentID,
+		OwnerID:  req.UserID,
+	}
+	return s.store.FolderCreate(folder)
 }
 
 func (s fileService) FolderUpload(req *msg.ReqFolderUpdate) error {
@@ -285,21 +306,21 @@ func (s fileService) FolderInclude(req *msg.ReqFolderInclude) (*msg.RspFileSearc
 	return rsp, nil
 }
 
-func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
+func (s fileService) FileCreate(req *msg.ReqFileCreate) (*msg.RspFileListItem, error) {
 	if !req.Verify() {
-		return msg.ErrFileUnSupport
+		return nil, msg.ErrFileUnSupport
 	}
 	folder, err := s.store.GetFolder(req.ParentID, req.UserID, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if folder == nil {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 	// 1. 列出当前文件夹下的文件
 	_files, err := s.store.FileList(req.ParentID, req.UserID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// if existed repeated name file
 	files := FunctionalFileFilter(_files, func(f *model.File) bool {
@@ -309,16 +330,16 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 		return false
 	})
 	if len(files) > 0 {
-		return msg.ErrFileHasExisted
+		return nil, msg.ErrFileHasExisted
 	}
 
 	fid, err := tools.SnowflakeId()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var suffix int
 	if v, ok := envir.MapFileTypeToID[path.Ext(req.FileName)]; !ok {
-		return msg.ErrFileUnSupport
+		return nil, msg.ErrFileUnSupport
 	} else {
 		suffix = v
 	}
@@ -333,7 +354,10 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) error {
 		Address:  req.Address,
 		Ftype:    envir.GetFileType(suffix),
 	}
-	return s.store.FileCreate(file)
+	if err = s.store.FileCreate(file); err != nil {
+		return nil, err
+	}
+	return file.ToFileListItem(), nil
 }
 
 func (s fileService) FileDelete(req *msg.ReqFileDelete) error {
@@ -357,17 +381,7 @@ func (s fileService) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
 
 // FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
-	var location string
-
-	switch runtime.GOOS {
-	case "linux":
-		location = conf.C.Application.LocationUnix
-	case "windows":
-		location = conf.C.Application.LocationWin
-	}
-
-	bucketName := fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, req.UserID)
-	ossAddress := fmt.Sprintf("https://%s.%s/%s", bucketName, conf.C.Oss.EndPoint, req.FileHeader.Filename)
+	bucketName, ossAddress, location := oss.BuildBucketNameAndAddress(req.UserID, req.FileHeader.Filename)
 
 	createFileReq := &msg.ReqFileCreate{
 		ParentID: req.ParentID,
@@ -378,7 +392,7 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 		Address:  ossAddress,
 	}
 
-	if err := s.FileCreate(createFileReq); err != nil {
+	if _, err := s.FileCreate(createFileReq); err != nil {
 		return err
 	}
 
@@ -577,4 +591,74 @@ func (s fileService) FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFil
 	rsp.List = files.ToRspFindFileItemByType()
 	rsp.Total = total
 	return &rsp, nil
+}
+
+// CreateDoc 创建文本类型文件
+func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, error) {
+	// 判断文档文件夹是否存在
+	_, err := s.store.GetFolder(envir.DocFolderID, req.UserID, false)
+	if err != nil {
+		flag := errors.Is(err, gorm.ErrRecordNotFound)
+		if flag {
+			// 需要去创建文件夹
+			folderReq := &msg.ReqFolderCreate{
+				FolderName: envir.DocFolderID,
+				ParentID:   envir.RootFileID,
+				UserID:     req.UserID,
+			}
+			if err = s.folderCreate(folderReq); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	bucketName, ossAddress, location := oss.BuildBucketNameAndAddress(req.UserID, req.Name)
+
+	// 创建绑定的基本文件
+	fileCreate := &msg.ReqFileCreate{
+		ParentID: envir.DocFolderID,
+		FileName: req.Name,
+		FileType: envir.FileTypeTxtID,
+		Size:     len(req.Content),
+		Address:  ossAddress,
+		UserID:   req.UserID,
+	}
+
+	createRsp, err := s.FileCreate(fileCreate)
+	if err != nil {
+		return nil, err
+	}
+
+	docFile := &model.DocFile{
+		ID:      createRsp.ID,
+		Content: req.Content,
+	}
+	// 保存记录
+	if err = s.store.CreateDocFile(docFile); err != nil {
+		return nil, err
+	}
+
+	// 将文件持久化
+	pm := persistence.NewResourceManager()
+	go func() {
+		pm.SaveSimpleFile(req.Name, location, []byte(req.Content))
+	}()
+
+	// 将文件上传到oss
+	go func() {
+		oss.AliyunOss.UploadString(bucketName, req.Name, req.Content)
+	}()
+
+	rsp := &msg.RspCreateDocFile{
+		ID:       createRsp.ID,
+		Name:     req.Name,
+		Size:     createRsp.Size,
+		Address:  createRsp.Address,
+		Content:  req.Content,
+		CreateAt: createRsp.CreatedAt,
+		UpdateAt: createRsp.UpdatedAt,
+	}
+	return rsp, nil
 }
