@@ -22,8 +22,8 @@ type ReqFolderGetInfo struct {
 type ReqFolderCreate struct {
 	FolderName string `json:"filename"`
 	ParentID   string `json:"parentID, omitempty"`
-	
-	ID string `json:"id"`
+
+	ID     string `json:"id"`
 	UserID int
 }
 
@@ -56,11 +56,13 @@ type ReqFolderInclude struct {
 }
 
 type ReqFileCreate struct {
-	ParentID string `json:"parentID"`
-	FileName string `json:"fileName"`
-	FileType int    `json:"fileType"` // 创建的文件类型
-	Size     int    `json:"size"`     // 文件大小
-	Address  string `json:"address"`  // 文件的oss地址
+	ParentID   string `json:"parentID"`
+	FileName   string `json:"fileName"`
+	FileType   int    `json:"fileType"`   // 创建的文件类型
+	Size       int    `json:"size"`       // 文件大小
+	Address    string `json:"address"`    // 文件的oss地址
+	Hash       string `json:"hash"`       // 文件hash
+	BucketName string `json:"bucketName"` // 存储桶名
 
 	UserID int
 }
@@ -194,10 +196,11 @@ type ReqFindFileByType struct {
 	UserID int
 }
 
-// ReqDocCreate 创建文本文件的请求
-type ReqDocCreate struct {
+// ReqDocFile 创建文本文件的请求
+type ReqDocFile struct {
 	Name    string `json:"name"`    // 文件名，需要后缀
 	Content string `json:"content"` // 文本内容
+	ID      string `json:"id"`      // 用于更新时的id
 
 	UserID int
 }

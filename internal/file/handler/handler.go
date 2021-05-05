@@ -46,8 +46,10 @@ func SetupFileRouters(r gin.IRouter) {
 
 	// 统一处理文件夹和文件的方法
 	file.DELETE("/integration", deleteInIntegration) // 通过一个方法来删除文件夹和文件
-	file.GET("/findByType", findFileByType)          // 获取当前用户的所有图片
-	file.POST("/create/doc", createDoc)              // 创建文档类型文件
+
+	// 处理文档型文件相关方法
+	file.GET("/findByType", findFileByType) // 获取当前用户的所有图片
+	file.POST("/create/doc", createDoc)     // 创建文档类型文件
 
 }
 
@@ -381,7 +383,7 @@ func findFileByType(c *gin.Context) {
 
 // createDoc 创建文档类型文件
 func createDoc(c *gin.Context) {
-	var req msg.ReqDocCreate
+	var req msg.ReqDocFile
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return

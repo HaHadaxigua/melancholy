@@ -10,7 +10,20 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"runtime"
 )
+
+// GetOSType 获取系统类型
+func GetOSType() string {
+	var location string
+	switch runtime.GOOS {
+	case "linux":
+		location = conf.C.Application.LocationUnix
+	case "windows":
+		location = conf.C.Application.LocationWin
+	}
+	return location
+}
 
 // GetMultiFileName 获取分片文件的文件名
 func GetMultiFileName(path, filename string) string {
@@ -62,6 +75,14 @@ func MergeFiles(dir, filename string) error {
 		complateFile.Close()
 	}()
 	return nil
+}
+
+// todo: 在计算hash时，面对大文件时，只计算部分
+
+// CalcBytesHashInSHA 计算byte数组的hash, 最通用的方法
+func CalcBytesHashInSHA(data []byte) string {
+	r := sha1.Sum(data)
+	return hex.EncodeToString(r[:])
 }
 
 // CalcStringHashInSHA 使用sha算法来计算字符串的hash

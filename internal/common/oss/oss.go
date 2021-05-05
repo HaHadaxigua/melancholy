@@ -7,7 +7,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"os"
-	"runtime"
 )
 
 var AliyunOss MelancholyOSS
@@ -25,18 +24,9 @@ type MelancholyOSS interface {
 	DownloadFileByStream(bucketName, objectName string) (*bytes.Buffer, error)
 }
 
-
 // BuildBucketNameAndAddress 返回bucketName, address 和当前系统
-func  BuildBucketNameAndAddress(userID int, filename string) (string,string,string){
-	var location string
-	switch runtime.GOOS {
-	case "linux":
-		location = conf.C.Application.LocationUnix
-	case "windows":
-		location = conf.C.Application.LocationWin
-	}
-
+func BuildBucketNameAndAddress(userID int, filename string) (string, string) {
 	bucketName := fmt.Sprintf("%s%d", consts.OssBucketGeneratePrefix, userID)
 	ossAddress := fmt.Sprintf("https://%s.%s/%s", bucketName, conf.C.Oss.EndPoint, filename)
-	return bucketName, ossAddress, location
+	return bucketName, ossAddress
 }

@@ -51,9 +51,13 @@ type FileService interface {
 	FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspFIleMultiDownload, error) // 文件的分片下载
 
 	// 文件夹和文件的整合方法
-	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error                 // 一个方法来处理文件夹和文件的删除方法
+	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error // 一个方法来处理文件夹和文件的删除方法
+
+	// 针对特定类型的方法
 	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 寻找当前用户的图片文件
-	CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, error)            // 创建文本文件
+	CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, error)              // 创建文本文件
+
+	IsHashExisted(hash string) (bool, *model.File, error) // 文件hash是否已经存在
 }
 
 type fileService struct {
@@ -345,14 +349,16 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) (*msg.RspFileListItem, e
 	}
 
 	file := &model.File{
-		ID:       fid,
-		OwnerID:  req.UserID,
-		ParentID: req.ParentID, // create empty file don't need to generate file
-		Name:     req.FileName,
-		Suffix:   suffix,
-		Size:     req.Size,
-		Address:  req.Address,
-		Ftype:    envir.GetFileType(suffix),
+		ID:         fid,
+		OwnerID:    req.UserID,
+		ParentID:   req.ParentID, // create empty file don't need to generate file
+		Name:       req.FileName,
+		Suffix:     suffix,
+		Size:       req.Size,
+		Address:    req.Address,
+		BucketName: req.BucketName,
+		Ftype:      envir.GetFileType(suffix),
+		Hash:       req.Hash,
 	}
 	if err = s.store.FileCreate(file); err != nil {
 		return nil, err
@@ -381,32 +387,48 @@ func (s fileService) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
 
 // FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
-	bucketName, ossAddress, location := oss.BuildBucketNameAndAddress(req.UserID, req.FileHeader.Filename)
+	hash := utils.CalcBytesHashInSHA(req.Data)
+	var (
+		bucketName string
+		ossAddress string
+	)
+	location := utils.GetOSType()
+	isExist, originFile, err := s.IsHashExisted(hash)
+	if err != nil {
+		return err
+	}
+	if isExist {
+		bucketName = originFile.BucketName
+		ossAddress = originFile.Address
+	} else {
+		bucketName, ossAddress = oss.BuildBucketNameAndAddress(req.UserID, req.FileHeader.Filename)
+	}
 
 	createFileReq := &msg.ReqFileCreate{
-		ParentID: req.ParentID,
-		FileName: req.FileHeader.Filename,
-		FileType: req.FileType,
-		UserID:   req.UserID,
-		Size:     int(req.FileHeader.Size),
-		Address:  ossAddress,
+		ParentID:   req.ParentID,
+		FileName:   req.FileHeader.Filename,
+		FileType:   req.FileType,
+		UserID:     req.UserID,
+		Size:       int(req.FileHeader.Size),
+		BucketName: bucketName,
+		Address:    ossAddress,
+		Hash:       hash,
 	}
 
 	if _, err := s.FileCreate(createFileReq); err != nil {
 		return err
 	}
 
-	pm := persistence.NewResourceManager()
+	if !isExist {
+		pm := persistence.NewResourceManager()
+		go func() {
+			err = pm.SaveSimpleFile(createFileReq.FileName, location, req.Data)
+		}()
 
-	var err error
-
-	go func() {
-		err = pm.SaveSimpleFile(createFileReq.FileName, location, req.Data)
-	}()
-
-	go func() {
-		err = oss.AliyunOss.UploadBytes(bucketName, req.FileHeader.Filename, req.Data)
-	}()
+		go func() {
+			err = oss.AliyunOss.UploadBytes(bucketName, req.FileHeader.Filename, req.Data)
+		}()
+	}
 
 	if err != nil {
 		return err
@@ -594,7 +616,7 @@ func (s fileService) FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFil
 }
 
 // CreateDoc 创建文本类型文件
-func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, error) {
+func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, error) {
 	// 判断文档文件夹是否存在
 	_, err := s.store.GetFolder(envir.DocFolderID, req.UserID, false)
 	if err != nil {
@@ -614,7 +636,23 @@ func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, er
 		}
 	}
 
-	bucketName, ossAddress, location := oss.BuildBucketNameAndAddress(req.UserID, req.Name)
+	// 计算hash 判断文件是否已经上传过
+	hash := utils.CalcStringHashInSHA(req.Content)
+	isExist, originFile, err := s.IsHashExisted(hash)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		bucketName string
+		ossAddress string
+	)
+	location := utils.GetOSType()
+	if isExist {
+		bucketName = originFile.BucketName
+		ossAddress = originFile.Address
+	} else {
+		bucketName, ossAddress = oss.BuildBucketNameAndAddress(req.UserID, req.Name)
+	}
 
 	// 创建绑定的基本文件
 	fileCreate := &msg.ReqFileCreate{
@@ -624,6 +662,7 @@ func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, er
 		Size:     len(req.Content),
 		Address:  ossAddress,
 		UserID:   req.UserID,
+		Hash:     hash,
 	}
 
 	createRsp, err := s.FileCreate(fileCreate)
@@ -640,16 +679,18 @@ func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, er
 		return nil, err
 	}
 
-	// 将文件持久化
-	pm := persistence.NewResourceManager()
-	go func() {
-		pm.SaveSimpleFile(req.Name, location, []byte(req.Content))
-	}()
+	if !isExist {
+		// 将文件持久化
+		pm := persistence.NewResourceManager()
+		go func() {
+			pm.SaveSimpleFile(req.Name, location, []byte(req.Content))
+		}()
 
-	// 将文件上传到oss
-	go func() {
-		oss.AliyunOss.UploadString(bucketName, req.Name, req.Content)
-	}()
+		// 将文件上传到oss
+		go func() {
+			oss.AliyunOss.UploadString(bucketName, req.Name, req.Content)
+		}()
+	}
 
 	rsp := &msg.RspCreateDocFile{
 		ID:       createRsp.ID,
@@ -661,4 +702,19 @@ func (s fileService) CreateDoc(req *msg.ReqDocCreate) (*msg.RspCreateDocFile, er
 		UpdateAt: createRsp.UpdatedAt,
 	}
 	return rsp, nil
+}
+
+// IsHashExisted 文件hash是否存在
+func (s fileService) IsHashExisted(hash string) (bool, *model.File, error) {
+	var isExisted bool
+	file, err := s.store.FindFileByHash(hash)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil, err
+		}
+		isExisted = false
+	} else {
+		isExisted = true
+	}
+	return isExisted, file, nil
 }

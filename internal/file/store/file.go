@@ -26,6 +26,7 @@ type FileStore interface {
 	FileDelete(fileID, parentID string) error                                  // 删除文件
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 批量删除文件
 	FindFileByType(req *msg.ReqFindFileByType) (model.Files, int, error)       // 根据文件类型寻找文件
+	FindFileByHash(hash string) (*model.File, error)                           // 通过文件hash来查找文件
 
 	CreateDocFile(docFile *model.DocFile) error // 创建文本类型的文件
 }
@@ -203,6 +204,16 @@ func (s fileStore) FindFileByType(req *msg.ReqFindFileByType) (model.Files, int,
 		return nil, 0, err
 	}
 	return files, int(total), nil
+}
+
+// FindFileByHash 根据文件Hash来查找文件
+func (s fileStore) FindFileByHash(hash string) (*model.File, error) {
+	query := s.db.Model(&model.File{})
+	var file model.File
+	if err := query.Where("hash = ?", hash).Take(&file).Error; err != nil {
+		return nil, err
+	}
+	return &file, nil
 }
 
 // CreateDocFile 创建文本类型文件
