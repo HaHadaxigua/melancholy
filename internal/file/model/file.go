@@ -168,5 +168,42 @@ type DocFile struct {
 }
 
 func (DocFile) TableName() string {
-	return "txt_files"
+	return "doc_files"
+}
+
+// VideoFile 视频类型文件
+type VideoFile struct {
+	ID                string   `json:"id"`                // 对应的文件id
+	Title             string   `json:"title"`             // 视频标题
+	Description       string   `json:"description"`       // 视频描述
+	CoverUrl          string   `json:"coverUrl"`          // 视频封面地址
+	Area              string   `json:"area"`              // 地区
+	Species           string   `json:"species"`           // 视频类型
+	ProductionCompany string   `json:"productionCompany"` // 制作公司
+	Years             int      `json:"years"`             // 年份
+	Duration          int      `json:"duration"`          // 时长
+	Tags              []string `json:"tags"`              // 视频标签
+	Finished          bool     `json:"finished"`          // 是否上传完成
+}
+
+func (VideoFile) TableName() string {
+	return "video_file"
+}
+
+// MusicFile 视频类型文件
+type MusicFile struct {
+	ID       string   `json:"id"`       // 对应的文件id
+	Name     string   `json:"name"`     // 歌名
+	CoverUrl string   `json:"coverUrl"` // 封面地址
+	Duration int      `json:"duration"` // 时长
+	Singer   string   `json:"singer"`   // 歌手
+	Album    string   `json:"album"`    // 专辑
+	Years    int      `json:"years"`    // 年份
+	Species  string   `json:"species"`  // 类型
+	Tags     []string `json:"tags"`     // 音频标签
+	Finished bool     `json:"finished"` // 是否上传完成
+}
+
+func (MusicFile) TableName() string {
+	return "music_file"
 }

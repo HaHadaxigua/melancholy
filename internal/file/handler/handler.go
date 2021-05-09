@@ -10,9 +10,11 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/service"
 	"github.com/HaHadaxigua/melancholy/internal/response"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"io"
 	"net/http"
+	"time"
 )
 
 func SetupFileRouters(r gin.IRouter) {
@@ -35,10 +37,10 @@ func SetupFileRouters(r gin.IRouter) {
 	file.POST("/search", searchFile)
 	file.GET("/list", listFile)
 	file.POST("/create", createFile)
-	file.DELETE("/single", deleteFile)              // 删除单个文件
-	file.DELETE("/patch", patchDeleteFile)          // 批量删除文件
-	file.POST("simple/upload", uploadSimpleFile)    // 处理小文件
-	file.GET("simple/download", downloadSimpleFile) // 处理小文件
+	file.DELETE("/single", deleteFile)               // 删除单个文件
+	file.DELETE("/patch", patchDeleteFile)           // 批量删除文件
+	file.POST("/simple/upload", uploadSimpleFile)    // 处理小文件
+	file.GET("/simple/download", downloadSimpleFile) // 处理小文件
 	// 处理分片文件上传
 	file.GET("/multi/checkChunk", checkChunk)    // 检查文件的上传情况
 	file.POST("/multi/uploadChunk", uploadChunk) // 上传文件分片
@@ -303,26 +305,25 @@ func checkChunk(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(rsp))
 }
 
-// uploadChunk 上传文件分片,返回已经完成的文件分片列表
+// uploadChunk 上传文件分片,返回已经完成的文件分片列表, 此方法中会同时携带参数和文件
 func uploadChunk(c *gin.Context) {
 	var req msg.ReqFileMultiUpload
-	if err := c.BindJSON(&req); err != nil {
+	//logrus.Println(res)
+	if err := c.ShouldBind(&req); err != nil {
+		logrus.Error(err)
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	fileHeader, err := c.FormFile(fConst.FileUpload)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewErr(err))
-		return
-	}
-	req.UserID = c.GetInt(consts.UserID)
-	req.FileHeader = fileHeader
-	rsp, err := service.FileSvc.FileMultiUpload(&req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.NewErr(err))
-		return
-	}
-	c.JSON(http.StatusOK, response.Ok(rsp))
+	logrus.Printf("%s 一次调用 \n", time.Now().String())
+	//req.UserID = c.GetInt(consts.UserID)
+	//rsp, err := service.FileSvc.FileMultiUpload(&req)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, response.NewErr(err))
+	//	return
+	//}
+	//c.JSON(http.StatusOK, response.Ok(rsp))
+	c.JSON(http.StatusOK, nil)
+	return
 }
 
 // mergeChunk 合并文件分片，意味着文件上传完成，需要将文件上传到oss中

@@ -18,7 +18,8 @@ const (
 )
 
 const (
-	OssBucketPattern = `[0-9a-z-]{3,63}`
-	OssBucketGeneratePrefix =  `melancholy-userid-`
-	Https = "https://"
+	OssBucketPattern        = `[0-9a-z-]{3,63}`
+	OssBucketGeneratePrefix = `melancholy-userid-`
+	Https                   = "https://"
+	RegionID                = "cn-shanghai" // 用于视频点播
 )

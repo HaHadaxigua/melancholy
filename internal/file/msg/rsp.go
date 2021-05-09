@@ -119,7 +119,7 @@ type RspFindFileByTypeItem struct {
 }
 
 // RspCreateDocFie 创建文档文件的返回体
-type RspCreateDocFile struct {
+type RspDocFile struct {
 	ID       string    `json:"id"`
 	Name     string    `json:"name"`
 	Size     int       `json:"size"`
@@ -127,4 +127,14 @@ type RspCreateDocFile struct {
 	Content  string    `json:"content"`
 	CreateAt time.Time `json:"createAt"`
 	UpdateAt time.Time `json:"updateAt"`
+}
+
+// RspVideoFile 关于视频文件的返回
+type RspVideoFile struct {
+
+}
+
+// RspMusicFile 关于音频文件的返回
+type RspMusicFile struct {
+
 }

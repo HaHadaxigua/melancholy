@@ -6,6 +6,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/encryptor"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -15,7 +16,6 @@ import (
 	"github.com/HaHadaxigua/melancholy/persistence"
 	"gorm.io/gorm"
 	"io/ioutil"
-	"os"
 	"path"
 	"sort"
 	"strings"
@@ -44,6 +44,9 @@ type FileService interface {
 	FilePatchDelete(req *msg.ReqFilePatchDelete) error                         // 文件的批量删除
 	FileSimpleDownload(req *msg.ReqFileDownload) (*msg.RspFileDownload, error) // 处理简单文件下载
 
+	// 针对通用方法
+	IsHashExisted(hash string) (bool, *model.File, error) // 文件hash是否已经存在
+
 	// 处理文件分片上传
 	FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error)          // 检查文件上传情况
 	FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error)       // 文件分片的上传
@@ -54,11 +57,15 @@ type FileService interface {
 	DeleteInIntegration(req *msg.ReqDeleteInIntegration) error // 一个方法来处理文件夹和文件的删除方法
 
 	// 针对特定类型的方法
-	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 寻找当前用户的图片文件
-	CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, error)              // 创建文本文件
-	GetDocContent(req *msg.ReqDocFile) (string, error)                         // 获取文稿文件内容
+	FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFileByType, error) // 根据文件类型查找文件
+	// 针对文稿文件
+	CreateDoc(req *msg.ReqDocFile) (*msg.RspDocFile, error) // 创建文本文件
+	GetDocContent(req *msg.ReqDocFile) (string, error)      // 获取文稿文件内容
+	// 针对视频文件
+	CreateVideoFile(req *msg.ReqVideoFile) (*msg.RspVideoFile, error) // 创建视频文件
 
-	IsHashExisted(hash string) (bool, *model.File, error) // 文件hash是否已经存在
+	// 针对音频文件
+	CreateMusicFile(req *msg.ReqMusicFile) (*msg.RspMusicFile, error) // 创建音频文件
 }
 
 type fileService struct {
@@ -388,7 +395,7 @@ func (s fileService) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
 
 // FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
-	hash := utils.CalcBytesHashInSHA(req.Data)
+	hash := encryptor.CalcBytesHashInSHA1(req.Data)
 	var (
 		bucketName string
 		ossAddress string
@@ -421,9 +428,8 @@ func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
 	}
 
 	if !isExist {
-		pm := persistence.NewResourceManager()
 		go func() {
-			err = pm.SaveSimpleFile(createFileReq.FileName, location, req.Data)
+			err = persistence.SaveSimpleFile(createFileReq.FileName, location, req.Data)
 		}()
 
 		go func() {
@@ -518,11 +524,30 @@ func (s fileService) DeleteInIntegration(req *msg.ReqDeleteInIntegration) error 
 	return err
 }
 
+// IsHashExisted 文件hash是否存在(针对逻辑文件)
+func (s fileService) IsHashExisted(hash string) (bool, *model.File, error) {
+	var isExisted bool
+	file, err := s.store.FindFileByHash(hash)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil, err
+		}
+		isExisted = false
+	} else {
+		isExisted = true
+	}
+	return isExisted, file, nil
+}
+
 // FileMultiCheck 检查文件分分片的上传情况，返回一个分片列表
 func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMultiCheck, error) {
 	var rsp msg.RspFileMultiCheck
 	hashPath := fmt.Sprintf("%s%s", conf.C.Application.TmpFile, req.Hash) // 以hash为文件名的文件夹
-	if !utils.PathExists(hashPath) {                                      // 如果不存在该文件夹
+	exist, err := persistence.IsPathExist(hashPath)
+	if err != nil {
+		return nil, err
+	}
+	if !exist { // 如果不存在该文件夹
 		rsp.ChunkList = make([]string, 0)
 		return &rsp, nil
 	}
@@ -550,13 +575,13 @@ func (s fileService) FileMultiCheck(req *msg.ReqFileMultiCheck) (*msg.RspFileMul
 func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileMultiUpload, error) {
 	hashPath := fmt.Sprintf("%s%s", conf.C.Application.TmpFile, req.Hash) // 以hash为文件名的文件夹
 	// 不存在文件夹则进行创建
-	if !utils.PathExists(hashPath) {
-		os.Mkdir(hashPath, os.ModePerm)
-	}
-	// 将文件保存到对应路径
-	if err := req.C.SaveUploadedFile(req.FileHeader, utils.GetMultiFileName(hashPath, req.ChunkID)); err != nil {
+	if err := persistence.CreateFolderIfNotExist(hashPath); err != nil {
 		return nil, err
 	}
+	// 将文件保存到对应路径
+	//if err := req.C.SaveUploadedFile(req.FileHeader, utils.GetMultiFileName(hashPath, req.ChunkID)); err != nil {
+	//	return nil, err
+	//}
 	// 读取文件夹下的文件分片，告诉前端已经当前文件的上传情况
 	var chunkList []string
 	files, err := ioutil.ReadDir(hashPath)
@@ -578,26 +603,28 @@ func (s fileService) FileMultiUpload(req *msg.ReqFileMultiUpload) (*msg.RspFileM
 // FileMultiMerge 文件合并操作
 func (s fileService) FileMultiMerge(req *msg.ReqFileMultiMerge) (*msg.RspFileMultiMerge, error) {
 	hashPath := utils.GetMultiFilePath(req.Hash)
-	// 不存在文件夹说明请求错误
-	if !utils.PathExists(hashPath) {
+	exist, err := persistence.IsPathExist(hashPath)
+	if err != nil {
+		return nil, err
+	}
+	if !exist { // 不存在文件夹说明请求错误
 		return nil, msg.ErrMergeFileFailed
 	}
 	var (
-		err error
 		rsp msg.RspFileMultiMerge
 	)
 	rsp.Done = make(chan struct{}, 0)
 	// 这里开启的协程是与此函数平级的，并不会因为函数的退出而退出
 	go func() {
 		// 进行文件合并
-		err = utils.MergeFiles(hashPath, req.Filename)
+		err = persistence.MergeFiles(hashPath, req.Filename)
 		rsp.Result = err
 		rsp.Done <- struct{}{}
 	}()
 	return &rsp, nil
 }
 
-// FileMultiDownload 处理文件的分片下载
+// FileMultiDownload todo:处理文件的分片下载
 func (s fileService) FileMultiDownload(req *msg.ReqFileMultiDownload) (*msg.RspFIleMultiDownload, error) {
 	// 1。 判断本地有无下载好的文件
 	// 2。 将文件进行分片的传输
@@ -617,7 +644,7 @@ func (s fileService) FindFileByType(req *msg.ReqFindFileByType) (*msg.RspFindFil
 }
 
 // CreateDoc 创建文本类型文件
-func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, error) {
+func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspDocFile, error) {
 	// 判断文档文件夹是否存在
 	_, err := s.store.GetFolder(envir.DocFolderID, req.UserID, false)
 	if err != nil {
@@ -638,7 +665,7 @@ func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, erro
 	}
 
 	// 计算hash 判断文件是否已经上传过
-	hash := utils.CalcStringHashInSHA(req.Content)
+	hash := encryptor.CalcStringHashInSHA1(req.Content)
 	isExist, originFile, err := s.IsHashExisted(hash)
 	if err != nil {
 		return nil, err
@@ -682,9 +709,8 @@ func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, erro
 
 	if !isExist {
 		// 将文件持久化
-		pm := persistence.NewResourceManager()
 		go func() {
-			pm.SaveSimpleFile(req.Name, location, []byte(req.Content))
+			persistence.SaveSimpleFile(req.Name, location, []byte(req.Content))
 		}()
 
 		// 将文件上传到oss
@@ -693,7 +719,7 @@ func (s fileService) CreateDoc(req *msg.ReqDocFile) (*msg.RspCreateDocFile, erro
 		}()
 	}
 
-	rsp := &msg.RspCreateDocFile{
+	rsp := &msg.RspDocFile{
 		ID:       createRsp.ID,
 		Name:     req.Name,
 		Size:     createRsp.Size,
@@ -718,17 +744,31 @@ func (s fileService) GetDocContent(req *msg.ReqDocFile) (string, error) {
 	return docFile.Content, nil
 }
 
-// IsHashExisted 文件hash是否存在
-func (s fileService) IsHashExisted(hash string) (bool, *model.File, error) {
-	var isExisted bool
-	file, err := s.store.FindFileByHash(hash)
+// CreateVideoFile 创建视频逻辑文件 todo
+func (s fileService) CreateVideoFile(req *msg.ReqVideoFile) (*msg.RspVideoFile, error) {
+	// 判断文档文件夹是否存在
+	_, err := s.store.GetFolder(envir.DocFolderID, req.UserID, false)
 	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil, err
+		flag := errors.Is(err, gorm.ErrRecordNotFound)
+		if flag {
+			// 需要去创建文件夹
+			folderReq := &msg.ReqFolderCreate{
+				FolderName: envir.DocFolderID,
+				ParentID:   envir.RootFileID,
+				UserID:     req.UserID,
+			}
+			if err = s.folderCreate(folderReq); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
 		}
-		isExisted = false
-	} else {
-		isExisted = true
 	}
-	return isExisted, file, nil
+
+	return nil, nil
+}
+
+// CreateMusicFile 创建音频逻辑文件 todo
+func (s fileService) CreateMusicFile(req *msg.ReqMusicFile) (*msg.RspMusicFile, error) {
+	return nil, nil
 }

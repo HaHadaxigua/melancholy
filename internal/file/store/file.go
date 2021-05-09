@@ -30,6 +30,12 @@ type FileStore interface {
 
 	CreateDocFile(docFile *model.DocFile) error       // 创建文本类型的文件
 	GetDocFile(fileID string) (*model.DocFile, error) // 通过文件id来找出文稿结构
+
+	CreateMusicFile(musicFile *model.MusicFile) error     // 创建音频类型文件
+	GetMusicFile(fileID string) (*model.MusicFile, error) // 根据文件id来找出音频文件结构
+
+	CreateVideoFile(videoFile *model.VideoFile) error     // 创建视频类型文件
+	GetVideoFile(fileID string) (*model.VideoFile, error) // 通过文件id来获取视频类型文件
 }
 
 type fileStore struct {
@@ -230,4 +236,34 @@ func (s fileStore) GetDocFile(fileID string) (*model.DocFile, error) {
 		return nil, err
 	}
 	return &docFile, nil
+}
+
+// CreateMusicFile 创建音频类型文件
+func (s fileStore) CreateMusicFile(musicFile *model.MusicFile) error {
+	return s.db.Create(musicFile).Error
+}
+
+// GetMusicFile 获取音频类型的文件
+func (s fileStore) GetMusicFile(fileID string) (*model.MusicFile, error) {
+	var musicFile model.MusicFile
+	query := s.db.Model(&model.MusicFile{})
+	if err := query.Where("id = ?", fileID).Take(&musicFile).Error; err != nil {
+		return nil, err
+	}
+	return &musicFile, nil
+}
+
+// CreateVideoFile 创建视频类型文件
+func (s fileStore) CreateVideoFile(videoFile *model.VideoFile) error {
+	return s.db.Create(videoFile).Error
+}
+
+// GetVideoFile 获取视频类型文件
+func (s fileStore) GetVideoFile(fileID string) (*model.VideoFile, error) {
+	var videoFile model.VideoFile
+	query := s.db.Model(&model.VideoFile{})
+	if err := query.Where("id = ?", fileID).Take(&videoFile).Error; err != nil {
+		return nil, err
+	}
+	return &videoFile, nil
 }

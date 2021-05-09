@@ -22,6 +22,8 @@ type MelancholyOSS interface {
 
 	// 通过流来下载文件,下载文件到缓存
 	DownloadFileByStream(bucketName, objectName string) (*bytes.Buffer, error)
+
+	DeleteSingleObject(bucketName, objectName string) error // 删除单个文件
 }
 
 // BuildBucketNameAndAddress 返回bucketName, address 和当前系统

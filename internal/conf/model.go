@@ -6,6 +6,7 @@ type Config struct {
 	Database    Database
 	Gorm        Gorm
 	Oss         Oss
+	Cloud       Cloud
 	FileSupport FileSupport
 }
 
@@ -41,6 +42,12 @@ type Gorm struct {
 
 type Oss struct {
 	EndPoint        string `json:"endPoint" yml:"endPoint"`
+	AccessKeyID     string `json:"accessKeyId" yml:"accessKeyId"`
+	AccessKeySecret string `json:"accessKeySecret" yml:"accessKeySecret"`
+}
+
+// Cloud 用于阿里云视频点播
+type Cloud struct {
 	AccessKeyID     string `json:"accessKeyId" yml:"accessKeyId"`
 	AccessKeySecret string `json:"accessKeySecret" yml:"accessKeySecret"`
 }

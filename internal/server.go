@@ -6,11 +6,12 @@
 package internal
 
 import (
-	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/common/cloud"
+	aliyunCloud "github.com/HaHadaxigua/melancholy/internal/common/cloud/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
-	"github.com/HaHadaxigua/melancholy/internal/common/oss/aliyun"
+	aliyunOSS "github.com/HaHadaxigua/melancholy/internal/common/oss/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file"
@@ -34,6 +35,7 @@ func StartServer() {
 	Se.Engine = gin.Default()
 
 	initOssConfig()
+	initCloudConfig()
 	startService(Se.Engine)
 
 	hs := &http.Server{
@@ -49,16 +51,25 @@ func StartServer() {
 	}
 }
 
-// 初始化对象存储配置
+// initOssConfig 初始化对象存储配置
 func initOssConfig() {
-	fmt.Println(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
-	oss.AliyunOss, _ = aliyun.NewAliyunOss(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
+	oss.AliyunOss, _ = aliyunOSS.NewAliyunOss(conf.C.Oss.EndPoint, conf.C.Oss.AccessKeyID, conf.C.Oss.AccessKeySecret)
 	if oss.AliyunOss == nil {
 		panic("init oss failed")
 	}
+	logrus.Info("init ali oss config success!")
+}
+
+// initCloudConfig 初始化视频点播配置
+func initCloudConfig() {
+	cloud.AliyunCloud = aliyunCloud.NewAliyunCloud(conf.C.Cloud.AccessKeyID, conf.C.Cloud.AccessKeySecret)
+	cloud.AliyunCloud.InitCloudClient(consts.RegionID)
+	cloud.AliyunCloud.InitVodClient()
+	logrus.Info("init ali cloud config success!")
 }
 
 func startService(e *gin.Engine) {
+	e.MaxMultipartMemory = 5 << 30 // 5GB
 	// support cors
 	e.Use(middleware.Cors)
 	// swagger-path

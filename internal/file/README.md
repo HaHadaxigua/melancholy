@@ -25,6 +25,29 @@
 3. 上传文件到oss和从oss下载文件的方法
 4. 上传文件接口， 下载文件接口
 
+## 普通form表单获取数据的方法
 
+```go
+package demo
+
+type Req struct {
+	FileHeader *multipart.FileHeader `form:"file" json:"file"` // describes a file part of a multipart request.
+	MineType   string                `form:"mine_type" json:"mine_type"`
+	Name       string                `form:"name" json:"name"`
+	Phase      string                `form:"phase" json:"phase"`
+	Size       int                   `form:"size" json:"size"`
+}
+
+func uploadChunk(c *gin.Context) {
+	var req msg.ReqFileMultiUpload
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	logrus.Info(req)
+	return
+}
+
+```
 
 

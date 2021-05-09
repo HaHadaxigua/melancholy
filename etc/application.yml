@@ -5,11 +5,11 @@ Application:
   IsHttps: false
   Name: melancholy
   Port: "8002"
-  ReadTimeout: 1
-  WriterTimeout: 2
+  ReadTimeout: 10
+  WriterTimeout: 10
   LocationUnix: ~/melancholy/
   LocationWin: ../melancholyStorage/saveFiles/
-  TmpFile: ~/melancholy/tmp/
+  TmpFile: ~/melancholyStorage/tmp/
   AppSecret: 43f776358a
   AppIss: github.com/HaHadaxigua/melancholy
 Database:
@@ -25,6 +25,9 @@ Gorm:
   MaxOpenConn: 20000
 OSS:
   EndPoint:
+  AccessKeyID:
+  AccessKeySecret:
+Cloud:
   AccessKeyID:
   AccessKeySecret:
 FileSupport:

@@ -92,7 +92,8 @@ func TestOpenAndCloseFile(t *testing.T) {
 
 // TestFileIsExist 文件是否存在
 func TestFileIsExist(t *testing.T) {
-	file, err := os.Stat("test.txt")
+	file, err := os.Stat("D:\\data\\pictures\\wallpaper\\pixiv\\82847627_p0.png")
+	fmt.Println("大小",file.Size())
 	if err != nil {
 		if os.IsNotExist(err) {
 			logrus.Fatal("file not exist")

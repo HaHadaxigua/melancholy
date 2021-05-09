@@ -110,7 +110,7 @@ func (ali AliyunOss) UploadBytes(bucketName, objectName string, data []byte) err
 }
 
 // UploadString 上传字符串
-func (ali AliyunOss) UploadString(bucketName, objectName string, content string) error{
+func (ali AliyunOss) UploadString(bucketName, objectName string, content string) error {
 	client := ali.GetClient()
 
 	// 判断存储桶是否存在
@@ -175,4 +175,19 @@ func (ali AliyunOss) DownloadFileByStream(bucketName, objectName string) (*bytes
 		return buf, err
 	}
 	return nil, err
+}
+
+
+// DeleteObject 删除单个文件
+func (ali AliyunOss) DeleteSingleObject(bucketName, objectName string) error {
+	bucket, err := ali.client.Bucket(bucketName)
+	if err != nil {
+		return err
+	}
+	// 删除单个文件。objectName表示删除OSS文件时需要指定包含文件后缀在内的完整路径，例如abc/efg/123.jpg。
+	// 如需删除文件夹，请将objectName设置为对应的文件夹名称。如果文件夹非空，则需要将文件夹下的所有object删除后才能删除该文件夹。
+	if err := bucket.DeleteObject(objectName); err != nil {
+		return err
+	}
+	return nil
 }

@@ -6,8 +6,8 @@
 package msg
 
 import (
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
-	"github.com/gin-gonic/gin"
 	"mime/multipart"
 	"path"
 	"strings"
@@ -161,15 +161,23 @@ type ReqFileMultiCheck struct {
 
 // ReqFileMultiUpload 上传文件分片
 type ReqFileMultiUpload struct {
-	Filename  string `json:"filename"`  // 文件名称
-	Hash      string `json:"hash"`      // 文件hash， 根据文件hash找到文件
-	ChunkID   string `json:"chunkID"`   // 文件的分片id
-	ChunkHash string `json:"ChunkHash"` // 分片的hash
-	Total     int    `json:"total"`     // 总共有多少个分片
+	Filename  string `form:"filename" json:"filename"`   // 文件名称
+	Hash      string `form:"hash" json:"hash"`           // 文件hash， 根据文件hash找到文件
+	ChunkID   string `form:"chunkID" json:"chunkID"`     // 文件的分片id
+	ChunkHash string `form:"chunkHash" json:"chunkHash"` // 分片的hash
+	Total     int    `form:"total" json:"total"`         // 总共有多少个分片
 
-	C          *gin.Context          // gin的上下文
-	FileHeader *multipart.FileHeader // describes a file part of a multipart request.
+	FileHeader *multipart.FileHeader `form:"file" json:"file"` // describes a file part of a multipart request.
 	UserID     int
+
+	MineType string `form:"mine_type" json:"mine_type"`
+	Name     string `form:"name" json:"name"`
+	Phase    string `form:"phase" json:"phase"`
+	Size     int    `form:"size" json:"size"`
+}
+
+func (req ReqFileMultiUpload) String() string {
+	return fmt.Sprintf("MineType: %v, Name:%v, Phase: %v, Size: %v", req.MineType, req.Name, req.Phase, req.Size)
 }
 
 // ReqFileMultiMerge 请求将分片文件合并
@@ -203,4 +211,55 @@ type ReqDocFile struct {
 	ID      string `form:"id" json:"id"` // 用于更新时的id
 
 	UserID int
+}
+
+// ReqVideoFile 关于视频文件的请求
+type ReqVideoFile struct {
+	Name              string   `json:"name"`              // 带有后缀的文件名
+	Title             string   `json:"title"`             // 视频标题
+	Description       string   `json:"description"`       // 视频描述
+	CoverUrl          string   `json:"coverUrl"`          // 视频封面地址
+	Area              string   `json:"area"`              // 地区
+	Species           string   `json:"species"`           // 视频类型
+	ProductionCompany string   `json:"productionCompany"` // 制作公司
+	Years             int      `json:"years"`             // 年份
+	Duration          int      `json:"duration"`          // 时长
+	Tags              []string `json:"tags"`              // 视频标签
+	ID                string   `json:"id"`                // 用于更新时的id
+
+	UserID int
+}
+
+// ReqMusicFile 关于音频文件的请求
+type ReqMusicFile struct {
+	Name     string   `json:"name"`     // 歌名
+	CoverUrl string   `json:"coverUrl"` // 封面地址
+	Duration int      `json:"duration"` // 时长
+	Singer   string   `json:"singer"`   // 歌手
+	Album    string   `json:"album"`    // 专辑
+	Years    int      `json:"years"`    // 年份
+	Species  string   `json:"species"`  // 类型
+	Tags     []string `json:"tags"`     // 音频标签
+	ID       string   `json:"id"`       // 对应的文件id
+
+	UserID int
+}
+
+// ReqChunk 分片上传请求
+type ReqChunk struct {
+	Phase    string `json:"phase"`     // 所属阶段
+	MimeType string `json:"mime_type"` // 文件类型
+	Size     int    `json:"size"`      // 文件大小
+	Name     string `json:"name"`      // 文件名
+}
+
+type RspChunkData struct {
+	EndOffset int    `json:"end_offset"` // 每个切片的大小
+	SessionID string `json:"session_id"` // 标识一个上传
+}
+
+// RspChunk 分片文件返回
+type RspChunk struct {
+	Status string       `json:"status"` // 成功需要返回success
+	Data   RspChunkData `json:"data"`
 }
