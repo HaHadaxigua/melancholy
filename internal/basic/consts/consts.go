@@ -25,6 +25,9 @@ const (
 	MsgAuthCheckTokenTimeout  string = "Token超时"
 	MsgAuthAccessTokenIllegal string = "非法Token"
 	MsgAuthFailed             string = "认证失败"
+
+	// User in Oss
+	MsgUserLossOssConfigError string = "用户未进行云存储配置错误"
 )
 
 const (
@@ -33,7 +36,7 @@ const (
 )
 
 const (
-	Admin  string = "Admin"
+	Admin string = "Admin"
 )
 
 const (

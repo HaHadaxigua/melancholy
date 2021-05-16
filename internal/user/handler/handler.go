@@ -1,7 +1,7 @@
-package user
+package handler
 
 import "github.com/gin-gonic/gin"
 
-func SetupUserRouters(r *gin.RouterGroup) {
+func SetupUserRouters(router gin.IRouter){
 
 }

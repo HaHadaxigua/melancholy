@@ -14,6 +14,9 @@ type UserStore interface {
 	GetUserByName(name string) ([]*model.User, error)
 	ListUsers(req *msg.ReqUserFilter, withRoles bool) ([]*model.User, int, error)
 	RoleManager(uid, rid, operation int) error
+
+	UpdateUserInfo(mem map[string]interface{}, userID int) error
+	UpdateOneColumn(fieldName string, value interface{}, userID int) error // 给出列名和值进行更新
 }
 
 type userStore struct {
@@ -89,4 +92,22 @@ func (s *userStore) RoleManager(uid, rid, operation int) error {
 	default:
 		return nil
 	}
+}
+
+// UpdateUserInfo 更新多列用户信息
+func (s userStore) UpdateUserInfo(mem map[string]interface{}, userID int) error {
+	query := s.db.Model(&model.User{ID: userID})
+	if err := query.Updates(mem).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateOneColumn 根据给定列进行更新
+func (s userStore) UpdateOneColumn(fieldName string, value interface{}, userID int) error {
+	query := s.db.Model(&model.User{ID: userID})
+	if err := query.Where("id = ?", userID).Update(fieldName, value).Error; err != nil {
+		return err
+	}
+	return nil
 }

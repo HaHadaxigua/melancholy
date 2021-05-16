@@ -20,6 +20,12 @@ type User struct {
 	Avatar   string `json:"avatar"`
 	Status   int    `json:"status"`
 
+	OssEndPoint       string `form:"ossEndPoint" json:"ossEndPoint"`
+	OssAccessKey      string `form:"ossAccessKey" json:"ossAccessKey"`
+	OssAccessSecret   string `form:"ossAccessSecret" json:"ossAccessSecret"`
+	CloudAccessKey    string `form:"cloudAccessKey" json:"cloudAccessKey"`
+	CloudAccessSecret string `form:"cloudAccessSecret" json:"cloudAccessSecret"`
+
 	Roles []*Role `json:"roles" gorm:"many2many:user_role"`
 
 	CreatedAt time.Time      `json:"createdAt"`

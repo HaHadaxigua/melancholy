@@ -59,14 +59,19 @@ func login(c *gin.Context) {
 			// 构造登陆的返回体
 			rsp := &msg.RspLogin{
 				User: &msg.UserInfo{
-					ID:        _user.ID,
-					Username:  _user.Username,
-					Mobile:    _user.Mobile,
-					Email:     _user.Email,
-					Status:    _user.Status,
-					Avatar:    _user.Avatar,
-					CreatedAt: _user.CreatedAt,
-					UpdatedAt: _user.UpdatedAt,
+					ID:                _user.ID,
+					Username:          _user.Username,
+					Mobile:            _user.Mobile,
+					Email:             _user.Email,
+					Status:            _user.Status,
+					Avatar:            _user.Avatar,
+					CreatedAt:         _user.CreatedAt,
+					UpdatedAt:         _user.UpdatedAt,
+					OssEndPoint:       _user.OssEndPoint,
+					OssAccessKey:      _user.OssAccessKey,
+					OssAccessSecret:   _user.OssAccessSecret,
+					CloudAccessKey:    _user.CloudAccessKey,
+					CloudAccessSecret: _user.CloudAccessSecret,
 				},
 				Token: token,
 			}

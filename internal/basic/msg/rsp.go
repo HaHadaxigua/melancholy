@@ -52,6 +52,12 @@ type UserInfo struct {
 	Status   int    `json:"status"`
 	Avatar   string `json:"avatar"`
 
+	OssEndPoint       string `form:"ossEndPoint" json:"ossEndPoint"`
+	OssAccessKey      string `form:"ossAccessKey" json:"ossAccessKey"`
+	OssAccessSecret   string `form:"ossAccessSecret" json:"ossAccessSecret"`
+	CloudAccessKey    string `form:"cloudAccessKey" json:"cloudAccessKey"`
+	CloudAccessSecret string `form:"cloudAccessSecret" json:"cloudAccessSecret"`
+
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

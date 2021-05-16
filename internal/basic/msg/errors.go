@@ -30,4 +30,7 @@ var (
 	// Role
 	ErrRoleRepeated = &response.Err{Code: 10501, Message: consts.RepeatedRoleMsg}
 	ErrRoleNotFound = &response.Err{Code: 10502, Message: consts.RoleNotExistedMsg}
+
+	// Oss
+	ErrUserConfigError = &response.Err{Code: 10601, Message: consts.MsgUserLossOssConfigError} // 用户未进行云存储配置
 )

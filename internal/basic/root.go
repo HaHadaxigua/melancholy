@@ -40,4 +40,5 @@ func New(conn *gorm.DB) *module {
 func (m module) InitService(router gin.IRouter) {
 	handler.SetupRouters(router)
 	handler.SetupBasicRouters(router)
+	handler.SetupUserRouters(router)
 }

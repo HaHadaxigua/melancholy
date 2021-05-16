@@ -15,6 +15,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/conf"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/file"
+	"github.com/HaHadaxigua/melancholy/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -77,9 +78,15 @@ func startService(e *gin.Engine) {
 	router := e.Group(consts.ApiV1)
 
 	conn := GetConn()
+	// 权限管理
 	basic.Module = basic.New(conn)
 	basic.Module.InitService(router)
 
+	// 文件模块
 	file.Module = file.New(conn)
 	file.Module.InitService(router)
+
+	// 初始化用户业务
+	user.Module = user.New(conn)
+	user.Module.InitService(router)
 }

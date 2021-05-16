@@ -5,13 +5,15 @@
 ******/
 package msg
 
+import "mime/multipart"
+
 type ReqLogin struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type ReqRegister struct {
-	Username string `json:"username" binding:"required"`
+	Username string `json:"username"`
 	Password string `json:"password" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 }
@@ -54,4 +56,26 @@ type ReqPermissionFilter struct {
 type ReqRolePermAssociation struct {
 	RoleID       int `json:"roleID"`
 	PermissionID int `json:"permissionID"`
+}
+
+// ReqSetUserInfo 设置用户信息
+type ReqSetUserInfo struct {
+	Username string `form:"username" json:"username" gorm:"username"`
+	Mobile   string `form:"mobile" json:"mobile" gorm:"mobile"`
+	//Password          string `form:"password" json:"password" gorm:"password"`
+	OssEndPoint       string `form:"ossEndPoint" json:"ossEndPoint" gorm:"oss_end_point"`
+	OssAccessKey      string `form:"ossAccessKey" json:"ossAccessKey" gorm:"oss_access_key"`
+	OssAccessSecret   string `form:"ossAccessSecret" json:"ossAccessSecret" gorm:"oss_access_secret"`
+	CloudAccessKey    string `form:"cloudAccessKey" json:"cloudAccessKey" gorm:"cloud_access_key"`
+	CloudAccessSecret string `form:"cloudAccessSecret" json:"cloudAccessSecret" gorm:"cloud_access_secret"`
+
+	UserID int
+}
+
+// ReqUpdateAvatar 处理用户头像上传
+type ReqUpdateAvatar struct {
+	Data       []byte                `json:"data"`
+	FileHeader *multipart.FileHeader `json:"fileHeader"`
+
+	UserID int
 }
