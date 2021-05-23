@@ -5,6 +5,7 @@ const (
 	UserID = "user_id"
 	User   = "user"
 	ApiV1  = "/api/v1"
+	CurrentToken = "token"
 
 	// utils
 	// email regular
@@ -22,4 +23,5 @@ const (
 	OssBucketGeneratePrefix = `melancholy-userid-`
 	Https                   = "https://"
 	RegionID                = "cn-shanghai" // 用于视频点播
+	JSON = "JSON"
 )

@@ -2,6 +2,9 @@
 package encryptor
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
@@ -79,4 +82,25 @@ func CalcLargeFileHashInSHA1(file *os.File) (string, error) {
 		hash.Write(buf)
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// AESEncryption 通过给定AES来加密 字节流
+func AESEncryption(data []byte, keySecret string) ([]byte, error) {
+	// 创建加密算法aes
+	c, err := aes.NewCipher([]byte(keySecret))
+	if err != nil {
+		return nil, err
+	}
+
+	// The IV needs to be unique, but not secure. Therefore it's common to
+	// include it at the beginning of the ciphertext.
+	cipherData := make([]byte, aes.BlockSize+len(data))
+	iv := cipherData[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+
+	stream := cipher.NewCFBEncrypter(c, iv)
+	stream.XORKeyStream(cipherData[aes.BlockSize:], data)
+	return cipherData, nil
 }

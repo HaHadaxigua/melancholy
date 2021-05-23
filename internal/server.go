@@ -8,8 +8,6 @@ package internal
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
-	"github.com/HaHadaxigua/melancholy/internal/common/cloud"
-	aliyunCloud "github.com/HaHadaxigua/melancholy/internal/common/cloud/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	aliyunOSS "github.com/HaHadaxigua/melancholy/internal/common/oss/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
@@ -36,7 +34,7 @@ func StartServer() {
 	Se.Engine = gin.Default()
 
 	initOssConfig()
-	initCloudConfig()
+	//initCloudConfig()
 	startService(Se.Engine)
 
 	hs := &http.Server{
@@ -63,10 +61,10 @@ func initOssConfig() {
 
 // initCloudConfig 初始化视频点播配置
 func initCloudConfig() {
-	cloud.AliyunCloud = aliyunCloud.NewAliyunCloud(conf.C.Cloud.AccessKeyID, conf.C.Cloud.AccessKeySecret)
-	cloud.AliyunCloud.InitCloudClient(consts.RegionID)
-	cloud.AliyunCloud.InitVodClient()
-	logrus.Info("init ali cloud config success!")
+	//cloud.AliyunCloud = aliyunCloud.NewAliyunCloud(conf.C.Cloud.AccessKeyID, conf.C.Cloud.AccessKeySecret,)
+	//cloud.AliyunCloud.InitCloudClient(consts.RegionID)
+	//cloud.AliyunCloud.InitVodClient()
+	//logrus.Info("init ali cloud config success!")
 }
 
 func startService(e *gin.Engine) {

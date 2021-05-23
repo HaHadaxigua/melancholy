@@ -74,9 +74,10 @@ type File struct {
 	Address    string `json:"address"`    // 返回的oss地址
 	BucketName string `json:"bucketName"` // oss中的存储桶名字
 	ObjectName string `json:"objectName"` // oss中的存储对象名字
-	Size       int    `json:"size"`       // 文件大小
-	Mode       int    `json:"mode"`       // 文件模式
-	Ftype      int    `json:"ftype"`      // 文件类型
+	Endpoint   string `json:"endpoint"`
+	Size       int    `json:"size"`  // 文件大小
+	Mode       int    `json:"mode"`  // 文件模式
+	Ftype      int    `json:"ftype"` // 文件类型
 
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
@@ -182,12 +183,13 @@ type VideoFile struct {
 	ProductionCompany string   `json:"productionCompany"` // 制作公司
 	Years             int      `json:"years"`             // 年份
 	Duration          int      `json:"duration"`          // 时长
-	Tags              []string `json:"tags"`              // 视频标签
 	Finished          bool     `json:"finished"`          // 是否上传完成
+	VideoID           string   `json:"videoID"`           // 视频点播的视频id
+	Region            string   `json:"region"`            // 存储地区
 }
 
 func (VideoFile) TableName() string {
-	return "video_file"
+	return "video_files"
 }
 
 // MusicFile 视频类型文件
@@ -200,10 +202,11 @@ type MusicFile struct {
 	Album    string   `json:"album"`    // 专辑
 	Years    int      `json:"years"`    // 年份
 	Species  string   `json:"species"`  // 类型
-	Tags     []string `json:"tags"`     // 音频标签
 	Finished bool     `json:"finished"` // 是否上传完成
+	MusicID  string   `json:"musicID"`  // 视频点播的音频id
+	Region   string   `json:"region"`   // 存储地区
 }
 
 func (MusicFile) TableName() string {
-	return "music_file"
+	return "music_files"
 }

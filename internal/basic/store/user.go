@@ -11,6 +11,7 @@ type UserStore interface {
 	Create(req *model.User) error
 	FindUserById(id int, withRole bool) (*model.User, error)
 	FindUserByEmail(email string) (*model.User, error)
+	FindUsersByID(id []int, withRole bool) ([]*model.User, error)
 	GetUserByName(name string) ([]*model.User, error)
 	ListUsers(req *msg.ReqUserFilter, withRoles bool) ([]*model.User, int, error)
 	RoleManager(uid, rid, operation int) error
@@ -44,6 +45,19 @@ func (s *userStore) FindUserById(id int, withRole bool) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// FindUsersByID 根据id批量获取用户
+func (s *userStore) FindUsersByID(id []int, withRole bool) ([]*model.User, error) {
+	var users []*model.User
+	query := s.db.Model(&model.User{}).Where("id in ?", id)
+	if withRole {
+		query.Preload("Roles").Preload("Roles.Permissions")
+	}
+	if err := query.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 // GetUserByName 根据用户名找到用户

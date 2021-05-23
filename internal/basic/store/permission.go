@@ -15,7 +15,7 @@ type PermissionStore interface {
 	InsertPermission(p *model.Permission) error
 	ListPermission(r *msg.ReqPermissionFilter) ([]*model.Permission, int, error)
 	FindPermission(pid int) (*model.Permission, error)
-
+	DeletePermission(pid int) error
 }
 
 type permissionStore struct {
@@ -53,10 +53,18 @@ func (s permissionStore) ListPermission(r *msg.ReqPermissionFilter) ([]*model.Pe
 	}
 	return perms, int(total), nil
 }
-func (s permissionStore) FindPermission(pid int) (*model.Permission, error){
+func (s permissionStore) FindPermission(pid int) (*model.Permission, error) {
 	var perm model.Permission
 	if err := s.db.Model(&model.Permission{ID: pid}).Take(&perm).Error; err != nil {
-		return nil,err
+		return nil, err
 	}
 	return &perm, nil
+}
+
+func (s permissionStore) DeletePermission(pid int) error {
+	query := s.db.Model(&model.Permission{})
+	if err := query.Delete(&model.Permission{ID: pid}).Error; err != nil {
+		return err
+	}
+	return nil
 }

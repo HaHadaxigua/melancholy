@@ -28,12 +28,15 @@ const (
 	FileMergeFileFailedMsg      string = "合并文件错误"
 	FileMergeFileHasExistedMsg  string = "合并文件已存在"
 
-	FilePatchDeleteFailedMsg string = "文件并发删除失败"
+	FilePatchDeleteFailedMsg     string = "文件并发删除失败"
+	FileEncryptionEmptySecretKey string = "文件加密时没有传输密钥"
 )
 
 const (
-	RootFileID  string = "root" // 根目录文件夹id
-	DocFolderID string = "doc"  // 文档文件夹id
+	RootFileID    string = "root"  // 根目录文件夹id
+	DocFolderID   string = "doc"   // 文档文件夹id
+	VideoFolderID string = "video" // 视频文件夹id
+	MusicFolderID string = "music" // 音频文件及啊id
 )
 
 // file types which can be created
@@ -43,6 +46,10 @@ const (
 	FileTypePngID
 	FileTypeJpgID
 	FileTypeMp3ID
+	FileTypeFlacID
+	FileTypeMP4ID
+	FileTypeRMVBID
+	FileTypeKMVID
 )
 
 const (
@@ -53,6 +60,8 @@ const (
 	FileTypeMP4    = ".mp4"
 	FileTypeRMVB   = ".rmvb"
 	FileTypeKMV    = ".kmv"
+	FileTypeMp3    = ".mp3"
+	FileTypeFlac   = ".flac"
 )
 
 // 什么类型的文件

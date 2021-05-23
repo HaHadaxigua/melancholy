@@ -20,6 +20,7 @@ type UserService interface {
 	FindUserByUsername(username string) ([]*model.User, error)
 	GetUserByID(userID int, withRole bool) (*model.User, error)
 	GetUserByEmail(email string) (*model.User, error)
+	GetUsersByID(userIDList []int, withRole bool) ([]*model.User, error)
 	ListUsers(req *msg.ReqUserFilter, withRoles bool) (*msg.RspUserList, error)
 	RoleManager(uid, rid, operation int) error
 
@@ -118,6 +119,11 @@ func checkCreateUserReq(r *msg.ReqRegister) (bool, error) {
 		return false, msg.ErrUserNameIllegal
 	}
 	return true, nil
+}
+
+// GetUsersByID 根据id-list 批量获取用户
+func (s userService) GetUsersByID(userIDList []int, withRole bool) ([]*model.User, error) {
+	return s.store.FindUsersByID(userIDList, withRole)
 }
 
 func (s *userService) RoleManager(uid, rid, operation int) error {

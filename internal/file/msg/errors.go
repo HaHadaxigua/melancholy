@@ -22,4 +22,6 @@ var (
 	ErrMergeFileHasExist    = &response.Err{Code: 10308, Message: envir.FileMergeFileHasExistedMsg}
 
 	ErrPatchDeleteFailed = &response.Err{Code: 10309, Message: envir.FilePatchDeleteFailedMsg}
+
+	ErrEncryptionEmptySecretKey = &response.Err{Code: 10310, Message: envir.FileEncryptionEmptySecretKey}
 )

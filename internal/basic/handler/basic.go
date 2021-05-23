@@ -10,37 +10,37 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 )
 
 func SetupBasicRouters(r gin.IRouter) {
 	secured := r.Group("/basic", middleware.Auth)
 
 	role := secured.Group("/r")
-	role.GET("/role", listRoles)
-	role.POST("/role", createRole)
-	role.DELETE("role/:id", deleteRole)
-	role.PATCH("/appendPerm", appendPerm)
-	role.PATCH("/removePerm", removePerm)
+	role.POST("/role/list", listRoles)
+	role.POST("/role/create", createRole)
+	role.POST("/role/delete", deleteRole)
+	role.POST("/appendPerm", appendPerm)
+	role.POST("/removePerm", removePerm)
 
 	user := secured.Group("/u")
-	user.GET("/user", listUsers)
-	user.PATCH("/appendRole", appendRole)
-	user.PATCH("/removeRole", removeRole)
+	user.POST("/user", listUsers)
+	user.POST("/appendRole", appendRole)
+	user.POST("/removeRole", removeRole)
 
 	perms := secured.Group("/p")
-	perms.GET("/perm", listPerms)
-	perms.POST("/perm", createPerm)
+	perms.POST("/perm/list", listPerms)
+	perms.POST("/perm/create", createPerm)
+	perms.POST("/perm/delete", deletePerm)
 
 }
 
 func createRole(c *gin.Context) {
-	req := &msg.ReqRoleCreate{}
-	if err := c.BindJSON(req); err != nil {
+	var req msg.ReqRoleCreate
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	if err := service.Role.NewRole(req); err != nil {
+	if err := service.Role.NewRole(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	}
@@ -48,14 +48,17 @@ func createRole(c *gin.Context) {
 }
 
 func deleteRole(c *gin.Context) {
-	_rid := c.Param("id")
-	rid, err := strconv.Atoi(_rid)
-	if err != nil || rid <= 0 {
+	var req msg.ReqRoleDelete
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
+	if req.RoleID <= 0 {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
 
-	if err := service.Role.DeleteRole(rid); err != nil {
+	if err := service.Role.DeleteRole(req.RoleID); err != nil {
 
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
@@ -64,12 +67,12 @@ func deleteRole(c *gin.Context) {
 }
 
 func listRoles(c *gin.Context) {
-	req := &msg.ReqRoleFilter{}
-	if err := c.BindQuery(req); err != nil {
+	var req msg.ReqRoleFilter
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
-	if rsp, err := service.Role.ListRoles(req, true); err != nil {
+	if rsp, err := service.Role.ListRoles(&req, true); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
 	} else {
@@ -80,7 +83,7 @@ func listRoles(c *gin.Context) {
 
 func listUsers(c *gin.Context) {
 	var req msg.ReqUserFilter
-	if err := c.BindQuery(&req); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
@@ -154,9 +157,23 @@ func createPerm(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
+// deletePerm 删除权限
+func deletePerm(c *gin.Context) {
+	var req msg.ReqPermissionDelete
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	if err := service.Permission.DeletePermission(req.PermissionID); err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+}
+
+// appendPerm 给角色添加权限
 func appendPerm(c *gin.Context) {
-	req := &msg.ReqRolePermAssociation{}
-	if err := c.BindJSON(req); err != nil {
+	var req msg.ReqRolePermAssociation
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewErr(err))
 		return
 	}
@@ -171,6 +188,7 @@ func appendPerm(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Ok(nil))
 }
 
+// removePerm 给角色移除权限
 func removePerm(c *gin.Context) {
 	req := &msg.ReqRolePermAssociation{}
 	if err := c.BindJSON(req); err != nil {

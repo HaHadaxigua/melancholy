@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	fConst "github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/msg"
@@ -54,8 +55,22 @@ func SetupFileRouters(r gin.IRouter) {
 	file.POST("/create/doc", createDoc)     // 创建文档类型文件
 	file.GET("/get/doc", getDocContent)     // 创建文档类型文件
 
+	// 处理音频型文件相关方法
+	file.GET("/music/get")
+	file.POST("/music/create", createMusicFile) // 创建音频文件
+
+	file.GET("/video/get")
+	file.POST("/video/create", createVideoFile) // 创建视频文件
+
+	// 处理视频点播的相关方法
+	vod := secured.Group("/vod")
+	vod.POST("/getUploadAddressAndToken", getUploadAddressAndToken)         // 获取视频上传地址or凭证
+	vod.POST("/refreshUploadAddressAndToken", refreshUploadAddressAndToken) // 刷新视频上传地址or凭证
+	vod.POST("/getMezzanineInfo", getMezzanineInfo)                         // 获取视频文件或者音频文件的下载地址
+	vod.POST("/getPlayInfo", getPlayInfo)                                   // 获取视频播放地址
 }
 
+// createFolder 创建文件夹请求
 func createFolder(c *gin.Context) {
 	var req msg.ReqFolderCreate
 	if err := c.BindJSON(&req); err != nil {
@@ -262,6 +277,12 @@ func uploadSimpleFile(c *gin.Context) {
 	req.Data = data
 	req.UserID = c.GetInt(consts.UserID)
 
+	if req.Encryption && req.KeySecret == "" {
+		// 返回密钥缺失错误
+		c.JSON(http.StatusInternalServerError, response.NewErr(msg.ErrEncryptionEmptySecretKey))
+		return
+	}
+
 	if err := service.FileSvc.FileUpload(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return
@@ -408,6 +429,132 @@ func getDocContent(c *gin.Context) {
 	}
 	req.UserID = c.GetInt(consts.UserID)
 	rsp, err := service.FileSvc.GetDocContent(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// ============================vod 视频点播相关方法============================
+
+// getUploadAddressAndToken 获取视频上传地址和token
+func getUploadAddressAndToken(c *gin.Context) {
+	var req msg.ReqGetUploadAddressAndToken
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	_user, ok := c.Get(consts.User)
+	if !ok {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
+	req.User = _user.(*model.User)
+	rsp, err := service.FileSvc.GetUploadVideoAddress(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// refreshUploadAddressAndToken 刷新视频上传凭证
+func refreshUploadAddressAndToken(c *gin.Context) {
+	var req msg.ReqRefreshAddressAndToken
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	_user, ok := c.Get(consts.User)
+	if !ok {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
+	req.User = _user.(*model.User)
+	rsp, err := service.FileSvc.RefreshVideoAddress(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// createMusicFile 创建音频逻辑文件
+func createMusicFile(c *gin.Context) {
+	var req msg.ReqMusicFile
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.CreateMusicFile(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// createVideoFile 创建视频逻辑文件
+func createVideoFile(c *gin.Context) {
+	var req msg.ReqVideoFile
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+	req.UserID = c.GetInt(consts.UserID)
+	rsp, err := service.FileSvc.CreateVideoFile(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// getMezzanineInfo 获取视频文件或者是音频文件的下载地址
+func getMezzanineInfo(c *gin.Context) {
+	var req msg.ReqGetMezzanineInfo
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+
+	req.UserID = c.GetInt(consts.UserID)
+	_user, ok := c.Get(consts.User)
+	if !ok {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
+	req.User = _user.(*model.User)
+
+	rsp, err := service.FileSvc.GetMezzanineInfo(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.NewErr(err))
+		return
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}
+
+// getPlayInfo 获取视频播放地址
+func getPlayInfo(c *gin.Context) {
+	var req msg.ReqGetPlayInfo
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewErr(err))
+		return
+	}
+
+	req.UserID = c.GetInt(consts.UserID)
+	_user, ok := c.Get(consts.User)
+	if !ok {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
+	req.User = _user.(*model.User)
+
+	rsp, err := service.FileSvc.GetPlayInfo(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.NewErr(err))
 		return

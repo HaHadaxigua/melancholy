@@ -24,12 +24,12 @@ Gorm:
   MaxIdleConn: 0
   MaxOpenConn: 20000
 OSS:
-  EndPoint:
-  AccessKeyID:
-  AccessKeySecret:
+  EndPoint: oss-cn-shanghai.aliyuncs.com
+  AccessKeyID: LTAI5tBGyku7RiUc7GGkgs5z
+  AccessKeySecret: NMXytPtkTHaD9UFcdkiopOObfntUI0
 Cloud:
-  AccessKeyID:
-  AccessKeySecret:
+  AccessKeyID: LTAI5tDDoxSXNHP6SV4ZTvTc
+  AccessKeySecret: KfBBI8K5udgDEGk7lIAoIceO7EXGyB
 FileSupport:
   List:
     - ".txt"

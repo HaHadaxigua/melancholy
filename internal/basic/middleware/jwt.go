@@ -58,6 +58,6 @@ func Auth(c *gin.Context) {
 		return
 	}
 	c.Set(consts.User, _user)
-
+	c.Set(consts.CurrentToken, ah.AccessToken)
 	c.Next()
 }

@@ -6,11 +6,23 @@ var (
 		FileTypeTxtStr: FileTypeTxtID,
 		FileTypeShell:  FileTypeShID,
 		FileTypePng:    FileTypePngID,
+		FileTypeJpg:    FileTypeJpgID,
+		FileTypeMp3:    FileTypeMp3ID,
+		FileTypeFlac:   FileTypeFlacID,
+		FileTypeMP4:    FileTypeMP4ID,
+		FileTypeRMVB:   FileTypeRMVBID,
+		FileTypeKMV:    FileTypeKMVID,
 	}
 	MapFileTypeToStr map[int]string = map[int]string{
-		FileTypeTxtID: FileTypeTxtStr,
-		FileTypeShID:  FileTypeShell,
-		FileTypePngID: FileTypePng,
+		FileTypeTxtID:  FileTypeTxtStr,
+		FileTypeShID:   FileTypeShell,
+		FileTypePngID:  FileTypePng,
+		FileTypeJpgID:  FileTypeJpg,
+		FileTypeMp3ID:  FileTypeMp3,
+		FileTypeFlacID: FileTypeFlac,
+		FileTypeMP4ID:  FileTypeMP4,
+		FileTypeRMVBID: FileTypeRMVB,
+		FileTypeKMVID:  FileTypeKMV,
 	}
 )
 
@@ -21,12 +33,14 @@ func getFileSuffixID(suffix string) int {
 		return FileTypeTxtID
 	case ".sh":
 		return FileTypeShID
-	case ".png":
+	case FileTypePng:
 		return FileTypePngID
-	case ".jpg":
+	case FileTypeJpg:
 		return FileTypeJpgID
-	case ".mp3":
+	case FileTypeMp3:
 		return FileTypeMp3ID
+	case FileTypeFlac:
+		return FileTypeFlacID
 	default:
 		return 0
 	}
@@ -46,6 +60,10 @@ func GetFileType(suffix int) int {
 		return TypeTxt
 	case FileTypePngID:
 		return TypePictures
+	case FileTypeFlacID, FileTypeMp3ID:
+		return TypeMusic
+	case FileTypeMP4ID, FileTypeRMVBID, FileTypeKMVID:
+		return TypeVideo
 	default:
 		return TypeOther
 	}

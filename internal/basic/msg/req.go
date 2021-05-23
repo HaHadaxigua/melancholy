@@ -20,10 +20,10 @@ type ReqRegister struct {
 
 // User 条件过滤器
 type ReqUserFilter struct {
-	Username string `form:"username"`
+	Username string `json:"username"form:"username"`
 
-	Offset int `form:"offset"`
-	Limit  int `form:"limit"`
+	Offset int `json:"offset"form:"offset"`
+	Limit  int `json:"limit"form:"limit"`
 }
 
 type ReqUserRoleAssociation struct {
@@ -32,18 +32,26 @@ type ReqUserRoleAssociation struct {
 }
 
 type ReqRoleCreate struct {
-	RoleName string `json:"roleName"`
+	RoleName string `json:"name" form:"name"`
+}
+
+type ReqRoleDelete struct {
+	RoleID int `json:"id" form:"id"`
 }
 
 type ReqRoleFilter struct {
-	Fuzzy string `form:"fuzzy"`
+	Fuzzy string `json:"fuzzy" form:"fuzzy"`
 
-	Offset int `form:"offset"`
-	Limit  int `form:"limit"`
+	Offset int `json:"offset" form:"offset"`
+	Limit  int `json:"limit" form:"limit"`
 }
 
 type ReqPermissionCreate struct {
-	PermissionName string `json:"permissionName"`
+	PermissionName string `json:"name"`
+}
+
+type ReqPermissionDelete struct {
+	PermissionID int `json:"id"`
 }
 
 type ReqPermissionFilter struct {

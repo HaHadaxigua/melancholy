@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/HaHadaxigua/melancholy/internal/basic/middleware"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/basic/msg"
 	"github.com/HaHadaxigua/melancholy/internal/basic/service"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
@@ -12,14 +13,13 @@ import (
 	"net/http"
 )
 
-
-
 func SetupUserRouters(r gin.IRouter) {
 	secured := r.Group("/user", middleware.Auth)
 	// user's
 	userGroup := secured.Group("/u")
 	userGroup.POST("/setInfo", setInfo)
 	userGroup.POST("/setAvatar", setAvatar)
+	userGroup.GET("/refreshUserInfo", refreshUserInfo)
 	// friend's
 }
 
@@ -68,3 +68,32 @@ func setAvatar(c *gin.Context) {
 	c.JSON(http.StatusOK, response.OK)
 }
 
+// refreshUserInfo 刷新用户信息
+func refreshUserInfo(c *gin.Context) {
+	_user, ok := c.Get(consts.User)
+	if !ok {
+		c.JSON(http.StatusBadRequest, response.NewErr(nil))
+		return
+	}
+	user := _user.(*model.User)
+	token := c.GetString(consts.CurrentToken)
+	rsp := &msg.RspLogin{
+		User: &msg.UserInfo{
+			ID:                user.ID,
+			Username:          user.Username,
+			Mobile:            user.Mobile,
+			Email:             user.Email,
+			Status:            user.Status,
+			Avatar:            user.Avatar,
+			CreatedAt:         user.CreatedAt,
+			UpdatedAt:         user.UpdatedAt,
+			OssEndPoint:       user.OssEndPoint,
+			OssAccessKey:      user.OssAccessKey,
+			OssAccessSecret:   user.OssAccessSecret,
+			CloudAccessKey:    user.CloudAccessKey,
+			CloudAccessSecret: user.CloudAccessSecret,
+		},
+		Token: token,
+	}
+	c.JSON(http.StatusOK, response.Ok(rsp))
+}

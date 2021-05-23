@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/basic/tools"
+	"github.com/HaHadaxigua/melancholy/internal/common/cloud/aliyun"
 	"github.com/HaHadaxigua/melancholy/internal/common/oss"
 	"github.com/HaHadaxigua/melancholy/internal/conf"
+	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/HaHadaxigua/melancholy/internal/encryptor"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"github.com/HaHadaxigua/melancholy/internal/file/model"
@@ -14,6 +16,7 @@ import (
 	"github.com/HaHadaxigua/melancholy/internal/file/utils"
 	"github.com/HaHadaxigua/melancholy/internal/response"
 	"github.com/HaHadaxigua/melancholy/persistence"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/vod"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"path"
@@ -66,6 +69,12 @@ type FileService interface {
 
 	// 针对音频文件
 	CreateMusicFile(req *msg.ReqMusicFile) (*msg.RspMusicFile, error) // 创建音频文件
+
+	// 阿里云 视频点播相关代码
+	GetUploadVideoAddress(req *msg.ReqGetUploadAddressAndToken) (*msg.RspUploadAddressAndToken, error) // 获取视频上传地址
+	RefreshVideoAddress(req *msg.ReqRefreshAddressAndToken) (*msg.RspUploadAddressAndToken, error)     // 刷新视频上传地址
+	GetMezzanineInfo(req *msg.ReqGetMezzanineInfo) (*msg.RspGetMezzanineInfo, error)                   //  获取视频或者是音频文件的下载地址
+	GetPlayInfo(req *msg.ReqGetPlayInfo) (*vod.GetPlayInfoResponse, error)                             // 获取视频播放地址
 }
 
 type fileService struct {
@@ -132,7 +141,7 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 	}
 
 	// 2. 如果请求创建的父文件夹ID存在
-	if req.ParentID != "" {
+	if req.ParentID != "" && req.ParentID != envir.RootFileID {
 		// 获取父文件夹
 		parentFolder, err := s.store.GetFolder(req.ParentID, req.UserID, true)
 		if err != nil {
@@ -172,7 +181,7 @@ func (s fileService) FolderCreate(req *msg.ReqFolderCreate) error {
 // folderCreate 用于内部的创建文件夹 没有错误判断, 用于创建特殊的文件夹
 func (s fileService) folderCreate(req *msg.ReqFolderCreate) error {
 	folder := &model.Folder{
-		ID:       envir.DocFolderID,
+		ID:       req.ID,
 		Name:     req.FolderName,
 		ParentID: req.ParentID,
 		OwnerID:  req.UserID,
@@ -365,6 +374,7 @@ func (s fileService) FileCreate(req *msg.ReqFileCreate) (*msg.RspFileListItem, e
 		Size:       req.Size,
 		Address:    req.Address,
 		BucketName: req.BucketName,
+		Endpoint:   req.Endpoint,
 		Ftype:      envir.GetFileType(suffix),
 		Hash:       req.Hash,
 	}
@@ -395,6 +405,15 @@ func (s fileService) FilePatchDelete(req *msg.ReqFilePatchDelete) error {
 
 // FileUpload todo 上传文件的处理
 func (s fileService) FileUpload(req *msg.ReqFileUpload) error {
+	// 判断文件是否加密
+	if req.Encryption {
+		cipherData, err := encryptor.AESEncryption(req.Data, req.KeySecret)
+		if err != nil {
+			return nil
+		}
+		req.Data = cipherData
+	}
+
 	hash := encryptor.CalcBytesHashInSHA1(req.Data)
 	var (
 		bucketName string
@@ -746,14 +765,15 @@ func (s fileService) GetDocContent(req *msg.ReqDocFile) (string, error) {
 
 // CreateVideoFile 创建视频逻辑文件 todo
 func (s fileService) CreateVideoFile(req *msg.ReqVideoFile) (*msg.RspVideoFile, error) {
-	// 判断文档文件夹是否存在
-	_, err := s.store.GetFolder(envir.DocFolderID, req.UserID, false)
+	// 1. 判断文档文件夹是否存在
+	_, err := s.store.GetFolder(envir.VideoFolderID, req.UserID, false)
 	if err != nil {
 		flag := errors.Is(err, gorm.ErrRecordNotFound)
 		if flag {
 			// 需要去创建文件夹
 			folderReq := &msg.ReqFolderCreate{
-				FolderName: envir.DocFolderID,
+				ID:         envir.VideoFolderID,
+				FolderName: envir.VideoFolderID,
 				ParentID:   envir.RootFileID,
 				UserID:     req.UserID,
 			}
@@ -765,10 +785,175 @@ func (s fileService) CreateVideoFile(req *msg.ReqVideoFile) (*msg.RspVideoFile, 
 		}
 	}
 
-	return nil, nil
+	// 2. 在该文件夹下创建生成基本文件对象
+	basicFileCreateReq := &msg.ReqFileCreate{
+		ParentID:   envir.VideoFolderID,
+		FileName:   req.Name,
+		Size:       req.Size,
+		Hash:       req.Hash,
+		UserID:     req.UserID,
+		BucketName: req.Bucket,
+		Endpoint:   req.Endpoint,
+		Address:    req.VideoID,
+	}
+	fileCreateRsp, err := s.FileCreate(basicFileCreateReq)
+	if err != nil {
+		return nil, err
+	}
+	// 3. 生成视频逻辑文件
+	videoFile := &model.VideoFile{
+		ID:                fileCreateRsp.ID,
+		Title:             req.Title,
+		Description:       req.Description,
+		CoverUrl:          req.CoverUrl,
+		Area:              req.Area,
+		Species:           req.Species,
+		ProductionCompany: req.ProductionCompany,
+		Years:             req.Years,
+		Duration:          req.Duration,
+		Finished:          true,
+		VideoID:           req.VideoID,
+		Region:            req.Region,
+	}
+	if err := s.store.CreateVideoFile(videoFile); err != nil {
+		return nil, err
+	}
+	return &msg.RspVideoFile{
+		ID:   fileCreateRsp.ID,
+		Name: fileCreateRsp.Name,
+	}, nil
 }
 
 // CreateMusicFile 创建音频逻辑文件 todo
 func (s fileService) CreateMusicFile(req *msg.ReqMusicFile) (*msg.RspMusicFile, error) {
-	return nil, nil
+	// 1. 判断文档文件夹是否存在
+	_, err := s.store.GetFolder(envir.MusicFolderID, req.UserID, false)
+	if err != nil {
+		flag := errors.Is(err, gorm.ErrRecordNotFound)
+		if flag {
+			// 需要去创建文件夹
+			folderReq := &msg.ReqFolderCreate{
+				ID:         envir.MusicFolderID,
+				FolderName: envir.MusicFolderID,
+				ParentID:   envir.RootFileID,
+				UserID:     req.UserID,
+			}
+			if err = s.folderCreate(folderReq); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	// 2. 在该文件夹下创建生成基本文件对象
+	basicFileCreateReq := &msg.ReqFileCreate{
+		ParentID: envir.MusicFolderID,
+		FileName: req.Name,
+		Size:     req.Size,
+		Hash:     req.Hash,
+		UserID:   req.UserID,
+		Address:  req.MusicID,
+	}
+	fileCreateRsp, err := s.FileCreate(basicFileCreateReq)
+	if err != nil {
+		return nil, err
+	}
+	// 3. 生成视频逻辑文件
+	musicFile := &model.MusicFile{
+		ID:       fileCreateRsp.ID,
+		Name:     req.Name,
+		CoverUrl: req.CoverUrl,
+		Duration: req.Duration,
+		Singer:   req.Singer,
+		Album:    req.Album,
+		Years:    req.Years,
+		Species:  req.Species,
+		Finished: true,
+		MusicID:  req.MusicID,
+		Region:   req.Region,
+	}
+	if err := s.store.CreateMusicFile(musicFile); err != nil {
+		return nil, err
+	}
+	return &msg.RspMusicFile{
+		ID:   musicFile.ID,
+		Name: req.Name,
+	}, nil
+}
+
+// GetUploadVideoAddress 获取视频上传地址
+func (s fileService) GetUploadVideoAddress(req *msg.ReqGetUploadAddressAndToken) (*msg.RspUploadAddressAndToken, error) {
+	cloudSDK := aliyun.NewAliyunCloud(req.User.CloudAccessKey, req.User.CloudAccessSecret, consts.RegionID)
+
+	request := vod.CreateCreateUploadVideoRequest()
+	request.Title = req.Title
+	request.Description = req.Description
+	request.FileName = req.Filename
+	request.CoverURL = req.CoverURL
+	request.Tags = req.Tags
+	request.AcceptFormat = consts.JSON
+
+	response, err := cloudSDK.GetVodClient().CreateUploadVideo(request)
+	if err != nil {
+		return nil, err
+	}
+	return &msg.RspUploadAddressAndToken{
+		VideoID:       response.VideoId,
+		UploadAddress: response.UploadAddress,
+		UploadAuth:    response.UploadAuth,
+	}, nil
+}
+
+// RefreshVideoAddress 刷新视频上传地址
+func (s fileService) RefreshVideoAddress(req *msg.ReqRefreshAddressAndToken) (*msg.RspUploadAddressAndToken, error) {
+	cloudSDK := aliyun.NewAliyunCloud(req.User.CloudAccessKey, req.User.CloudAccessSecret, consts.RegionID)
+
+	request := vod.CreateRefreshUploadVideoRequest()
+	request.VideoId = req.VideoID
+	request.AcceptFormat = consts.JSON
+
+	response, err := cloudSDK.GetVodClient().RefreshUploadVideo(request)
+	if err != nil {
+		return nil, err
+	}
+	return &msg.RspUploadAddressAndToken{
+		VideoID:       response.VideoId,
+		UploadAddress: response.UploadAddress,
+		UploadAuth:    response.UploadAuth,
+	}, nil
+}
+
+// GetMezzanineInfo 获取视频或音频文件的下载地址
+func (s fileService) GetMezzanineInfo(req *msg.ReqGetMezzanineInfo) (*msg.RspGetMezzanineInfo, error) {
+	cloudSDK := aliyun.NewAliyunCloud(req.User.CloudAccessKey, req.User.CloudAccessSecret, consts.RegionID)
+
+	request := vod.CreateGetMezzanineInfoRequest()
+
+	request.VideoId = req.VideoID
+	request.AuthTimeout = "86400"
+	request.AcceptFormat = consts.JSON
+
+	response, err := cloudSDK.GetVodClient().GetMezzanineInfo(request)
+	if err != nil {
+		return nil, err
+	}
+	return &msg.RspGetMezzanineInfo{
+		RequestID: response.RequestId,
+		FileURL:   response.Mezzanine.FileURL,
+		FileName:  response.Mezzanine.FileURL,
+	}, nil
+}
+
+// GetPlayInfo 获取视频播放地址
+func (s fileService) GetPlayInfo(req *msg.ReqGetPlayInfo) (*vod.GetPlayInfoResponse, error) {
+	cloudSDK := aliyun.NewAliyunCloud(req.User.CloudAccessKey, req.User.CloudAccessSecret, consts.RegionID)
+	request := vod.CreateGetPlayInfoRequest()
+	request.VideoId = req.VideoID
+	request.AcceptFormat = consts.JSON
+	response, err := cloudSDK.GetVodClient().GetPlayInfo(request)
+	if err != nil {
+		panic(err)
+	}
+	return response, nil
 }

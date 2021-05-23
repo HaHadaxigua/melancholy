@@ -225,7 +225,7 @@ func (s fileStore) FindFileByHash(hash string) (*model.File, error) {
 
 // CreateDocFile 创建文本类型文件
 func (s fileStore) CreateDocFile(docFile *model.DocFile) error {
-	return s.db.Create(docFile).Error
+	return s.db.Model(&model.DocFile{}).Create(docFile).Error
 }
 
 //  GetDocContent 根据文稿id找出文稿内容
@@ -240,7 +240,8 @@ func (s fileStore) GetDocFile(fileID string) (*model.DocFile, error) {
 
 // CreateMusicFile 创建音频类型文件
 func (s fileStore) CreateMusicFile(musicFile *model.MusicFile) error {
-	return s.db.Create(musicFile).Error
+	query := s.db.Model(&model.MusicFile{})
+	return query.Create(musicFile).Error
 }
 
 // GetMusicFile 获取音频类型的文件
@@ -255,7 +256,8 @@ func (s fileStore) GetMusicFile(fileID string) (*model.MusicFile, error) {
 
 // CreateVideoFile 创建视频类型文件
 func (s fileStore) CreateVideoFile(videoFile *model.VideoFile) error {
-	return s.db.Create(videoFile).Error
+	query := s.db.Model(&model.VideoFile{})
+	return query.Create(videoFile).Error
 }
 
 // GetVideoFile 获取视频类型文件

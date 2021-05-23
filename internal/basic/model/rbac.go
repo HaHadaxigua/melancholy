@@ -37,6 +37,17 @@ func (u User) TableName() string {
 	return "users"
 }
 
+type Users []*User
+
+// ToIDMap slice 转换为 id map
+func (users Users) ToIDMap() map[int]*User {
+	res := make(map[int]*User)
+	for i := 0; i < len(users); i++ {
+		res[users[i].ID] = users[i]
+	}
+	return res
+}
+
 type Role struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`

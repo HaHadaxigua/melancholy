@@ -7,6 +7,7 @@ package msg
 
 import (
 	"fmt"
+	"github.com/HaHadaxigua/melancholy/internal/basic/model"
 	"github.com/HaHadaxigua/melancholy/internal/file/envir"
 	"mime/multipart"
 	"path"
@@ -63,6 +64,7 @@ type ReqFileCreate struct {
 	Address    string `json:"address"`    // 文件的oss地址
 	Hash       string `json:"hash"`       // 文件hash
 	BucketName string `json:"bucketName"` // 存储桶名
+	Endpoint   string `json:"endpoint"`
 
 	UserID int
 }
@@ -70,7 +72,7 @@ type ReqFileCreate struct {
 //  Verify 验证请求是否合法
 func (req ReqFileCreate) Verify() bool {
 	if req.FileType == 0 {
-		// 判断上传的文件id是否支持
+		// 判断上传的文件类型id是否支持
 		if ftid, ok := envir.MapFileTypeToID[path.Ext(req.FileName)]; !ok {
 			return false
 		} else {
@@ -104,7 +106,9 @@ type ReqFileUpload struct {
 	Data       []byte                `json:"data"`
 	FileHeader *multipart.FileHeader `json:"fileHeader"`
 	ParentID   string                `form:"parentID" json:"parentID"`
-	FileType   int                   `json:"fileType"`
+	FileType   int                   `form:"fileType" json:"fileType"`
+	Encryption bool                  `form:"encryption" json:"encryption"`
+	KeySecret  string                `form:"encryption" json:"keySecret"` // 进行加密的字符串
 
 	UserID int
 }
@@ -215,32 +219,44 @@ type ReqDocFile struct {
 
 // ReqVideoFile 关于视频文件的请求
 type ReqVideoFile struct {
-	Name              string   `json:"name"`              // 带有后缀的文件名
-	Title             string   `json:"title"`             // 视频标题
-	Description       string   `json:"description"`       // 视频描述
-	CoverUrl          string   `json:"coverUrl"`          // 视频封面地址
-	Area              string   `json:"area"`              // 地区
-	Species           string   `json:"species"`           // 视频类型
-	ProductionCompany string   `json:"productionCompany"` // 制作公司
-	Years             int      `json:"years"`             // 年份
-	Duration          int      `json:"duration"`          // 时长
-	Tags              []string `json:"tags"`              // 视频标签
-	ID                string   `json:"id"`                // 用于更新时的id
+	Name              string   `form:"name" json:"name"`                           // 带有后缀的文件名
+	Title             string   `form:"title" json:"title"`                         // 视频标题
+	Description       string   `form:"description" json:"description"`             // 视频描述
+	CoverUrl          string   `form:"coverUrl" json:"coverUrl"`                   // 视频封面地址
+	Area              string   `form:"area" json:"area"`                           // 地区
+	Species           string   `form:"species" json:"species"`                     // 视频类型
+	ProductionCompany string   `form:"productionCompany" json:"productionCompany"` // 制作公司
+	Years             int      `form:"years" json:"years"`                         // 年份
+	Duration          int      `form:"duration" json:"duration"`                   // 时长
+	Tags              []string `form:"tags" json:"tags"`                           // 视频标签
+	ID                string   `form:"id" json:"id"`                               // 用于更新时的id
+	Size              int      `form:"size" json:"size"`                           // 文件大小
+	Hash              string   `json:"hash"`                                       // 文件hash
+	VideoID           string   `json:"videoID" form:"videoID"`                     // 视频文件ID
+	Region            string   `json:"region"`                                     // 存储地区
+	Bucket            string   `json:"bucket"`
+	Endpoint          string   `json:"endpoint"`
 
 	UserID int
 }
 
 // ReqMusicFile 关于音频文件的请求
 type ReqMusicFile struct {
-	Name     string   `json:"name"`     // 歌名
-	CoverUrl string   `json:"coverUrl"` // 封面地址
-	Duration int      `json:"duration"` // 时长
-	Singer   string   `json:"singer"`   // 歌手
-	Album    string   `json:"album"`    // 专辑
-	Years    int      `json:"years"`    // 年份
-	Species  string   `json:"species"`  // 类型
-	Tags     []string `json:"tags"`     // 音频标签
-	ID       string   `json:"id"`       // 对应的文件id
+	Name     string   `json:"name" form:"name"`         // 歌名
+	CoverUrl string   `json:"coverUrl" form:"coverUrl"` // 封面地址
+	Duration int      `json:"duration" form:"duration"` // 时长
+	Singer   string   `json:"singer" form:"singer"`     // 歌手
+	Album    string   `json:"album" form:"album"`       // 专辑
+	Years    int      `json:"years" form:"years"`       // 年份
+	Species  string   `json:"species" form:"species"`   // 类型
+	Tags     []string `json:"tags" form:"tags"`         // 音频标签
+	ID       string   `json:"id" form:"id"`             // 对应的文件id
+	Size     int      `json:"size" form:"size"`         // 文件大小
+	Hash     string   `json:"hash"`                     // 文件hash
+	MusicID  string   `json:"musicID" form:"musicID"`   // 音频文件id
+	Region   string   `json:"region"`                   // 存储地区
+	Bucket   string   `json:"bucket"`
+	Endpoint string   `json:"endpoint"`
 
 	UserID int
 }
@@ -262,4 +278,40 @@ type RspChunkData struct {
 type RspChunk struct {
 	Status string       `json:"status"` // 成功需要返回success
 	Data   RspChunkData `json:"data"`
+}
+
+// ReqGetUploadAddressAndToken 获取视频上传地址和token
+type ReqGetUploadAddressAndToken struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Filename    string `json:"filename"`
+	CoverURL    string `json:"coverURL"`
+	Tags        string `json:"tags"`
+
+	UserID int
+	User   *model.User
+}
+
+// ReqRefreshAddressAndToken 刷新视频上传地址token
+type ReqRefreshAddressAndToken struct {
+	VideoID string `json:"videoID"`
+
+	UserID int
+	User   *model.User
+}
+
+// ReqGetMezzanineInfo 获取视频或音频文件的下载地址
+type ReqGetMezzanineInfo struct {
+	VideoID  string `json:"videoID"`  // 视频id
+
+	UserID int
+	User   *model.User
+}
+
+// ReqGetPlayInfo 获取视频播放地址
+type ReqGetPlayInfo struct {
+	VideoID  string `json:"videoID"`  // 视频id
+
+	UserID int
+	User   *model.User
 }

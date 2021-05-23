@@ -18,6 +18,7 @@ type PermissionService interface {
 	NewPermission(r *msg.ReqPermissionCreate) error
 	ListPermission(r *msg.ReqPermissionFilter) (*msg.RspPermList, error)
 	FindPermission(pid int) (*model.Permission, error)
+	DeletePermission(pid int) error
 }
 
 type permissionService struct {
@@ -54,4 +55,9 @@ func (s permissionService) ListPermission(r *msg.ReqPermissionFilter) (*msg.RspP
 
 func (s permissionService) FindPermission(pid int) (*model.Permission, error) {
 	return s.store.FindPermission(pid)
+}
+
+// DeletePermission 删除权限
+func (s permissionService) DeletePermission(pid int) error {
+	return s.store.DeletePermission(pid)
 }

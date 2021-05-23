@@ -3,6 +3,7 @@ package aliyun
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/HaHadaxigua/melancholy/internal/consts"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
@@ -17,11 +18,38 @@ type AliyunCloud struct {
 	vodCloud        *vod.Client `json:"vodCloud"` // 视频点播客户端
 }
 
-func NewAliyunCloud(accessKeyID, accessKeySecret string) *AliyunCloud {
-	return &AliyunCloud{
+func NewAliyunCloud(accessKeyID, accessKeySecret, regionID string) *AliyunCloud {
+	ali := &AliyunCloud{
 		AccessKeyID:     accessKeyID,
 		AccessKeySecret: accessKeySecret,
 	}
+	client, err := sdk.NewClientWithAccessKey(regionID, ali.AccessKeyID, ali.AccessKeySecret)
+	if err != nil {
+		panic("initCloudClientFailed")
+		return nil
+	}
+	ali.cloudClient = client
+
+
+	// 创建授权对象
+	credential := &credentials.AccessKeyCredential{
+		AccessKeyId:     ali.AccessKeyID,
+		AccessKeySecret: ali.AccessKeySecret,
+	}
+	// 自定义config
+	config := sdk.NewConfig()
+	config.AutoRetry = true     // 失败是否自动重试
+	config.MaxRetryTime = 3     // 最大重试次数
+	config.Timeout = 3000000000 // 连接超时，单位：纳秒；默认为3秒
+	// 创建vodClient实例
+	vodClient, err := vod.NewClientWithOptions(consts.RegionID, config, credential)
+	if err != nil {
+		panic("initVodClientFailed")
+		return nil
+	}
+	ali.vodCloud = vodClient
+
+	return ali
 }
 
 func (ali AliyunCloud) InitCloudClient(regionID string) {
@@ -31,6 +59,7 @@ func (ali AliyunCloud) InitCloudClient(regionID string) {
 		return
 	}
 	ali.cloudClient = client
+	fmt.Println("hello")
 }
 
 // NewVodClient 使用AK初始化VOD客户端
@@ -52,6 +81,7 @@ func (ali AliyunCloud) InitVodClient() {
 		return
 	}
 	ali.vodCloud = vodClient
+	fmt.Println("hello")
 }
 
 func (ali AliyunCloud) GetCloudClient() *sdk.Client {
@@ -112,7 +142,7 @@ func uploadLocalFile(client *oss.Client, uploadAddressDTO UploadAddressDTO, loca
 }
 
 // RefreshUploadVideo 刷新上传凭证
-func(ali AliyunCloud) RefreshUploadVideo() (response *vod.RefreshUploadVideoResponse, err error) {
+func (ali AliyunCloud) RefreshUploadVideo() (response *vod.RefreshUploadVideoResponse, err error) {
 	request := vod.CreateRefreshUploadVideoRequest()
 	request.VideoId = ""
 	request.AcceptFormat = "JSON"

@@ -131,10 +131,27 @@ type RspDocFile struct {
 
 // RspVideoFile 关于视频文件的返回
 type RspVideoFile struct {
-
+	ID   string `json:"id"`   // 视频文件id
+	Name string `json:"name"` // 视频文件名
 }
 
 // RspMusicFile 关于音频文件的返回
 type RspMusicFile struct {
-
+	ID   string `json:"id"`   // 音频文件id
+	Name string `json:"name"` // 音频文件名
 }
+
+// RspUploadAddressAndToken 获取视频上传的地址和token
+type RspUploadAddressAndToken struct {
+	VideoID       string `json:"videoID"`
+	UploadAddress string `json:"uploadAddress"`
+	UploadAuth    string `json:"uploadAuth"`
+}
+
+// RspGetMezzanineInfo 获取视频和音频文件的下载地址
+type RspGetMezzanineInfo struct {
+	RequestID string `json:"requestID"` // 请求ID。
+	FileURL   string `json:"fileUrl"`   // 文件下载地址
+	FileName  string `json:"fileName"`  // 文件名
+}
+
