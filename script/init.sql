@@ -1,3 +1,10 @@
+create table doc_files
+(
+    id      varchar(255) not null
+        primary key,
+    content text         null comment '文件内容'
+);
+
 create table files
 (
     id          varchar(255) not null
@@ -10,8 +17,10 @@ create table files
     address     varchar(255) null comment 'oss地址',
     bucket_name varchar(255) null comment '存储桶名',
     object_name varchar(255) null comment '存储对象名字',
+    endpoint    varchar(255) null,
     size        int          null comment '文件大小',
     mode        int          null comment '文件模式',
+    ftype       int          null comment '文件类型',
     created_at  timestamp    null,
     updated_at  timestamp    null,
     deleted_at  timestamp    null
@@ -35,6 +44,34 @@ create table folders
     updated_at timestamp    null,
     deleted_at timestamp    null,
     primary key (id, owner_id)
+);
+
+create table friends
+(
+    id         int auto_increment
+        primary key,
+    `from`     varchar(255) null comment '来自A用户的好友申请',
+    `to`       varchar(255) null comment '来自B用户的好友同意',
+    status     int          null,
+    created_at timestamp    null comment '好友申请日期',
+    updated_at timestamp    null comment '好友申请同意',
+    deleted_at timestamp    null comment '好友申请拒绝'
+);
+
+create table music_files
+(
+    id        varchar(255) not null
+        primary key,
+    name      varchar(255) null comment '歌曲名',
+    cover_url varchar(255) null comment '封面',
+    duration  int          null comment '时长',
+    singer    varchar(255) null comment '歌手',
+    album     varchar(255) null comment '专辑',
+    years     int          null comment '年份',
+    species   varchar(255) null comment '分类',
+    finished  tinyint(1)   null comment '是否上传完成',
+    music_id  varchar(255) null comment '视频点播地址',
+    region    varchar(255) null
 );
 
 create table permissions
@@ -79,18 +116,42 @@ create table user_role
 
 create table users
 (
-    id         int auto_increment
+    id                  int auto_increment
         primary key,
-    username   varchar(255)  not null,
-    password   varchar(255)  not null,
-    mobile     varchar(255)  null,
-    email      varchar(255)  not null,
-    status     int default 0 null,
-    salt       varchar(255)  not null,
-    created_at timestamp     null,
-    updated_at timestamp     null,
-    deleted_at timestamp     null,
+    username            varchar(255)  not null,
+    password            varchar(255)  not null,
+    mobile              varchar(255)  null,
+    email               varchar(255)  not null,
+    salt                varchar(255)  not null,
+    avatar              varchar(255)  null comment '头像',
+    status              int default 0 null,
+    oss_end_point       varchar(255)  null,
+    cloud_access_key    varchar(255)  null,
+    oss_access_secret   varchar(255)  null,
+    oss_access_key      varchar(255)  null,
+    cloud_access_secret varchar(255)  null,
+    created_at          timestamp     null,
+    updated_at          timestamp     null,
+    deleted_at          timestamp     null,
     constraint users_email_uindex
         unique (email)
 );
+
+create table video_files
+(
+    id                 varchar(255) not null
+        primary key,
+    title              varchar(255) null comment '视频标题',
+    description        varchar(255) null comment '简介',
+    cover_url          varchar(255) null comment '封面地址',
+    area               varchar(255) null comment '地区',
+    years              int          null comment '年份',
+    production_company varchar(255) null comment '制作公司',
+    species            varchar(255) null comment '视频类型',
+    duration           int          null comment '时长(秒)',
+    finished           tinyint(1)   null comment '是否上传完成',
+    video_id           varchar(255) null comment '视频点播文件地址',
+    region             varchar(255) null
+)
+    comment '视频文件信息';
 
